@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react"
 
-import { sideTowardPoint, type RenderedEdge, type Side } from "../graph"
+import { nearestSide, sideTowardPoint, type RenderedEdge, type Side } from "../graph"
 import {
   clampNewNodePoint,
   edgeExistsBetween,
@@ -15,16 +15,7 @@ import type { MindmapGraph } from "./useMindmapGraph"
 
 type Options = Pick<
   MindmapGraph,
-  | "nodes"
-  | "links"
-  | "byId"
-  | "moveNode"
-  | "addChildAt"
-  | "addLink"
-  | "updateLink"
-  | "removeLink"
-  | "reparentTree"
-  | "detachTree"
+  "nodes" | "links" | "byId" | "moveNode" | "addNode" | "addLink" | "updateLink" | "removeLink"
 > & {
   setSelectedId: (id: string | null) => void
 }
@@ -34,12 +25,10 @@ export function useMindmapInteractions({
   links,
   byId,
   moveNode,
-  addChildAt,
+  addNode,
   addLink,
   updateLink,
   removeLink,
-  reparentTree,
-  detachTree,
   setSelectedId,
 }: Options) {
   const [drag, setDrag] = useState<{ id: string; ox: number; oy: number } | null>(null)
@@ -74,7 +63,7 @@ export function useMindmapInteractions({
   }
 
   function connected(a: string, b: string) {
-    return edgeExistsBetween(nodes, links, a, b)
+    return edgeExistsBetween(links, a, b)
   }
 
   function clampPoint(p: { x: number; y: number }) {
@@ -142,12 +131,9 @@ export function useMindmapInteractions({
     const p = toSvgPoint(e.clientX, e.clientY)
     setEdgeDrag({
       edgeId: edge.id,
-      kind: edge.kind,
       moving,
       fixedNodeId: fixed.id,
       fixedSide,
-      linkId: edge.kind === "link" ? edge.id : null,
-      childId: edge.kind === "tree" ? edge.to.id : null,
       x: p.x,
       y: p.y,
       targetNodeId: null,
@@ -173,7 +159,7 @@ export function useMindmapInteractions({
 
     if (edgeDrag) {
       const hit = nodeAtPoint(p)
-      const target = resolveEdgeTarget(nodes, links, byId, hit, p, edgeDrag)
+      const target = resolveEdgeTarget(links, byId, hit, p, edgeDrag)
       setEdgeDrag((prev) =>
         prev
           ? {
@@ -202,8 +188,14 @@ export function useMindmapInteractions({
           toSide: sideTowardPoint(hit, p),
         })
       } else if (source && !hit) {
-        const node = addChildAt(source.id, clampPoint(p), connect.sourceSide)
-        if (node) setSelectedId(node.id)
+        const node = addNode(clampPoint(p))
+        addLink({
+          from: source.id,
+          to: node.id,
+          fromSide: connect.sourceSide,
+          toSide: nearestSide(node, source),
+        })
+        setSelectedId(node.id)
       }
       setConnect(null)
       return
@@ -211,35 +203,19 @@ export function useMindmapInteractions({
 
     if (edgeDrag) {
       const hit = nodeAtPoint(p)
-      const target = resolveEdgeTarget(nodes, links, byId, hit, p, edgeDrag)
+      const target = resolveEdgeTarget(links, byId, hit, p, edgeDrag)
 
       if (target) {
-        if (edgeDrag.kind === "link" && edgeDrag.linkId) {
-          updateLink(
-            edgeDrag.linkId,
-            edgeDrag.moving === "from"
-              ? { from: target.node.id, fromSide: target.side }
-              : { to: target.node.id, toSide: target.side },
-          )
-        } else if (edgeDrag.kind === "tree" && edgeDrag.childId) {
-          if (edgeDrag.moving === "from") {
-            // The parent end moved: the original child gets a new parent.
-            reparentTree(edgeDrag.childId, target.node.id, target.side, edgeDrag.fixedSide)
-          } else {
-            // The child end moved: the target becomes the parent's child, and
-            // the original child is detached so the edge visually lands where
-            // it was dropped.
-            reparentTree(target.node.id, edgeDrag.fixedNodeId, edgeDrag.fixedSide, target.side)
-            detachTree(edgeDrag.childId)
-          }
-        }
+        updateLink(
+          edgeDrag.edgeId,
+          edgeDrag.moving === "from"
+            ? { from: target.node.id, fromSide: target.side }
+            : { to: target.node.id, toSide: target.side },
+        )
       } else if (!hit) {
-        if (edgeDrag.kind === "link" && edgeDrag.linkId) {
-          removeLink(edgeDrag.linkId)
-        } else if (edgeDrag.kind === "tree" && edgeDrag.childId) {
-          detachTree(edgeDrag.childId)
-        }
+        removeLink(edgeDrag.edgeId)
       }
+
       setEdgeDrag(null)
       return
     }
@@ -263,6 +239,7 @@ export function useMindmapInteractions({
 
   return {
     svgRef,
+    canvasSize,
     drag,
     connect,
     edgeDrag,

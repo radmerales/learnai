@@ -8,7 +8,6 @@ export function buildGhostNode(connect: ConnectDrag | null, point: Point | null,
     label: "New node",
     x: point.x,
     y: point.y,
-    parentId: connect.sourceId,
   }
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useReducer, useRef } from "react"
 
-import { nearestSide, uid, type Link, type Node, type Point, type Side } from "../graph"
+import { uid, type Link, type Node, type Point } from "../graph"
 import { initialMindmapState, mindmapReducer } from "../state/mindmapReducer"
 
 export function useMindmapGraph() {
@@ -13,65 +13,19 @@ export function useMindmapGraph() {
     return map
   }, [state.nodes])
 
-  const addRoot = useCallback(() => {
+  const addNode = useCallback((point: Point) => {
     const node: Node = {
       id: uid(),
-      label: `Topic ${labelCounter.current++}`,
-      x: 420,
-      y: 120 + state.nodes.length * 30,
-      parentId: null,
+      label: `Node ${labelCounter.current++}`,
+      x: point.x,
+      y: point.y,
     }
-    dispatch({ type: "add-root", node })
+    dispatch({ type: "add-node", node })
     return node
-  }, [state.nodes.length])
+  }, [])
 
-  const addChild = useCallback(
-    (parentId: string) => {
-      const parent = byId.get(parentId)
-      if (!parent) return null
-      const childCount = state.nodes.filter((n) => n.parentId === parentId).length
-      const node: Node = {
-        id: uid(),
-        label: `Node ${labelCounter.current++}`,
-        x: parent.x + 200,
-        y: parent.y + childCount * 70 - 20,
-        parentId,
-      }
-      dispatch({
-        type: "add-child",
-        node,
-        fromSide: nearestSide(parent, node),
-        toSide: nearestSide(node, parent),
-      })
-      return node
-    },
-    [byId, state.nodes],
-  )
-
-  const addChildAt = useCallback(
-    (parentId: string, point: Point, fromSide: Side) => {
-      const parent = byId.get(parentId)
-      if (!parent) return null
-      const node: Node = {
-        id: uid(),
-        label: `Node ${labelCounter.current++}`,
-        x: point.x,
-        y: point.y,
-        parentId,
-      }
-      dispatch({
-        type: "add-child",
-        node,
-        fromSide,
-        toSide: nearestSide(node, parent),
-      })
-      return node
-    },
-    [byId],
-  )
-
-  const removeSubtree = useCallback((id: string) => {
-    dispatch({ type: "remove-subtree", id })
+  const removeNode = useCallback((id: string) => {
+    dispatch({ type: "remove-node", id })
   }, [])
 
   const renameNode = useCallback((id: string, label: string) => {
@@ -97,33 +51,17 @@ export function useMindmapGraph() {
     dispatch({ type: "remove-link", id })
   }, [])
 
-  const reparentTree = useCallback(
-    (childId: string, parentId: string, fromSide: Side, toSide: Side) => {
-      dispatch({ type: "reparent-tree", childId, parentId, fromSide, toSide })
-    },
-    [],
-  )
-
-  const detachTree = useCallback((childId: string) => {
-    dispatch({ type: "detach-tree", childId })
-  }, [])
-
   return {
     nodes: state.nodes,
     links: state.links,
-    treeSides: state.treeSides,
     byId,
-    addRoot,
-    addChild,
-    addChildAt,
-    removeSubtree,
+    addNode,
+    removeNode,
     renameNode,
     moveNode,
     addLink,
     updateLink,
     removeLink,
-    reparentTree,
-    detachTree,
   }
 }
 

@@ -3,7 +3,6 @@ export type Node = {
   label: string
   x: number
   y: number
-  parentId: string | null
 }
 
 export type Side = "top" | "right" | "bottom" | "left"
@@ -16,15 +15,10 @@ export type Link = {
   toSide: Side
 }
 
-export type TreeSides = Record<string, { fromSide: Side; toSide: Side }>
-
 export type Point = { x: number; y: number }
-
-export type EdgeKind = "tree" | "link"
 
 export type RenderedEdge = {
   id: string
-  kind: EdgeKind
   from: Node
   to: Node
   fromSide: Side
@@ -133,65 +127,24 @@ export function curvePath(fromPoint: Point, fromSide: Side, toPoint: Point, toSi
   return `M ${round(fromPoint.x)} ${round(fromPoint.y)} C ${round(c1.x)} ${round(c1.y)}, ${round(c2.x)} ${round(c2.y)}, ${round(toPoint.x)} ${round(toPoint.y)}`
 }
 
-export function isDescendant(nodes: Node[], ancestorId: string, candidateId: string): boolean {
-  let cursor = nodes.find((n) => n.id === candidateId)
-  const seen = new Set<string>()
-
-  while (cursor?.parentId) {
-    if (cursor.parentId === ancestorId) return true
-    if (seen.has(cursor.id)) return false
-    seen.add(cursor.id)
-    const parentId = cursor.parentId
-    cursor = nodes.find((n) => n.id === parentId)
-  }
-
-  return false
-}
-
-export function buildRenderedEdges(
-  nodes: Node[],
-  links: Link[],
-  treeSides: TreeSides,
-  byId: Map<string, Node>,
-): RenderedEdge[] {
+export function buildRenderedEdges(links: Link[], byId: Map<string, Node>): RenderedEdge[] {
   const next: RenderedEdge[] = []
 
-  nodes.forEach((n) => {
-    if (!n.parentId) return
-    const from = byId.get(n.parentId)
-    if (!from) return
-    const sides = treeSides[n.id] ?? { fromSide: nearestSide(from, n), toSide: nearestSide(n, from) }
-    const fromPoint = sidePoint(from, sides.fromSide)
-    const toPoint = sidePoint(n, sides.toSide)
-    next.push({
-      id: `tree-${n.id}`,
-      kind: "tree",
-      from,
-      to: n,
-      fromSide: sides.fromSide,
-      toSide: sides.toSide,
-      fromPoint,
-      toPoint,
-      path: curvePath(fromPoint, sides.fromSide, toPoint, sides.toSide),
-    })
-  })
-
-  links.forEach((l) => {
-    const from = byId.get(l.from)
-    const to = byId.get(l.to)
+  links.forEach((link) => {
+    const from = byId.get(link.from)
+    const to = byId.get(link.to)
     if (!from || !to) return
-    const fromPoint = sidePoint(from, l.fromSide)
-    const toPoint = sidePoint(to, l.toSide)
+    const fromPoint = sidePoint(from, link.fromSide)
+    const toPoint = sidePoint(to, link.toSide)
     next.push({
-      id: l.id,
-      kind: "link",
+      id: link.id,
       from,
       to,
-      fromSide: l.fromSide,
-      toSide: l.toSide,
+      fromSide: link.fromSide,
+      toSide: link.toSide,
       fromPoint,
       toPoint,
-      path: curvePath(fromPoint, l.fromSide, toPoint, l.toSide),
+      path: curvePath(fromPoint, link.fromSide, toPoint, link.toSide),
     })
   })
 
