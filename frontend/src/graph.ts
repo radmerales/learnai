@@ -32,6 +32,8 @@ export type RenderedEdge = {
 export const NODE_W = 140
 export const NODE_H = 44
 export const HANDLE_R = 5
+export const HANDLE_HIT_R = 36
+export const ANCHOR_OFFSET = 5
 export const SIDES: Side[] = ["top", "right", "bottom", "left"]
 
 const NODE_TEXT_FONT = '14px "IBM Plex Sans", sans-serif'
@@ -64,13 +66,13 @@ export function uid() {
 export function sidePoint(node: Node, side: Side): Point {
   switch (side) {
     case "top":
-      return { x: node.x, y: node.y - NODE_H / 2 }
+      return { x: node.x, y: node.y - NODE_H / 2 - ANCHOR_OFFSET }
     case "right":
-      return { x: node.x + node.width / 2, y: node.y }
+      return { x: node.x + node.width / 2 + ANCHOR_OFFSET, y: node.y }
     case "bottom":
-      return { x: node.x, y: node.y + NODE_H / 2 }
+      return { x: node.x, y: node.y + NODE_H / 2 + ANCHOR_OFFSET }
     case "left":
-      return { x: node.x - node.width / 2, y: node.y }
+      return { x: node.x - node.width / 2 - ANCHOR_OFFSET, y: node.y }
   }
 }
 
@@ -90,13 +92,13 @@ export function sideNormal(side: Side): Point {
 export function localHandlePoint(width: number, side: Side): Point {
   switch (side) {
     case "top":
-      return { x: width / 2, y: 0 }
+      return { x: width / 2, y: -ANCHOR_OFFSET }
     case "right":
-      return { x: width, y: NODE_H / 2 }
+      return { x: width + ANCHOR_OFFSET, y: NODE_H / 2 }
     case "bottom":
-      return { x: width / 2, y: NODE_H }
+      return { x: width / 2, y: NODE_H + ANCHOR_OFFSET }
     case "left":
-      return { x: 0, y: NODE_H / 2 }
+      return { x: -ANCHOR_OFFSET, y: NODE_H / 2 }
   }
 }
 

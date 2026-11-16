@@ -97,13 +97,14 @@ must stay under 300 lines.
   extend along the side normal, so outgoing and incoming tangents are
   perpendicular to the anchor side while the middle of the path curves.
 - **Edge midpoint snapping:** Every endpoint snaps to the middle of one of the
-  four node sides. While dragging an endpoint, the target node renders all four
-  anchor dots and highlights the one nearest the pointer, chosen with
-  aspect-normalized node coordinates rather than the node as a whole. Links
-  persist both chosen sides (`fromSide` / `toSide`), so moving a node does not
-  automatically switch an edge to another side. Hovering a drop target previews
-  the snap point before release, and only an explicit endpoint drag changes the
-  anchor.
+  four node sides, offset 5px outward from the node shape so edges and anchor
+  dots sit just clear of the border. While dragging an endpoint, the target node
+  renders all four anchor dots and highlights the one nearest the pointer,
+  chosen with aspect-normalized node coordinates rather than the node as a
+  whole. Links persist both chosen sides (`fromSide` / `toSide`), so moving a
+  node does not automatically switch an edge to another side. Hovering a drop
+  target previews the snap point before release, and only an explicit endpoint
+  drag changes the anchor.
 - **Pointer-event dragging and connecting:** Dragging uses pointer events so
   movement stays smooth and works with mouse/touch/pen. Connection drops are
   hit-tested against node bounds, which makes targets reliable even as nodes
@@ -130,17 +131,19 @@ must stay under 300 lines.
 - **Clear selection state:** The selected node uses the accent color so the
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.
-- **Connection affordance:** Hovering a node reveals four circular handles at
-  the midpoint of each side. Dragging from a handle shows a dashed curved
+- **Connection affordance:** Hovering a node reveals four circular handles 5px
+  outside the side midpoints. Dragging from a handle shows a dashed curved
   preview and a live endpoint marker; hovering a valid target highlights it with
   the accent fill and snaps the preview to one of its four side midpoints before
-  the link is dropped. Hovering blank canvas shows a dashed “New node” ghost at
+  the link is dropped. New-edge connection handles use the same 36px hit radius
+  as edge-edit handles. Hovering blank canvas shows a dashed “New node” ghost at
   the future node position.
 - **Rewire affordance:** Finished edges stay clean with no endpoint circles.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
   replaced by a dashed preview so the new connection is clear. Endpoint hit
-  targets use a generous 36px radius, making the small handles easy to grab.
-  Dropping outside any node removes the edge.
+  targets use a generous 36px radius — the same threshold used when starting a
+  new edge — making the small handles easy to grab. Dropping outside any node
+  removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only

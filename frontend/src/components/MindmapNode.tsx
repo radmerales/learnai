@@ -1,6 +1,6 @@
 import type { MouseEvent, PointerEvent } from "react"
 
-import { HANDLE_R, NODE_H, SIDES, localHandlePoint, type Node, type Side } from "../graph"
+import { HANDLE_HIT_R, HANDLE_R, NODE_H, SIDES, localHandlePoint, type Node, type Side } from "../graph"
 
 type Props = {
   node: Node
@@ -103,7 +103,7 @@ export function MindmapNode({
                 <circle
                   cx={p.x}
                   cy={p.y}
-                  r={12}
+                  r={HANDLE_HIT_R}
                   fill="transparent"
                   className="cursor-crosshair"
                   onPointerDown={(e) => onConnectStart(e, node.id, side)}
