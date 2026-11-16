@@ -66,7 +66,7 @@ export function MindmapCanvas({
       {nodes.map((node) => {
         const connectTarget = interactions.connect?.targetId === node.id
         const edgeTarget = interactions.edgeDrag?.targetNodeId === node.id
-        const dropTarget = connectTarget || edgeTarget
+        const showAnchors = connectTarget || edgeTarget
         const anchorSide = connectTarget
           ? interactions.connect?.targetSide ?? null
           : edgeTarget
@@ -79,9 +79,8 @@ export function MindmapCanvas({
             key={node.id}
             node={node}
             selected={selectedNodeIds.includes(node.id)}
-            dropTarget={dropTarget}
             anchorSide={anchorSide}
-            showAnchors={dropTarget}
+            showAnchors={showAnchors}
             showHandles={showHandles}
             editing={node.id === editingId}
             onPointerDown={interactions.onNodePointerDown}

@@ -6,7 +6,6 @@ import { NOTE_STATUSES } from "../status"
 type Props = {
   node: Node
   selected: boolean
-  dropTarget: boolean
   anchorSide: Side | null
   showAnchors: boolean
   showHandles: boolean
@@ -22,7 +21,6 @@ type Props = {
 export function MindmapNode({
   node,
   selected,
-  dropTarget,
   anchorSide,
   showAnchors,
   showHandles,
@@ -60,20 +58,6 @@ export function MindmapNode({
         stroke={status.outline}
         strokeWidth={selected ? 4.5 : 1.5}
       />
-
-      {dropTarget && (
-        <rect
-          x={-4}
-          y={-4}
-          width={node.width + 8}
-          height={NODE_H + 8}
-          fill="none"
-          stroke="#000000"
-          strokeWidth={1.5}
-          strokeDasharray="4 2"
-          pointerEvents="none"
-        />
-      )}
 
       {!editing && (
         <text

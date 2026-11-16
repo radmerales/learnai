@@ -205,7 +205,7 @@ quizzes) when real quiz authoring is added.
   area, so the node body stays fully draggable and does not accidentally start
   an edge. Dragging from a handle shows a dashed curved preview and a live
   endpoint marker; moving within the same 36px threshold of a target anchor
-  highlights that node and snaps the preview to the specific side midpoint
+  shows its four anchor dots and snaps the preview to the specific side midpoint
   before the link is dropped. Hovering blank canvas shows a dashed “New node”
   ghost at the future node position.
 - **Rewire affordance:** Finished edges stay clean with no endpoint circles.
