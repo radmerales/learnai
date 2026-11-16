@@ -36,9 +36,9 @@ dragging a connection from a node’s side handle.
   group; attached edges follow. The marquee uses the accent colour at low
   opacity, selected nodes use a 3× status-colored border, selected edges use a
   thicker dark stroke, and a dashed rectangle surrounds the full multi-selection.
-- **Delete a selection** — press `Delete` or `Backspace`, or use the header
-  action, to remove every selected node and edge. Right-clicking either a node
-  or an edge opens the same themed context menu with a red trash action.
+- **Delete a selection** — press `Delete` or `Backspace` to remove every
+  selected node and edge. Right-clicking either a node or an edge opens the same
+  themed context menu with a red trash action.
 - **Inline labels** — double-click a node to edit its label in place; Enter
   commits, Escape cancels, and blur commits. While editing, the node keeps its
   status background and uses the same 3× status-colored border as selection.
@@ -200,8 +200,8 @@ quizzes) when real quiz authoring is added.
   multi-selection, while a marquee adds a translucent accent field during drag.
   Group dragging captures each selected node’s starting position once, then
   applies one shared delta so the selection moves together without drift.
-- **Selection-aware chrome:** The header labels the delete action for the current
-  selection size, and the footer reports node/edge selection counts.
+- **Selection-aware chrome:** The footer reports node/edge selection counts and
+  the available keyboard actions.
 - **Study status palette:** Status colors are defined once in `status.ts` and
   applied consistently: solid outline, pastel background, deep text color, and a
   matching active segment in the panel control. Selection thickens the node’s

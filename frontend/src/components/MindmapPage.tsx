@@ -116,10 +116,6 @@ export function MindmapPage() {
     focusNode(node.id)
   }
 
-  function handleDeleteSelection() {
-    if (selectedCount > 0) deleteSelection()
-  }
-
   function handleNodeDoubleClick(node: Node) {
     selectNode(node.id)
     editing.startEditing(node)
@@ -162,22 +158,9 @@ export function MindmapPage() {
     setContextMenu(null)
   }
 
-  const deleteLabel =
-    selectedCount > 1
-      ? `Delete ${selectedCount} items`
-      : selectedNodeIds.length === 1
-        ? "Delete node"
-        : selectedEdgeIds.length === 1
-          ? "Delete edge"
-          : "Delete"
-
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
-      <MindmapHeader
-        canDelete={selectedCount > 0}
-        deleteLabel={deleteLabel}
-        onDelete={handleDeleteSelection}
-      />
+      <MindmapHeader />
 
       <div className="relative flex-1 overflow-hidden">
         {graph.nodes.length === 0 && (
