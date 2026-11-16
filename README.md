@@ -36,10 +36,11 @@ dragging a connection from a node’s side handle.
 - **Inline labels** — double-click a node to edit its label in place; Enter
   commits, Escape cancels, and blur commits. Node width grows to fit the full
   label while keeping the original 140px width as the minimum.
-- **Node note panel** — focusing a node opens a right-hand panel that overlays
-  the canvas without resizing it. On smaller screens the panel takes the full
-  width. It includes a close button, a live-synced title, and editable node
-  contents.
+- **Node note panel** — the open panel always reflects the currently selected
+  node. Focusing a node opens a right-hand panel that overlays the canvas
+  without resizing it; creating a new node focuses it and opens the same panel.
+  On smaller screens the panel takes the full width. It includes a close button,
+  a live-synced title, and editable node contents.
 - **Local-only state** — the map lives in memory for the current session (no
   persistence in this MVP).
 
@@ -137,9 +138,10 @@ must stay under 300 lines.
   midpoints.
 - **Overlay note panel:** Clicking a node without dragging opens a note panel
   absolutely positioned over the right half of the canvas (full width on small
-  screens), so the canvas keeps its dimensions. The panel uses the paper/ink
-  theme, sharp corners, a square close button, a live title field, and an
-  editable contents area. Node content is stored on the node itself.
+  screens), so the canvas keeps its dimensions. The panel is driven by the
+  current selection, so changing nodes updates it in place. The panel uses the
+  paper/ink theme, sharp corners, a square close button, a live title field, and
+  an editable contents area. Node content is stored on the node itself.
 - **Clear selection state:** The selected node uses the accent color so the
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.

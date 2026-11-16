@@ -214,7 +214,7 @@ export function useMindmapInteractions({
           fromSide: connect.sourceSide,
           toSide: oppositeSide(connect.sourceSide),
         })
-        selectNode(node.id)
+        onNodeFocus(node.id)
       }
       setConnect(null)
       return

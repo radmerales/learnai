@@ -22,7 +22,7 @@ export function MindmapPage() {
   const graph = useMindmapGraph()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
-  const [panelNodeId, setPanelNodeId] = useState<string | null>(null)
+  const [panelOpen, setPanelOpen] = useState(false)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const editing = useLabelEditing({ byId: graph.byId, renameNode: graph.renameNode })
   const { cancelEditing } = editing
@@ -30,14 +30,14 @@ export function MindmapPage() {
   const selectNode = useCallback((id: string | null) => {
     setSelectedId(id)
     setSelectedEdgeId(null)
-    if (!id) setPanelNodeId(null)
+    if (!id) setPanelOpen(false)
   }, [])
 
   const selectEdge = useCallback(
     (id: string) => {
       setSelectedId(null)
       setSelectedEdgeId(id)
-      setPanelNodeId(null)
+      setPanelOpen(false)
       cancelEditing()
     },
     [cancelEditing],
@@ -46,7 +46,7 @@ export function MindmapPage() {
   const handleNodeFocus = useCallback(
     (id: string) => {
       selectNode(id)
-      setPanelNodeId(id)
+      setPanelOpen(true)
     },
     [selectNode],
   )
@@ -71,7 +71,7 @@ export function MindmapPage() {
 
   const { svgRef, ...canvasInteractions } = interactions
   const selected = selectedId ? graph.byId.get(selectedId) ?? null : null
-  const panelNode = panelNodeId ? graph.byId.get(panelNodeId) ?? null : null
+  const panelNode = panelOpen ? selected : null
 
   const edges = useMemo(
     () => buildRenderedEdges(graph.links, graph.byId),
@@ -85,7 +85,7 @@ export function MindmapPage() {
       removeNode(id)
       setSelectedId((current) => (current === id ? null : current))
       setSelectedEdgeId(null)
-      setPanelNodeId((current) => (current === id ? null : current))
+      setPanelOpen(false)
       cancelEditing()
       setContextMenu(null)
     },
@@ -126,7 +126,7 @@ export function MindmapPage() {
       x: width ? width / 2 : 420,
       y: height ? height / 2 : 220,
     })
-    selectNode(node.id)
+    handleNodeFocus(node.id)
   }
 
   function handleDeleteSelection() {
@@ -144,7 +144,7 @@ export function MindmapPage() {
 
   function handleNodeContextMenu(node: Node, e: MouseEvent<SVGGElement>) {
     selectNode(node.id)
-    setPanelNodeId(null)
+    setPanelOpen(false)
     setContextMenu({ nodeId: node.id, label: node.label, x: e.clientX, y: e.clientY })
   }
 
@@ -202,7 +202,7 @@ export function MindmapPage() {
         {panelNode && (
           <NodePanel
             node={panelNode}
-            onClose={() => setPanelNodeId(null)}
+            onClose={() => setPanelOpen(false)}
             onTitleChange={(title) => graph.renameNode(panelNode.id, title)}
             onContentChange={(content) => graph.setNodeContent(panelNode.id, content)}
           />
