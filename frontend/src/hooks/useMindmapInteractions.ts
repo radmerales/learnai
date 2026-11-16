@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react"
 
-import { oppositeSide, sideTowardPoint, type RenderedEdge, type Side } from "../graph"
+import { oppositeSide, type RenderedEdge, type Side } from "../graph"
 import {
   clampNewNodePoint,
-  edgeExistsBetween,
+  findConnectCandidate,
   hitTestNode,
+  resolveConnectTarget,
   resolveEdgeTarget,
   type ConnectDrag,
   type EdgeDrag,
@@ -17,7 +18,8 @@ type Options = Pick<
   MindmapGraph,
   "nodes" | "links" | "byId" | "moveNode" | "addNode" | "addLink" | "updateLink" | "removeLink"
 > & {
-  setSelectedId: (id: string | null) => void
+  selectNode: (id: string | null) => void
+  clearEdgeSelection: () => void
 }
 
 export function useMindmapInteractions({
@@ -29,7 +31,8 @@ export function useMindmapInteractions({
   addLink,
   updateLink,
   removeLink,
-  setSelectedId,
+  selectNode,
+  clearEdgeSelection,
 }: Options) {
   const [drag, setDrag] = useState<{ id: string; ox: number; oy: number } | null>(null)
   const [connect, setConnect] = useState<ConnectDrag | null>(null)
@@ -62,10 +65,6 @@ export function useMindmapInteractions({
     return hitTestNode(nodes, p)
   }
 
-  function connected(a: string, b: string) {
-    return edgeExistsBetween(links, a, b)
-  }
-
   function clampPoint(p: { x: number; y: number }) {
     return clampNewNodePoint(p, canvasSize.width, canvasSize.height)
   }
@@ -92,7 +91,7 @@ export function useMindmapInteractions({
 
   function onBackgroundPointerDown(e: PointerEvent<SVGSVGElement>) {
     if (e.button !== 0) return
-    setSelectedId(null)
+    selectNode(null)
   }
 
   function onNodePointerDown(e: PointerEvent<SVGGElement>, id: string) {
@@ -103,7 +102,7 @@ export function useMindmapInteractions({
     clearEdgeHoverTimer()
     setHoveredEdgeId(null)
     const p = toSvgPoint(e.clientX, e.clientY)
-    setSelectedId(id)
+    selectNode(id)
     setDrag({ id, ox: p.x - node.x, oy: p.y - node.y })
     ;(e.currentTarget as SVGGElement).setPointerCapture?.(e.pointerId)
   }
@@ -116,9 +115,10 @@ export function useMindmapInteractions({
     setHoveredId((prev) => (prev === id ? null : prev))
   }
 
-  function startConnect(e: PointerEvent<SVGCircleElement>, id: string, side: Side) {
+  function startConnect(e: PointerEvent<SVGPathElement>, id: string, side: Side) {
     e.stopPropagation()
     if (e.button !== 0) return
+    clearEdgeSelection()
     clearEdgeHoverTimer()
     setHoveredEdgeId(null)
     const p = toSvgPoint(e.clientX, e.clientY)
@@ -128,6 +128,7 @@ export function useMindmapInteractions({
   function startEdgeDrag(e: PointerEvent<SVGCircleElement>, edge: RenderedEdge, moving: "from" | "to") {
     e.stopPropagation()
     if (e.button !== 0) return
+    clearEdgeSelection()
     clearEdgeHoverTimer()
     setHoveredEdgeId(edge.id)
     const fixed = moving === "from" ? edge.to : edge.from
@@ -154,10 +155,10 @@ export function useMindmapInteractions({
     }
 
     if (connect) {
-      const hit = nodeAtPoint(p)
-      const targetId = hit && hit.id !== connect.sourceId && !connected(connect.sourceId, hit.id) ? hit.id : null
-      const targetSide = targetId && hit ? sideTowardPoint(hit, p) : null
-      setConnect((prev) => (prev ? { ...prev, x: p.x, y: p.y, targetId, targetSide } : prev))
+      const target = resolveConnectTarget(nodes, links, p, connect.sourceId)
+      setConnect((prev) =>
+        prev ? { ...prev, x: p.x, y: p.y, targetId: target?.node.id ?? null, targetSide: target?.side ?? null } : prev,
+      )
       return
     }
 
@@ -183,15 +184,16 @@ export function useMindmapInteractions({
 
     if (connect) {
       const source = byId.get(connect.sourceId)
-      const hit = nodeAtPoint(p)
-      if (source && hit && hit.id !== source.id && !connected(source.id, hit.id)) {
+      const candidate = findConnectCandidate(nodes, p)
+      const target = resolveConnectTarget(nodes, links, p, connect.sourceId)
+      if (source && target) {
         addLink({
           from: source.id,
-          to: hit.id,
+          to: target.node.id,
           fromSide: connect.sourceSide,
-          toSide: sideTowardPoint(hit, p),
+          toSide: target.side,
         })
-      } else if (source && !hit) {
+      } else if (source && !candidate) {
         const node = addNode(clampPoint(p))
         addLink({
           from: source.id,
@@ -199,7 +201,7 @@ export function useMindmapInteractions({
           fromSide: connect.sourceSide,
           toSide: oppositeSide(connect.sourceSide),
         })
-        setSelectedId(node.id)
+        selectNode(node.id)
       }
       setConnect(null)
       return
@@ -236,8 +238,8 @@ export function useMindmapInteractions({
   }
 
   const connectPoint = connect ? clampPoint({ x: connect.x, y: connect.y }) : null
-  const connectHoverNode = connect ? nodeAtPoint({ x: connect.x, y: connect.y }) : null
-  const ghostNode = buildGhostNode(connect, connectPoint, connectHoverNode)
+  const connectCandidate = connect ? findConnectCandidate(nodes, { x: connect.x, y: connect.y }) : null
+  const ghostNode = buildGhostNode(connect, connectPoint, connectCandidate?.node ?? null)
   const connectPreview = buildConnectPreview(connect, byId, ghostNode)
   const edgePreview = buildEdgePreview(edgeDrag, byId)
 

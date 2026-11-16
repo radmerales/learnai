@@ -1,9 +1,10 @@
 type Props = {
   canDelete: boolean
+  deleteLabel: string
   onDelete: () => void
 }
 
-export function MindmapHeader({ canDelete, onDelete }: Props) {
+export function MindmapHeader({ canDelete, deleteLabel, onDelete }: Props) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-4 border-b border-hairline bg-surface px-6 py-4">
       <div>
@@ -21,7 +22,7 @@ export function MindmapHeader({ canDelete, onDelete }: Props) {
           disabled={!canDelete}
           className="border border-hairline bg-paper px-3 py-2 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[#e1e0dd]"
         >
-          Delete node
+          {deleteLabel}
         </button>
       </div>
     </header>

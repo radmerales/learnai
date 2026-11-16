@@ -27,6 +27,9 @@ dragging a connection from a node’s side handle.
 - **Curved connectors** — edges are cubic Bézier curves that leave and enter a
   node perpendicular to the middle of the anchor side.
 - **Drag to move** — reposition nodes freely on the canvas; edges follow.
+- **Select and delete edges** — click an edge to select it; the selected edge
+  uses a thicker dark stroke. Press `Delete` or `Backspace`, or use the header
+  action, to remove it.
 - **Delete nodes** — select a node and press `Delete` or `Backspace`, use the
   header action, or right-click the node for a themed context menu with a red
   trash action.
@@ -132,18 +135,19 @@ must stay under 300 lines.
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.
 - **Connection affordance:** Hovering a node reveals four circular handles 5px
-  outside the side midpoints. Dragging from a handle shows a dashed curved
-  preview and a live endpoint marker; hovering a valid target highlights it with
-  the accent fill and snaps the preview to one of its four side midpoints before
-  the link is dropped. New-edge connection handles use the same 36px hit radius
-  as edge-edit handles. Hovering blank canvas shows a dashed “New node” ghost at
-  the future node position.
+  outside the side midpoints. Each handle uses an outward-only half-disc hit
+  area, so the node body stays fully draggable and does not accidentally start
+  an edge. Dragging from a handle shows a dashed curved preview and a live
+  endpoint marker; moving within the same 36px threshold of a target anchor
+  highlights that node and snaps the preview to the specific side midpoint
+  before the link is dropped. Hovering blank canvas shows a dashed “New node”
+  ghost at the future node position.
 - **Rewire affordance:** Finished edges stay clean with no endpoint circles.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
   replaced by a dashed preview so the new connection is clear. Endpoint hit
-  targets use a generous 36px radius — the same threshold used when starting a
-  new edge — making the small handles easy to grab. Dropping outside any node
-  removes the edge.
+  targets use a generous 36px radius, matching the target-anchor halo used when
+  starting a new edge, making the small handles easy to grab. Dropping outside
+  any node removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only

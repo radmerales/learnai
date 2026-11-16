@@ -1,4 +1,15 @@
-import { NODE_H, NODE_W, sideTowardPoint, type Link, type Node, type Point, type Side } from "./graph"
+import {
+  HANDLE_HIT_R,
+  NODE_H,
+  NODE_W,
+  SIDES,
+  sidePoint,
+  sideTowardPoint,
+  type Link,
+  type Node,
+  type Point,
+  type Side,
+} from "./graph"
 
 export type ConnectDrag = {
   sourceId: string
@@ -36,6 +47,42 @@ export function edgeExistsBetween(links: Link[], a: string, b: string, ignoreLin
   return links.some(
     (l) => l.id !== ignoreLinkId && ((l.from === a && l.to === b) || (l.from === b && l.to === a)),
   )
+}
+
+/**
+ * A node can be targeted when the pointer is inside its bounds or within the
+ * same 36px radius used by the endpoint edit handles. Anchors already sit 5px
+ * outside the node, so this creates a forgiving halo around each side midpoint.
+ */
+export function findConnectCandidate(nodes: Node[], p: Point): { node: Node; side: Side } | null {
+  const hit = hitTestNode(nodes, p)
+  if (hit) return { node: hit, side: sideTowardPoint(hit, p) }
+
+  let best: { node: Node; side: Side; distance: number } | null = null
+
+  for (const node of nodes) {
+    for (const side of SIDES) {
+      const anchor = sidePoint(node, side)
+      const distance = Math.hypot(anchor.x - p.x, anchor.y - p.y)
+      if (distance <= HANDLE_HIT_R && (!best || distance < best.distance)) {
+        best = { node, side, distance }
+      }
+    }
+  }
+
+  return best ? { node: best.node, side: best.side } : null
+}
+
+export function resolveConnectTarget(
+  nodes: Node[],
+  links: Link[],
+  p: Point,
+  sourceId: string,
+): { node: Node; side: Side } | null {
+  const candidate = findConnectCandidate(nodes, p)
+  if (!candidate || candidate.node.id === sourceId) return null
+  if (edgeExistsBetween(links, sourceId, candidate.node.id)) return null
+  return candidate
 }
 
 export function resolveEdgeTarget(

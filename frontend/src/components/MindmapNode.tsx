@@ -1,6 +1,6 @@
 import type { MouseEvent, PointerEvent } from "react"
 
-import { HANDLE_HIT_R, HANDLE_R, NODE_H, SIDES, localHandlePoint, type Node, type Side } from "../graph"
+import { HANDLE_R, NODE_H, SIDES, localHandleHitPath, localHandlePoint, type Node, type Side } from "../graph"
 
 type Props = {
   node: Node
@@ -15,7 +15,7 @@ type Props = {
   onPointerLeave: (id: string) => void
   onDoubleClick: (node: Node) => void
   onContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
-  onConnectStart: (e: PointerEvent<SVGCircleElement>, id: string, side: Side) => void
+  onConnectStart: (e: PointerEvent<SVGPathElement>, id: string, side: Side) => void
 }
 
 export function MindmapNode({
@@ -100,16 +100,15 @@ export function MindmapNode({
             const p = localHandlePoint(node.width, side)
             return (
               <g key={side}>
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={HANDLE_HIT_R}
+                <path
+                  d={localHandleHitPath(node.width, side)}
                   fill="transparent"
+                  pointerEvents="all"
                   className="cursor-crosshair"
                   onPointerDown={(e) => onConnectStart(e, node.id, side)}
                 >
                   <title>Drag to connect from the {side} edge</title>
-                </circle>
+                </path>
                 <circle
                   cx={p.x}
                   cy={p.y}

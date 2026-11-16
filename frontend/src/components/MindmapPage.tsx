@@ -20,8 +20,28 @@ type ContextMenuState = {
 export function MindmapPage() {
   const graph = useMindmapGraph()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const editing = useLabelEditing({ byId: graph.byId, renameNode: graph.renameNode })
+  const { cancelEditing } = editing
+
+  const selectNode = useCallback((id: string | null) => {
+    setSelectedId(id)
+    setSelectedEdgeId(null)
+  }, [])
+
+  const selectEdge = useCallback(
+    (id: string) => {
+      setSelectedId(null)
+      setSelectedEdgeId(id)
+      cancelEditing()
+    },
+    [cancelEditing],
+  )
+
+  const clearEdgeSelection = useCallback(() => {
+    setSelectedEdgeId(null)
+  }, [])
 
   const interactions = useMindmapInteractions({
     nodes: graph.nodes,
@@ -32,7 +52,8 @@ export function MindmapPage() {
     addLink: graph.addLink,
     updateLink: graph.updateLink,
     removeLink: graph.removeLink,
-    setSelectedId,
+    selectNode,
+    clearEdgeSelection,
   })
 
   const { svgRef, ...canvasInteractions } = interactions
@@ -43,17 +64,25 @@ export function MindmapPage() {
     [graph.byId, graph.links],
   )
 
-  const { removeNode } = graph
-  const { cancelEditing } = editing
+  const { removeNode, removeLink } = graph
 
   const deleteNode = useCallback(
     (id: string) => {
       removeNode(id)
       setSelectedId((current) => (current === id ? null : current))
+      setSelectedEdgeId(null)
       cancelEditing()
       setContextMenu(null)
     },
     [cancelEditing, removeNode],
+  )
+
+  const deleteEdge = useCallback(
+    (id: string) => {
+      removeLink(id)
+      setSelectedEdgeId((current) => (current === id ? null : current))
+    },
+    [removeLink],
   )
 
   useEffect(() => {
@@ -65,12 +94,16 @@ export function MindmapPage() {
       if (target?.closest("input, textarea, select, [contenteditable='true']")) return
 
       e.preventDefault()
-      if (selectedId) deleteNode(selectedId)
+      if (selectedEdgeId) {
+        deleteEdge(selectedEdgeId)
+      } else if (selectedId) {
+        deleteNode(selectedId)
+      }
     }
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [deleteNode, selectedId])
+  }, [deleteEdge, deleteNode, selectedEdgeId, selectedId])
 
   function handleCreateFirstNode() {
     const { width, height } = interactions.canvasSize
@@ -78,27 +111,36 @@ export function MindmapPage() {
       x: width ? width / 2 : 420,
       y: height ? height / 2 : 220,
     })
-    setSelectedId(node.id)
+    selectNode(node.id)
   }
 
-  function handleDelete() {
-    if (!selected) return
-    deleteNode(selected.id)
+  function handleDeleteSelection() {
+    if (selectedEdgeId) {
+      deleteEdge(selectedEdgeId)
+      return
+    }
+    if (selected) deleteNode(selected.id)
   }
 
   function handleNodeDoubleClick(node: Node) {
-    setSelectedId(node.id)
+    selectNode(node.id)
     editing.startEditing(node)
   }
 
   function handleNodeContextMenu(node: Node, e: MouseEvent<SVGGElement>) {
-    setSelectedId(node.id)
+    selectNode(node.id)
     setContextMenu({ nodeId: node.id, label: node.label, x: e.clientX, y: e.clientY })
   }
 
+  const deleteLabel = selectedEdgeId ? "Delete edge" : selected ? "Delete node" : "Delete"
+
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
-      <MindmapHeader canDelete={Boolean(selected)} onDelete={handleDelete} />
+      <MindmapHeader
+        canDelete={Boolean(selected || selectedEdgeId)}
+        deleteLabel={deleteLabel}
+        onDelete={handleDeleteSelection}
+      />
 
       <div className="relative flex-1 overflow-hidden">
         {graph.nodes.length === 0 && (
@@ -122,11 +164,13 @@ export function MindmapPage() {
           nodes={graph.nodes}
           edges={edges}
           selectedId={selectedId}
+          selectedEdgeId={selectedEdgeId}
           editingId={editing.editingId}
           svgRef={svgRef}
           interactions={canvasInteractions}
           onNodeDoubleClick={handleNodeDoubleClick}
           onNodeContextMenu={handleNodeContextMenu}
+          onSelectEdge={selectEdge}
         />
 
         {editing.editingNode && (
@@ -142,6 +186,7 @@ export function MindmapPage() {
 
       <MindmapFooter
         selectedLabel={selected?.label ?? null}
+        selectedEdge={Boolean(selectedEdgeId)}
         nodeCount={graph.nodes.length}
         linkCount={graph.links.length}
       />

@@ -102,6 +102,29 @@ export function localHandlePoint(width: number, side: Side): Point {
   }
 }
 
+/**
+ * A half-disc hit target that extends outward from the node border only. The
+ * flat edge sits on the border, so the hit area covers the 5px anchor offset
+ * without overlapping the node body. Dragging inside the node always moves the
+ * node instead of starting a connection.
+ */
+export function localHandleHitPath(width: number, side: Side, radius = HANDLE_HIT_R): string {
+  const anchor = localHandlePoint(width, side)
+  const x = anchor.x
+  const y = anchor.y
+
+  switch (side) {
+    case "top":
+      return `M ${x - radius} ${y + ANCHOR_OFFSET} A ${radius} ${radius} 0 0 1 ${x + radius} ${y + ANCHOR_OFFSET} Z`
+    case "right":
+      return `M ${x - ANCHOR_OFFSET} ${y - radius} A ${radius} ${radius} 0 0 1 ${x - ANCHOR_OFFSET} ${y + radius} Z`
+    case "bottom":
+      return `M ${x - radius} ${y - ANCHOR_OFFSET} A ${radius} ${radius} 0 0 0 ${x + radius} ${y - ANCHOR_OFFSET} Z`
+    case "left":
+      return `M ${x + ANCHOR_OFFSET} ${y - radius} A ${radius} ${radius} 0 0 0 ${x + ANCHOR_OFFSET} ${y + radius} Z`
+  }
+}
+
 export function nearestSide(from: Node, to: Node): Side {
   const dx = to.x - from.x
   const dy = to.y - from.y

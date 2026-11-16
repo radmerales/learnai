@@ -11,22 +11,26 @@ type Props = {
   nodes: Node[]
   edges: RenderedEdge[]
   selectedId: string | null
+  selectedEdgeId: string | null
   editingId: string | null
   svgRef: MindmapInteractions["svgRef"]
   interactions: Omit<MindmapInteractions, "svgRef">
   onNodeDoubleClick: (node: Node) => void
   onNodeContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
+  onSelectEdge: (id: string) => void
 }
 
 export function MindmapCanvas({
   nodes,
   edges,
   selectedId,
+  selectedEdgeId,
   editingId,
   svgRef,
   interactions,
   onNodeDoubleClick,
   onNodeContextMenu,
+  onSelectEdge,
 }: Props) {
   const interactionActive = Boolean(interactions.drag || interactions.connect || interactions.edgeDrag)
 
@@ -49,8 +53,10 @@ export function MindmapCanvas({
       <EdgePaths
         edges={edges}
         hiddenEdgeId={interactions.edgeDrag?.edgeId ?? null}
+        selectedEdgeId={selectedEdgeId}
         onHoverStart={interactions.showEdge}
         onHoverEnd={interactions.scheduleEdgeHide}
+        onSelect={onSelectEdge}
       />
 
       {nodes.map((node) => {
