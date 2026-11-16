@@ -45,7 +45,7 @@ export function LearnTab({ blocks, onChange }: Props) {
         <button
           type="button"
           onClick={addBlock}
-          className="flex w-full items-center gap-2 border border-hairline px-3 py-3 text-left font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          className="flex w-full items-center justify-center gap-2 border border-hairline px-3 py-3 text-center font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           <PlusIcon />
           Click here to add new block
@@ -69,12 +69,12 @@ export function LearnTab({ blocks, onChange }: Props) {
         ))}
       </div>
 
-      <div className="group mt-2 flex h-10 items-center border border-transparent px-3 hover:border-hairline">
+      <div className="group mt-2 border border-transparent hover:border-hairline">
         <button
           type="button"
           aria-label="Add markdown block"
           onClick={addBlock}
-          className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink opacity-0 hover:text-ink focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink group-hover:opacity-100"
+          className="flex h-10 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink opacity-0 hover:text-ink focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink group-hover:opacity-100"
         >
           <PlusIcon />
           Add block
