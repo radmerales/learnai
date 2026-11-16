@@ -129,8 +129,8 @@ quizzes) when real quiz authoring is added.
   extend along the side normal, so outgoing and incoming tangents are
   perpendicular to the anchor side while the middle of the path curves.
 - **Edge midpoint snapping:** Every endpoint snaps to the middle of one of the
-  four node sides, offset 5px outward from the node shape so edges and anchor
-  dots sit just clear of the border. While dragging an endpoint, the target node
+  four node sides, offset 15px outward from the node shape so edges and anchor
+  dots sit clear of the border. While dragging an endpoint, the target node
   renders all four anchor dots and highlights the one nearest the pointer,
   chosen with aspect-normalized node coordinates rather than the node as a
   whole. Links persist both chosen sides (`fromSide` / `toSide`), so moving a
@@ -173,7 +173,7 @@ quizzes) when real quiz authoring is added.
 - **Clear selection state:** The selected node uses the accent color so the
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.
-- **Connection affordance:** Hovering a node reveals four circular handles 5px
+- **Connection affordance:** Hovering a node reveals four circular handles 15px
   outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start
   an edge. Dragging from a handle shows a dashed curved preview and a live
@@ -185,8 +185,8 @@ quizzes) when real quiz authoring is added.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
   replaced by a dashed preview so the new connection is clear. Endpoint hit
   targets use a 36px radius, matching the target-anchor halo used when starting
-  a new edge. Visible anchor dots use a compact 2.5px radius with a 1px outline.
-  Dropping outside any node removes the edge.
+  a new edge. Visible anchor dots use a 5px radius with a 1px outline. Dropping
+  outside any node removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only
