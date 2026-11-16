@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "id": "mm_7f3a9c2e",
+  "title": "Biology review",
+  "createdAt": "2026-11-16T10:00:00.000Z",
+  "updatedAt": "2026-11-16T10:42:11.000Z",
+  "nodes": [
+    {
+      "id": "n_1a2b3c4",
+      "label": "Cell respiration",
+      "status": "doing",
+      "x": 420,
+      "y": 220,
+      "width": 168,
+      "learn": {
+        "blocks": [
+          "## Overview\n\nGlycolysis happens in the cytosol.",
+          "- Inputs: glucose, NAD⁺\n- Outputs: pyruvate, ATP, NADH"
+        ]
+      },
+      "quiz": {
+        "questions": [
+          {
+            "id": "q_9d8e7f6",
+            "prompt": "Where does glycolysis take place?",
+            "options": ["Cytosol", "Mitochondrial matrix", "Nucleus", "Golgi apparatus"],
+            "answerIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "n_5f6g7h8",
+      "label": "Krebs cycle",
+      "status": "todo",
+      "x": 700,
+      "y": 220,
+      "width": 140,
+      "learn": { "blocks": [""] },
+      "quiz": { "questions": [] }
+    }
+  ],
+  "links": [
+    {
+      "id": "l_2b3c4d5",
+      "from": "n_1a2b3c4",
+      "to": "n_5f6g7h8",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ]
+}

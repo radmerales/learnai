@@ -1,0 +1,235 @@
+{
+  "$defs": {
+    "LearnContent": {
+      "additionalProperties": false,
+      "properties": {
+        "blocks": {
+          "items": {
+            "maxLength": 50000,
+            "type": "string"
+          },
+          "maxItems": 200,
+          "title": "Blocks",
+          "type": "array"
+        }
+      },
+      "title": "LearnContent",
+      "type": "object"
+    },
+    "MindmapLink": {
+      "additionalProperties": false,
+      "properties": {
+        "from": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "From",
+          "type": "string"
+        },
+        "fromSide": {
+          "enum": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ],
+          "title": "Fromside",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "to": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "To",
+          "type": "string"
+        },
+        "toSide": {
+          "enum": [
+            "top",
+            "right",
+            "bottom",
+            "left"
+          ],
+          "title": "Toside",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "from",
+        "to",
+        "fromSide",
+        "toSide"
+      ],
+      "title": "MindmapLink",
+      "type": "object"
+    },
+    "MindmapNode": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "default": "",
+          "maxLength": 300,
+          "title": "Label",
+          "type": "string"
+        },
+        "learn": {
+          "$ref": "#/$defs/LearnContent"
+        },
+        "quiz": {
+          "$ref": "#/$defs/QuizContent"
+        },
+        "status": {
+          "default": "todo",
+          "enum": [
+            "todo",
+            "doing",
+            "done"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "width": {
+          "maximum": 5000,
+          "minimum": 40,
+          "title": "Width",
+          "type": "number"
+        },
+        "x": {
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "title": "Y",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "x",
+        "y",
+        "width"
+      ],
+      "title": "MindmapNode",
+      "type": "object"
+    },
+    "QuizContent": {
+      "additionalProperties": false,
+      "properties": {
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/QuizQuestion"
+          },
+          "maxItems": 200,
+          "title": "Questions",
+          "type": "array"
+        }
+      },
+      "title": "QuizContent",
+      "type": "object"
+    },
+    "QuizQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "answerIndex": {
+          "minimum": 0,
+          "title": "Answerindex",
+          "type": "integer"
+        },
+        "id": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "options": {
+          "items": {
+            "maxLength": 1000,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 2,
+          "title": "Options",
+          "type": "array"
+        },
+        "prompt": {
+          "default": "",
+          "maxLength": 4000,
+          "title": "Prompt",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "options",
+        "answerIndex"
+      ],
+      "title": "QuizQuestion",
+      "type": "object"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "createdAt": {
+      "title": "Createdat",
+      "type": "string"
+    },
+    "id": {
+      "maxLength": 64,
+      "minLength": 1,
+      "title": "Id",
+      "type": "string"
+    },
+    "links": {
+      "items": {
+        "$ref": "#/$defs/MindmapLink"
+      },
+      "maxItems": 5000,
+      "title": "Links",
+      "type": "array"
+    },
+    "nodes": {
+      "items": {
+        "$ref": "#/$defs/MindmapNode"
+      },
+      "maxItems": 2000,
+      "title": "Nodes",
+      "type": "array"
+    },
+    "schemaVersion": {
+      "const": 1,
+      "default": 1,
+      "title": "Schemaversion",
+      "type": "integer"
+    },
+    "title": {
+      "default": "Untitled mindmap",
+      "maxLength": 200,
+      "minLength": 1,
+      "title": "Title",
+      "type": "string"
+    },
+    "updatedAt": {
+      "title": "Updatedat",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "createdAt",
+    "updatedAt"
+  ],
+  "title": "MindmapResource",
+  "type": "object"
+}

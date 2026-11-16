@@ -16,7 +16,7 @@ if ! .venv/bin/python -c 'import sys' >/dev/null 2>&1; then
 fi
 
 .venv/bin/pip install --upgrade pip
-.venv/bin/pip install -r backend/requirements.txt
+.venv/bin/pip install -r backend/requirements-dev.txt
 
 if [ -f frontend/package.json ]; then
   npm --prefix frontend install
