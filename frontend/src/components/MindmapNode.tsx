@@ -56,7 +56,7 @@ export function MindmapNode({
         height={NODE_H}
         fill={status.background}
         stroke={status.outline}
-        strokeWidth={selected ? 4.5 : 1.5}
+        strokeWidth={selected || editing ? 4.5 : 1.5}
       />
 
       {!editing && (

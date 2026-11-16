@@ -1,4 +1,5 @@
 import { NODE_H, type Node } from "../graph"
+import { NOTE_STATUSES } from "../status"
 
 type Props = {
   node: Node
@@ -9,6 +10,8 @@ type Props = {
 }
 
 export function InlineNodeEditor({ node, value, onChange, onCommit, onCancel }: Props) {
+  const status = NOTE_STATUSES[node.status]
+
   return (
     <input
       key={node.id}
@@ -33,8 +36,9 @@ export function InlineNodeEditor({ node, value, onChange, onCommit, onCancel }: 
         top: node.y - NODE_H / 2,
         width: node.width,
         height: NODE_H,
+        color: status.text,
       }}
-      className="absolute z-10 border-2 border-ink bg-accent px-2 text-center font-sans text-sm text-accentink outline-none focus:ring-2 focus:ring-ink"
+      className="absolute z-10 border-0 bg-transparent px-2 text-center font-sans text-sm outline-none"
     />
   )
 }

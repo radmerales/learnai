@@ -40,8 +40,10 @@ dragging a connection from a node’s side handle.
   action, to remove every selected node and edge. Right-clicking a node still
   offers a themed context menu with a red trash action.
 - **Inline labels** — double-click a node to edit its label in place; Enter
-  commits, Escape cancels, and blur commits. Node width grows to fit the full
-  label while keeping the original 140px width as the minimum.
+  commits, Escape cancels, and blur commits. While editing, the node keeps its
+  status background and uses the same 3× status-colored border as selection.
+  Node width grows to fit the full label while keeping the original 140px width
+  as the minimum.
 - **Node note panel** — the open panel always reflects the currently selected
   node. Focusing a node opens a right-hand panel that overlays the canvas
   without resizing it; creating a new node focuses it and opens the same panel.
@@ -183,11 +185,12 @@ quizzes) when real quiz authoring is added.
   gives every node a three-item quiz for now, and the quiz view uses the accent
   color for the correct option and red for an incorrect selection.
 - **Clear selection state:** Selected nodes triple their status-colored border
-  weight and selected edges use a thicker dark stroke so the active set is
-  obvious. A dashed bounding box encloses the entire multi-selection, while a
-  marquee adds a translucent accent field during drag. Group dragging captures
-  each selected node’s starting position once, then applies one shared delta so
-  the selection moves together without drift.
+  weight, and inline title editing uses the same thicker border while preserving
+  the node’s status background. Selected edges use a thicker dark stroke so the
+  active set is obvious. A dashed bounding box encloses the entire
+  multi-selection, while a marquee adds a translucent accent field during drag.
+  Group dragging captures each selected node’s starting position once, then
+  applies one shared delta so the selection moves together without drift.
 - **Selection-aware chrome:** The header labels the delete action for the current
   selection size, and the footer reports node/edge selection counts.
 - **Study status palette:** Status colors are defined once in `status.ts` and
