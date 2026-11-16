@@ -27,6 +27,9 @@ dragging a connection from a node’s side handle.
 - **Curved connectors** — edges are cubic Bézier curves that leave and enter a
   node perpendicular to the middle of the anchor side.
 - **Drag to move** — reposition nodes freely on the canvas; edges follow.
+- **Delete nodes** — select a node and press `Delete` or `Backspace`, use the
+  header action, or right-click the node for a themed context menu with a red
+  trash action.
 - **Inline labels** — double-click a node to edit its label in place; Enter
   commits, Escape cancels, and blur commits. Node width grows to fit the full
   label while keeping the original 140px width as the minimum.

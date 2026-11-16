@@ -1,4 +1,4 @@
-import type { PointerEvent } from "react"
+import type { MouseEvent, PointerEvent } from "react"
 
 import { HANDLE_R, NODE_H, SIDES, localHandlePoint, type Node, type Side } from "../graph"
 
@@ -14,6 +14,7 @@ type Props = {
   onPointerEnter: (id: string) => void
   onPointerLeave: (id: string) => void
   onDoubleClick: (node: Node) => void
+  onContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
   onConnectStart: (e: PointerEvent<SVGCircleElement>, id: string, side: Side) => void
 }
 
@@ -29,6 +30,7 @@ export function MindmapNode({
   onPointerEnter,
   onPointerLeave,
   onDoubleClick,
+  onContextMenu,
   onConnectStart,
 }: Props) {
   const filled = selected || dropTarget
@@ -42,6 +44,11 @@ export function MindmapNode({
       onDoubleClick={(e) => {
         e.stopPropagation()
         onDoubleClick(node)
+      }}
+      onContextMenu={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onContextMenu(node, e)
       }}
       className="cursor-grab active:cursor-grabbing"
     >

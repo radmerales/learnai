@@ -1,3 +1,5 @@
+import type { MouseEvent } from "react"
+
 import type { Node, RenderedEdge } from "../graph"
 import type { MindmapInteractions } from "../hooks/useMindmapInteractions"
 import { EdgeHandles } from "./EdgeHandles"
@@ -13,6 +15,7 @@ type Props = {
   svgRef: MindmapInteractions["svgRef"]
   interactions: Omit<MindmapInteractions, "svgRef">
   onNodeDoubleClick: (node: Node) => void
+  onNodeContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
 }
 
 export function MindmapCanvas({
@@ -23,6 +26,7 @@ export function MindmapCanvas({
   svgRef,
   interactions,
   onNodeDoubleClick,
+  onNodeContextMenu,
 }: Props) {
   const interactionActive = Boolean(interactions.drag || interactions.connect || interactions.edgeDrag)
 
@@ -74,6 +78,7 @@ export function MindmapCanvas({
             onPointerEnter={interactions.onNodePointerEnter}
             onPointerLeave={interactions.onNodePointerLeave}
             onDoubleClick={onNodeDoubleClick}
+            onContextMenu={onNodeContextMenu}
             onConnectStart={interactions.startConnect}
           />
         )

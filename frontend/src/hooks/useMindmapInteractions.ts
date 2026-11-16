@@ -90,12 +90,14 @@ export function useMindmapInteractions({
     }, 180)
   }
 
-  function onBackgroundPointerDown() {
+  function onBackgroundPointerDown(e: PointerEvent<SVGSVGElement>) {
+    if (e.button !== 0) return
     setSelectedId(null)
   }
 
   function onNodePointerDown(e: PointerEvent<SVGGElement>, id: string) {
     e.stopPropagation()
+    if (e.button !== 0) return
     const node = byId.get(id)
     if (!node) return
     clearEdgeHoverTimer()
@@ -116,6 +118,7 @@ export function useMindmapInteractions({
 
   function startConnect(e: PointerEvent<SVGCircleElement>, id: string, side: Side) {
     e.stopPropagation()
+    if (e.button !== 0) return
     clearEdgeHoverTimer()
     setHoveredEdgeId(null)
     const p = toSvgPoint(e.clientX, e.clientY)
@@ -124,6 +127,7 @@ export function useMindmapInteractions({
 
   function startEdgeDrag(e: PointerEvent<SVGCircleElement>, edge: RenderedEdge, moving: "from" | "to") {
     e.stopPropagation()
+    if (e.button !== 0) return
     clearEdgeHoverTimer()
     setHoveredEdgeId(edge.id)
     const fixed = moving === "from" ? edge.to : edge.from
