@@ -16,6 +16,7 @@
 - `frontend/src/graph.ts` — domain types, geometry, and edge view-model builder
 - `frontend/src/interaction.ts` — pure hit-testing, target validation, and canvas clamping
 - `frontend/src/previews.ts` — pure preview geometry builders
+- `frontend/src/quiz.ts` — quiz schema and sample quiz generator
 - `frontend/src/state/` — pure reducer and state transitions
 - `frontend/src/hooks/` — graph, label-editing, and pointer-interaction controllers
 - `frontend/src/components/` — presentational React components

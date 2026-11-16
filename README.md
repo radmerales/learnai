@@ -40,7 +40,10 @@ dragging a connection from a node’s side handle.
   node. Focusing a node opens a right-hand panel that overlays the canvas
   without resizing it; creating a new node focuses it and opens the same panel.
   On smaller screens the panel takes the full width. It includes a close button,
-  a live-synced title, and editable node contents.
+  a live-synced title, editable node contents, and a Quiz tab.
+- **Sample quizzes** — every node currently gets a three-question sample quiz
+  built from the node title. Options give immediate correct/incorrect feedback,
+  and the quiz can be reset.
 - **Local-only state** — the map lives in memory for the current session (no
   persistence in this MVP).
 
@@ -66,13 +69,34 @@ frontend/src/
   graph.ts          Domain types, geometry, edge view-model builder
   interaction.ts    Pure hit-testing and target validation
   previews.ts       Pure preview geometry builders
+  quiz.ts           Quiz schema and sample quiz generator
   state/            Reducer and graph state transitions
   hooks/            Graph, label-editing, and interaction controllers
-  components/       Presentational canvas, node, edge, header, footer
+  components/       Presentational canvas, node, edge, panel, header, footer
 ```
 
 Project-specific engineering rules are kept in `AGENTS.md`; every source file
 must stay under 300 lines.
+
+## Defining quizzes
+
+Quizzes are plain data:
+
+```ts
+type Quiz = {
+  title: string
+  questions: {
+    id: string
+    prompt: string
+    options: string[]
+    answerIndex: number
+  }[]
+}
+```
+
+`createSampleQuiz` in `frontend/src/quiz.ts` builds the placeholder three-item
+quiz used by every node. Replace that function (or back it with stored per-node
+quizzes) when real quiz authoring is added.
 
 ## Design decisions
 
@@ -141,7 +165,11 @@ must stay under 300 lines.
   screens), so the canvas keeps its dimensions. The panel is driven by the
   current selection, so changing nodes updates it in place. The panel uses the
   paper/ink theme, sharp corners, a square close button, a live title field, and
-  an editable contents area. Node content is stored on the node itself.
+  Contents/Quiz tabs. Node content is stored on the node itself.
+- **Quiz template:** Quizzes are a simple typed object (`title` plus questions
+  with stable ids, prompts, options, and a correct index). The sample generator
+  gives every node a three-item quiz for now, and the quiz view uses the accent
+  color for the correct option and red for an incorrect selection.
 - **Clear selection state:** The selected node uses the accent color so the
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.
