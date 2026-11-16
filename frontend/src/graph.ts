@@ -1,7 +1,10 @@
+import type { NoteStatus } from "./status"
+
 export type Node = {
   id: string
   label: string
   content: string
+  status: NoteStatus
   x: number
   y: number
   width: number

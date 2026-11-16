@@ -9,6 +9,7 @@ import {
   type Point,
 } from "./graph"
 import type { ConnectDrag, EdgeDrag, Preview } from "./interaction"
+import { DEFAULT_NOTE_STATUS } from "./status"
 
 export function buildGhostNode(connect: ConnectDrag | null, point: Point | null, hoverNode: Node | null): Node | null {
   if (!connect || !point || hoverNode) return null
@@ -16,6 +17,7 @@ export function buildGhostNode(connect: ConnectDrag | null, point: Point | null,
     id: "__ghost__",
     label: "New node",
     content: "",
+    status: DEFAULT_NOTE_STATUS,
     x: point.x,
     y: point.y,
     width: NODE_W,

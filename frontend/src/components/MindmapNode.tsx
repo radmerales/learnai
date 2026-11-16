@@ -1,6 +1,7 @@
 import type { MouseEvent, PointerEvent } from "react"
 
 import { HANDLE_R, NODE_H, SIDES, localHandleHitPath, localHandlePoint, type Node, type Side } from "../graph"
+import { NOTE_STATUSES } from "../status"
 
 type Props = {
   node: Node
@@ -33,7 +34,7 @@ export function MindmapNode({
   onContextMenu,
   onConnectStart,
 }: Props) {
-  const filled = selected || dropTarget
+  const status = NOTE_STATUSES[node.status]
 
   return (
     <g
@@ -52,14 +53,34 @@ export function MindmapNode({
       }}
       className="cursor-grab active:cursor-grabbing"
     >
-      <rect
-        width={node.width}
-        height={NODE_H}
-        fill={filled ? "#f5c518" : "#e1e0dd"}
-        stroke={filled ? "#000000" : "#cbcac7"}
-        strokeWidth={filled ? 2 : 1}
-        strokeDasharray={dropTarget && !selected ? "4 2" : undefined}
-      />
+      <rect width={node.width} height={NODE_H} fill={status.background} stroke={status.outline} strokeWidth={1.5} />
+
+      {selected && !dropTarget && (
+        <rect
+          x={-4}
+          y={-4}
+          width={node.width + 8}
+          height={NODE_H + 8}
+          fill="none"
+          stroke="#f5c518"
+          strokeWidth={3}
+          pointerEvents="none"
+        />
+      )}
+
+      {dropTarget && (
+        <rect
+          x={-4}
+          y={-4}
+          width={node.width + 8}
+          height={NODE_H + 8}
+          fill="none"
+          stroke="#000000"
+          strokeWidth={1.5}
+          strokeDasharray="4 2"
+          pointerEvents="none"
+        />
+      )}
 
       {!editing && (
         <text
@@ -68,7 +89,7 @@ export function MindmapNode({
           textAnchor="middle"
           fontSize="14"
           fontFamily="IBM Plex Sans, sans-serif"
-          fill={filled ? "#040404" : "#000000"}
+          fill={status.text}
         >
           {node.label}
         </text>

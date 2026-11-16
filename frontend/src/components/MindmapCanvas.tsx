@@ -42,6 +42,7 @@ export function MindmapCanvas({
       onPointerUp={interactions.onPointerUp}
       onPointerLeave={interactions.onPointerLeave}
       onPointerDown={interactions.onBackgroundPointerDown}
+      onDoubleClick={interactions.onCanvasDoubleClick}
     >
       <defs>
         <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">

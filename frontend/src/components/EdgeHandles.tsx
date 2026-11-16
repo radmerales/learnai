@@ -55,6 +55,7 @@ export function EdgeHandles({ edges, hoveredEdgeId, disabled, onStart, onHoverSt
             key={`handles-${edge.id}`}
             onPointerEnter={onHoverStart}
             onPointerLeave={() => onHoverEnd(edge.id)}
+            onDoubleClick={(e) => e.stopPropagation()}
           >
             <Handle point={edge.fromPoint} onPointerDown={(e) => onStart(e, edge, "from")} />
             <Handle point={edge.toPoint} onPointerDown={(e) => onStart(e, edge, "to")} />

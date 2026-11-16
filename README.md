@@ -12,6 +12,8 @@ dragging a connection from a node’s side handle.
   node’s side handle onto empty canvas. A dashed “New node” ghost previews the
   result before release, with its receiving anchor fixed to the side opposite
   the dragged handle so the preview stays stable.
+- **Double-click to create** — double-clicking empty canvas creates and focuses
+  a node at that position, without needing to drag from an existing edge.
 - **Connect existing nodes** — drag a handle onto another node to create an
   explicit edge between them.
 - **Edit edges** — hover an edge to reveal endpoint handles, then drag either
@@ -45,6 +47,10 @@ dragging a connection from a node’s side handle.
   without resizing it; creating a new node focuses it and opens the same panel.
   On smaller screens the panel takes the full width. It includes a close button,
   a live-synced title, editable node contents, and a Quiz tab.
+- **Study statuses** — each note is marked **To do** (grey), **Learn** (blue),
+  **Quiz** (purple), or **Master** (green). The solid status color outlines the
+  node, a pastel tint fills it, and the text uses the matching deep color. A
+  segmented control in the panel changes the status live.
 - **Sample quizzes** — every node currently gets a three-question sample quiz
   built from the node title. Options give immediate correct/incorrect feedback,
   and the quiz can be reset.
@@ -74,8 +80,9 @@ frontend/src/
   interaction.ts    Pure hit-testing and target validation
   previews.ts       Pure preview geometry builders
   quiz.ts           Quiz schema and sample quiz generator
+  status.ts         Study status types and color palette
   state/            Reducer and graph state transitions
-  hooks/            Graph, label-editing, and interaction controllers
+  hooks/            Graph, selection, marquee, label-editing, and interaction controllers
   components/       Presentational canvas, node, edge, panel, header, footer
 ```
 
@@ -116,7 +123,7 @@ quizzes) when real quiz authoring is added.
   lines; the rule is documented in `AGENTS.md` as a project-specific system
   instruction.
 - **Nodes and edges only:** Nodes are stored as
-  `{ id, label, content, x, y, width }`; all connections are explicit links stored as
+  `{ id, label, content, status, x, y, width }`; all connections are explicit links stored as
   `{ id, from, to, fromSide, toSide }`. There is no `parentId`, no derived tree
   edge, and no root/child distinction. Deleting a node removes its incident
   edges; other nodes remain untouched.
@@ -181,6 +188,13 @@ quizzes) when real quiz authoring is added.
   moves together without drift.
 - **Selection-aware chrome:** The header labels the delete action for the current
   selection size, and the footer reports node/edge selection counts.
+- **Study status palette:** Status colors are defined once in `status.ts` and
+  applied consistently: solid outline, pastel background, deep text color, and a
+  matching active segment in the panel control. Selection adds an accent ring
+  around the node so the status palette stays intact.
+- **Segmented status control:** The four status buttons share inner borders and
+  the group clips to a rounded outer shape, keeping adjacent segments flush
+  while the first and last outer corners are rounded.
 - **Connection affordance:** Hovering a node reveals four small circular handles
   10px outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start
@@ -201,5 +215,6 @@ quizzes) when real quiz authoring is added.
   appearing while choosing a connection target.
 - **Direct manipulation:** Nodes are moved by dragging rather than through
   forms, matching the mental model of arranging a mindmap on a board. New nodes
-  are added where the edge is dropped, not from a separate “add child” form.
+  are added where an edge is dropped or where the canvas is double-clicked, not
+  from a separate “add child” form.
 

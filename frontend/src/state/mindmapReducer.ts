@@ -1,4 +1,5 @@
 import type { Link, Node } from "../graph"
+import type { NoteStatus } from "../status"
 
 export type MindmapState = {
   nodes: Node[]
@@ -15,6 +16,7 @@ export type MindmapAction =
   | { type: "remove-node"; id: string }
   | { type: "rename"; id: string; label: string; width: number }
   | { type: "set-content"; id: string; content: string }
+  | { type: "set-status"; id: string; status: NoteStatus }
   | { type: "move-nodes"; moves: { id: string; x: number; y: number }[] }
   | { type: "add-link"; link: Link }
   | { type: "update-link"; id: string; patch: Partial<Pick<Link, "from" | "to" | "fromSide" | "toSide">> }
@@ -44,6 +46,12 @@ export function mindmapReducer(state: MindmapState, action: MindmapAction): Mind
       return {
         ...state,
         nodes: state.nodes.map((n) => (n.id === action.id ? { ...n, content: action.content } : n)),
+      }
+
+    case "set-status":
+      return {
+        ...state,
+        nodes: state.nodes.map((n) => (n.id === action.id ? { ...n, status: action.status } : n)),
       }
 
     case "move-nodes": {

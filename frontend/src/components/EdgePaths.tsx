@@ -37,6 +37,7 @@ export function EdgePaths({ edges, hiddenEdgeId, selectedEdgeIds, onHoverStart, 
               e.stopPropagation()
               onSelect(edge.id, e.shiftKey || e.metaKey || e.ctrlKey)
             }}
+            onDoubleClick={(e) => e.stopPropagation()}
           />
         ),
       )}

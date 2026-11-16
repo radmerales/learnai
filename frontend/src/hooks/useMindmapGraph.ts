@@ -2,6 +2,7 @@ import { useCallback, useMemo, useReducer, useRef } from "react"
 
 import { measureNodeWidth, uid, type Link, type Node, type Point } from "../graph"
 import { initialMindmapState, mindmapReducer } from "../state/mindmapReducer"
+import { DEFAULT_NOTE_STATUS } from "../status"
 
 export function useMindmapGraph() {
   const [state, dispatch] = useReducer(mindmapReducer, initialMindmapState)
@@ -19,6 +20,7 @@ export function useMindmapGraph() {
       id: uid(),
       label,
       content: "",
+      status: DEFAULT_NOTE_STATUS,
       x: point.x,
       y: point.y,
       width: measureNodeWidth(label),
@@ -37,6 +39,10 @@ export function useMindmapGraph() {
 
   const setNodeContent = useCallback((id: string, content: string) => {
     dispatch({ type: "set-content", id, content })
+  }, [])
+
+  const setNodeStatus = useCallback((id: string, status: Node["status"]) => {
+    dispatch({ type: "set-status", id, status })
   }, [])
 
   const moveNodes = useCallback((moves: { id: string; x: number; y: number }[]) => {
@@ -66,6 +72,7 @@ export function useMindmapGraph() {
     removeNode,
     renameNode,
     setNodeContent,
+    setNodeStatus,
     moveNodes,
     addLink,
     updateLink,

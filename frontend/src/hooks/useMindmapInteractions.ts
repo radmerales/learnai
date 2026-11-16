@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent } from "react"
+import { useRef, useState, type MouseEvent, type PointerEvent } from "react"
 
 import { oppositeSide, type RenderedEdge, type Side } from "../graph"
 import {
@@ -63,6 +63,12 @@ export function useMindmapInteractions(options: Options) {
 
   function onBackgroundPointerDown(e: PointerEvent<SVGSVGElement>) {
     marquee.start(e)
+  }
+
+  function onCanvasDoubleClick(e: MouseEvent<SVGSVGElement>) {
+    if (e.button !== 0) return
+    const node = addNode(clampPoint(toSvgPoint(e.clientX, e.clientY)))
+    focusNode(node.id)
   }
 
   function onNodePointerDown(e: PointerEvent<SVGGElement>, id: string) {
@@ -275,6 +281,7 @@ export function useMindmapInteractions(options: Options) {
     connectPreview,
     edgePreview,
     onBackgroundPointerDown,
+    onCanvasDoubleClick,
     onNodePointerDown,
     onNodePointerEnter,
     onNodePointerLeave,
