@@ -197,8 +197,9 @@ quizzes) when real quiz authoring is added.
   intact without an extra ring.
 - **Segmented status control:** The three status buttons share inner borders
   and the group clips to a rounded outer shape, keeping adjacent segments flush
-  while the first and last outer corners are rounded. The control sits beside
-  the node title rather than taking its own row.
+  while the first and last outer corners are rounded. Inactive segments stay
+  neutral; the active segment takes its solid status color and a bold label.
+  The control sits beside the node title rather than taking its own row.
 - **Connection affordance:** Hovering a node reveals four small circular handles
   10px outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start

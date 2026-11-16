@@ -62,13 +62,14 @@ export function NodePanel({ node, onClose, onTitleChange, onContentChange, onSta
                     type="button"
                     aria-pressed={active}
                     onClick={() => onStatusChange(status)}
-                    style={{
-                      backgroundColor: active ? style.outline : style.background,
-                      color: active ? "#ffffff" : style.text,
-                    }}
+                    style={active ? { backgroundColor: style.outline } : undefined}
                     className={`${
                       index < NOTE_STATUS_ORDER.length - 1 ? "border-r border-hairline" : ""
-                    } px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink`}
+                    } px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink ${
+                      active
+                        ? "font-bold text-white"
+                        : "bg-surface text-mutedink hover:bg-paper hover:text-ink"
+                    }`}
                   >
                     {style.label}
                   </button>
