@@ -1,3 +1,5 @@
+import type { MouseEvent } from "react"
+
 import type { RenderedEdge } from "../graph"
 import { EdgeStroke } from "./EdgeStroke"
 
@@ -8,9 +10,18 @@ type Props = {
   onHoverStart: (id: string) => void
   onHoverEnd: (id: string) => void
   onSelect: (id: string, additive: boolean) => void
+  onContextMenu: (edge: RenderedEdge, e: MouseEvent<SVGPathElement>) => void
 }
 
-export function EdgePaths({ edges, hiddenEdgeId, selectedEdgeIds, onHoverStart, onHoverEnd, onSelect }: Props) {
+export function EdgePaths({
+  edges,
+  hiddenEdgeId,
+  selectedEdgeIds,
+  onHoverStart,
+  onHoverEnd,
+  onSelect,
+  onContextMenu,
+}: Props) {
   return (
     <>
       {edges.map((edge) =>
@@ -38,6 +49,11 @@ export function EdgePaths({ edges, hiddenEdgeId, selectedEdgeIds, onHoverStart, 
               onSelect(edge.id, e.shiftKey || e.metaKey || e.ctrlKey)
             }}
             onDoubleClick={(e) => e.stopPropagation()}
+            onContextMenu={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              onContextMenu(edge, e)
+            }}
           />
         ),
       )}

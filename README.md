@@ -37,8 +37,8 @@ dragging a connection from a node’s side handle.
   opacity, selected nodes use a 3× status-colored border, selected edges use a
   thicker dark stroke, and a dashed rectangle surrounds the full multi-selection.
 - **Delete a selection** — press `Delete` or `Backspace`, or use the header
-  action, to remove every selected node and edge. Right-clicking a node still
-  offers a themed context menu with a red trash action.
+  action, to remove every selected node and edge. Right-clicking either a node
+  or an edge opens the same themed context menu with a red trash action.
 - **Inline labels** — double-click a node to edit its label in place; Enter
   commits, Escape cancels, and blur commits. While editing, the node keeps its
   status background and uses the same 3× status-colored border as selection.

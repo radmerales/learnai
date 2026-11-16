@@ -2,6 +2,7 @@ import { useEffect } from "react"
 
 type Props = {
   label: string
+  deleteLabel: string
   x: number
   y: number
   onDelete: () => void
@@ -25,7 +26,7 @@ function TrashIcon() {
   )
 }
 
-export function NodeContextMenu({ label, x, y, onDelete, onClose }: Props) {
+export function ContextMenu({ label, deleteLabel, x, y, onDelete, onClose }: Props) {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -66,7 +67,7 @@ export function NodeContextMenu({ label, x, y, onDelete, onClose }: Props) {
           className="flex w-full items-center gap-2 bg-red-600 px-3 py-2 text-left text-sm font-medium text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           <TrashIcon />
-          Delete node
+          {deleteLabel}
         </button>
       </div>
     </>

@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react"
 
-import { buildRenderedEdges, type Node } from "../graph"
+import { buildRenderedEdges, type Node, type RenderedEdge } from "../graph"
 import { getSelectionBounds } from "../selectionBounds"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapGraph } from "../hooks/useMindmapGraph"
 import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
 import { useMindmapSelection } from "../hooks/useMindmapSelection"
 import { InlineNodeEditor } from "./InlineNodeEditor"
+import { ContextMenu } from "./ContextMenu"
 import { MindmapCanvas } from "./MindmapCanvas"
 import { MindmapFooter } from "./MindmapFooter"
 import { MindmapHeader } from "./MindmapHeader"
-import { NodeContextMenu } from "./NodeContextMenu"
 import { NodePanel } from "./NodePanel"
 
 type ContextMenuState = {
-  nodeId: string
+  kind: "node" | "edge"
+  id: string
   label: string
+  deleteLabel: string
   x: number
   y: number
 }
@@ -126,7 +128,38 @@ export function MindmapPage() {
   function handleNodeContextMenu(node: Node, e: MouseEvent<SVGGElement>) {
     selectNode(node.id)
     closePanel()
-    setContextMenu({ nodeId: node.id, label: node.label, x: e.clientX, y: e.clientY })
+    setContextMenu({
+      kind: "node",
+      id: node.id,
+      label: node.label,
+      deleteLabel: "Delete node",
+      x: e.clientX,
+      y: e.clientY,
+    })
+  }
+
+  function handleEdgeContextMenu(edge: RenderedEdge, e: MouseEvent<SVGPathElement>) {
+    selectEdge(edge.id)
+    setContextMenu({
+      kind: "edge",
+      id: edge.id,
+      label: `${edge.from.label} → ${edge.to.label}`,
+      deleteLabel: "Delete edge",
+      x: e.clientX,
+      y: e.clientY,
+    })
+  }
+
+  function handleContextDelete() {
+    if (!contextMenu) return
+    if (contextMenu.kind === "node") {
+      deleteNodeById(contextMenu.id)
+      return
+    }
+    removeLink(contextMenu.id)
+    clearSelection()
+    cancelEditing()
+    setContextMenu(null)
   }
 
   const deleteLabel =
@@ -175,6 +208,7 @@ export function MindmapPage() {
           interactions={canvasInteractions}
           onNodeDoubleClick={handleNodeDoubleClick}
           onNodeContextMenu={handleNodeContextMenu}
+          onEdgeContextMenu={handleEdgeContextMenu}
           onSelectEdge={selectEdge}
         />
 
@@ -208,11 +242,12 @@ export function MindmapPage() {
       />
 
       {contextMenu && (
-        <NodeContextMenu
+        <ContextMenu
           label={contextMenu.label}
+          deleteLabel={contextMenu.deleteLabel}
           x={contextMenu.x}
           y={contextMenu.y}
-          onDelete={() => deleteNodeById(contextMenu.nodeId)}
+          onDelete={handleContextDelete}
           onClose={() => setContextMenu(null)}
         />
       )}
