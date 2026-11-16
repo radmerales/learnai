@@ -1,6 +1,7 @@
 import type { MouseEvent } from "react"
 
 import type { Node, RenderedEdge } from "../graph"
+import type { SelectionBox } from "../selectionBounds"
 import type { MindmapInteractions } from "../hooks/useMindmapInteractions"
 import { EdgeHandles } from "./EdgeHandles"
 import { EdgePaths } from "./EdgePaths"
@@ -13,6 +14,7 @@ type Props = {
   selectedNodeIds: string[]
   selectedEdgeIds: string[]
   editingId: string | null
+  selectionBox: SelectionBox | null
   svgRef: MindmapInteractions["svgRef"]
   interactions: Omit<MindmapInteractions, "svgRef">
   onNodeDoubleClick: (node: Node) => void
@@ -26,6 +28,7 @@ export function MindmapCanvas({
   selectedNodeIds,
   selectedEdgeIds,
   editingId,
+  selectionBox,
   svgRef,
   interactions,
   onNodeDoubleClick,
@@ -105,6 +108,20 @@ export function MindmapCanvas({
         connectPreview={interactions.connectPreview}
         edgePreview={interactions.edgePreview}
       />
+
+      {selectionBox && !interactions.marquee && (
+        <rect
+          x={selectionBox.x}
+          y={selectionBox.y}
+          width={selectionBox.width}
+          height={selectionBox.height}
+          fill="none"
+          stroke="#3f3e3e"
+          strokeWidth={1}
+          strokeDasharray="5 4"
+          pointerEvents="none"
+        />
+      )}
 
       {interactions.marquee && (
         <rect

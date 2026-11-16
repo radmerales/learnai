@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from "react"
 
 import { buildRenderedEdges, type Node } from "../graph"
+import { getSelectionBounds } from "../selectionBounds"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapGraph } from "../hooks/useMindmapGraph"
 import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
@@ -66,6 +67,10 @@ export function MindmapPage() {
     selectedNodeIds.length === 1 ? graph.byId.get(selectedNodeIds[0]) ?? null : null
   const panelNode = panelOpen && selectedNodeIds.length === 1 ? selectedNode : null
   const selectedCount = selectedNodeIds.length + selectedEdgeIds.length
+  const selectionBox = useMemo(
+    () => getSelectionBounds(graph.nodes, edges, selectedNodeIds, selectedEdgeIds),
+    [edges, graph.nodes, selectedEdgeIds, selectedNodeIds],
+  )
 
   const deleteSelection = useCallback(() => {
     selectedEdgeIds.forEach((id) => removeLink(id))
@@ -165,6 +170,7 @@ export function MindmapPage() {
           selectedNodeIds={selectedNodeIds}
           selectedEdgeIds={selectedEdgeIds}
           editingId={editing.editingId}
+          selectionBox={selectionBox}
           svgRef={svgRef}
           interactions={canvasInteractions}
           onNodeDoubleClick={handleNodeDoubleClick}

@@ -34,8 +34,8 @@ dragging a connection from a node’s side handle.
   nodes or edges to the current selection.
 - **Move a selection** — drag any selected node to move the whole selected node
   group; attached edges follow. The marquee uses the accent colour at low
-  opacity, selected nodes use the accent fill, and selected edges use a thicker
-  dark stroke.
+  opacity, selected nodes use a 3× status-colored border, selected edges use a
+  thicker dark stroke, and a dashed rectangle surrounds the full multi-selection.
 - **Delete a selection** — press `Delete` or `Backspace`, or use the header
   action, to remove every selected node and edge. Right-clicking a node still
   offers a themed context menu with a red trash action.
@@ -81,6 +81,7 @@ frontend/src/
   previews.ts       Pure preview geometry builders
   quiz.ts           Quiz schema and sample quiz generator
   status.ts         Study status types and color palette
+  selectionBounds.ts Exact multi-selection bounds
   state/            Reducer and graph state transitions
   hooks/            Graph, selection, marquee, label-editing, and interaction controllers
   components/       Presentational canvas, node, edge, panel, header, footer
@@ -181,17 +182,19 @@ quizzes) when real quiz authoring is added.
   with stable ids, prompts, options, and a correct index). The sample generator
   gives every node a three-item quiz for now, and the quiz view uses the accent
   color for the correct option and red for an incorrect selection.
-- **Clear selection state:** Selected nodes use the accent fill and selected
-  edges use a thicker dark stroke so the active set is obvious. A marquee adds a
-  translucent accent field while dragging. Group dragging captures each selected
-  node’s starting position once, then applies one shared delta so the selection
-  moves together without drift.
+- **Clear selection state:** Selected nodes triple their status-colored border
+  weight and selected edges use a thicker dark stroke so the active set is
+  obvious. A dashed bounding box encloses the entire multi-selection, while a
+  marquee adds a translucent accent field during drag. Group dragging captures
+  each selected node’s starting position once, then applies one shared delta so
+  the selection moves together without drift.
 - **Selection-aware chrome:** The header labels the delete action for the current
   selection size, and the footer reports node/edge selection counts.
 - **Study status palette:** Status colors are defined once in `status.ts` and
   applied consistently: solid outline, pastel background, deep text color, and a
-  matching active segment in the panel control. Selection adds an accent ring
-  around the node so the status palette stays intact.
+  matching active segment in the panel control. Selection thickens the node’s
+  status-colored border to three times its resting weight, so the palette stays
+  intact without an extra ring.
 - **Segmented status control:** The three status buttons share inner borders
   and the group clips to a rounded outer shape, keeping adjacent segments flush
   while the first and last outer corners are rounded. The control sits beside

@@ -170,27 +170,41 @@ function round(n: number) {
   return Math.round(n * 100) / 100
 }
 
+export type CurveGeometry = {
+  start: Point
+  c1: Point
+  c2: Point
+  end: Point
+}
+
 /**
  * Cubic Bézier whose tangent at each endpoint is perpendicular to the anchor
  * side. This keeps the line exiting and entering a node straight-on before it
  * curves through the middle, similar to a canvas connector.
  */
-export function curvePath(fromPoint: Point, fromSide: Side, toPoint: Point, toSide: Side): string {
+export function curveGeometry(fromPoint: Point, fromSide: Side, toPoint: Point, toSide: Side): CurveGeometry {
   const distance = Math.hypot(toPoint.x - fromPoint.x, toPoint.y - fromPoint.y)
   const bend = Math.max(36, Math.min(170, distance * 0.45))
   const n1 = sideNormal(fromSide)
   const n2 = sideNormal(toSide)
 
-  const c1 = {
-    x: fromPoint.x + n1.x * bend,
-    y: fromPoint.y + n1.y * bend,
+  return {
+    start: fromPoint,
+    c1: {
+      x: fromPoint.x + n1.x * bend,
+      y: fromPoint.y + n1.y * bend,
+    },
+    c2: {
+      x: toPoint.x + n2.x * bend,
+      y: toPoint.y + n2.y * bend,
+    },
+    end: toPoint,
   }
-  const c2 = {
-    x: toPoint.x + n2.x * bend,
-    y: toPoint.y + n2.y * bend,
-  }
+}
 
-  return `M ${round(fromPoint.x)} ${round(fromPoint.y)} C ${round(c1.x)} ${round(c1.y)}, ${round(c2.x)} ${round(c2.y)}, ${round(toPoint.x)} ${round(toPoint.y)}`
+export function curvePath(fromPoint: Point, fromSide: Side, toPoint: Point, toSide: Side): string {
+  const { start, c1, c2, end } = curveGeometry(fromPoint, fromSide, toPoint, toSide)
+  return `M ${round(start.x)} ${round(start.y)} C ${round(c1.x)} ${round(c1.y)}, ${round(c2.x)} ${round(c2.y)}, ${round(end.x)} ${round(end.y)}`
 }
 
 export function buildRenderedEdges(links: Link[], byId: Map<string, Node>): RenderedEdge[] {

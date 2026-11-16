@@ -53,20 +53,13 @@ export function MindmapNode({
       }}
       className="cursor-grab active:cursor-grabbing"
     >
-      <rect width={node.width} height={NODE_H} fill={status.background} stroke={status.outline} strokeWidth={1.5} />
-
-      {selected && !dropTarget && (
-        <rect
-          x={-4}
-          y={-4}
-          width={node.width + 8}
-          height={NODE_H + 8}
-          fill="none"
-          stroke="#f5c518"
-          strokeWidth={3}
-          pointerEvents="none"
-        />
-      )}
+      <rect
+        width={node.width}
+        height={NODE_H}
+        fill={status.background}
+        stroke={status.outline}
+        strokeWidth={selected ? 4.5 : 1.5}
+      />
 
       {dropTarget && (
         <rect
