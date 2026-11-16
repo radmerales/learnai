@@ -16,6 +16,33 @@ type Props = {
 const smallButton =
   "border border-hairline bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:bg-surface hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
 
+function DeleteBlockButton({
+  blockNumber,
+  onDelete,
+  className = "",
+}: {
+  blockNumber: number
+  onDelete: () => void
+  className?: string
+}) {
+  return (
+    <button
+      type="button"
+      aria-label={`Delete block ${blockNumber}`}
+      title="Delete block"
+      onClick={(e) => {
+        e.stopPropagation()
+        onDelete()
+      }}
+      onDoubleClick={(e) => e.stopPropagation()}
+      className={`flex items-center gap-1.5 border border-red-700 bg-red-600 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${className}`}
+    >
+      <TrashIcon />
+      Delete
+    </button>
+  )
+}
+
 export function MarkdownBlock({
   content,
   editing,
@@ -38,19 +65,11 @@ export function MarkdownBlock({
   if (!editing) {
     return (
       <div className="group relative border border-transparent hover:border-hairline focus-within:border-hairline">
-        <button
-          type="button"
-          aria-label={`Delete block ${blockNumber}`}
-          title="Delete block"
-          onClick={(e) => {
-            e.stopPropagation()
-            onDelete()
-          }}
-          onDoubleClick={(e) => e.stopPropagation()}
-          className="absolute right-2 top-2 z-10 border border-transparent p-1 text-red-700 opacity-0 hover:border-red-700 hover:bg-red-600 hover:text-white focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink group-hover:opacity-100"
-        >
-          <TrashIcon />
-        </button>
+        <DeleteBlockButton
+          blockNumber={blockNumber}
+          onDelete={onDelete}
+          className="absolute right-2 top-2 z-10 opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
+        />
 
         <div
           role="button"
@@ -64,7 +83,7 @@ export function MarkdownBlock({
               onEdit()
             }
           }}
-          className="cursor-text px-3 py-2 pr-12 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink"
+          className="cursor-text px-3 py-2 pr-24 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink"
         >
           {content.trim() ? (
             <MarkdownPreview content={content} />
@@ -78,18 +97,10 @@ export function MarkdownBlock({
 
   return (
     <div className="border border-ink bg-paper">
-      <div className="flex items-center justify-between gap-3 border-b border-hairline px-3 py-1.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline px-3 py-1.5">
         <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink">Editing block</p>
         <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            aria-label={`Delete block ${blockNumber}`}
-            title="Delete block"
-            onClick={onDelete}
-            className="border border-red-700 bg-red-600 p-1 text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-          >
-            <TrashIcon />
-          </button>
+          <DeleteBlockButton blockNumber={blockNumber} onDelete={onDelete} />
           <button type="button" onClick={onDone} className={smallButton}>
             Done
           </button>
