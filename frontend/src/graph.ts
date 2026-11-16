@@ -32,8 +32,8 @@ export type RenderedEdge = {
 
 export const NODE_W = 140
 export const NODE_H = 44
-export const HANDLE_R = 5
-export const HANDLE_HIT_R = 18
+export const HANDLE_R = 2.5
+export const HANDLE_HIT_R = 36
 export const ANCHOR_OFFSET = 5
 export const SIDES: Side[] = ["top", "right", "bottom", "left"]
 

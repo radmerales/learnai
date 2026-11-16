@@ -177,16 +177,16 @@ quizzes) when real quiz authoring is added.
   outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start
   an edge. Dragging from a handle shows a dashed curved preview and a live
-  endpoint marker; moving within the same 18px threshold of a target anchor
+  endpoint marker; moving within the same 36px threshold of a target anchor
   highlights that node and snaps the preview to the specific side midpoint
   before the link is dropped. Hovering blank canvas shows a dashed “New node”
   ghost at the future node position.
 - **Rewire affordance:** Finished edges stay clean with no endpoint circles.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
   replaced by a dashed preview so the new connection is clear. Endpoint hit
-  targets use an 18px radius, matching the target-anchor halo used when starting
-  a new edge. Handle and anchor outlines stay at 1px. Dropping outside any node
-  removes the edge.
+  targets use a 36px radius, matching the target-anchor halo used when starting
+  a new edge. Visible anchor dots use a compact 2.5px radius with a 1px outline.
+  Dropping outside any node removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only
