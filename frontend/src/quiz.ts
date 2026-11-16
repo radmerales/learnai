@@ -40,8 +40,8 @@ export function createSampleQuiz(nodeLabel: string): Quiz {
       },
       {
         id: "q3",
-        prompt: "Which panel tab holds the node's written notes?",
-        options: ["Contents", "Quiz", "Close", "Canvas"],
+        prompt: "Which panel tab holds the node's markdown notes?",
+        options: ["Learn", "Quiz", "Close", "Canvas"],
         answerIndex: 0,
       },
     ],

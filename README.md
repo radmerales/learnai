@@ -48,7 +48,12 @@ dragging a connection from a node’s side handle.
   node. Focusing a node opens a right-hand panel that overlays the canvas
   without resizing it; creating a new node focuses it and opens the same panel.
   On smaller screens the panel takes the full width. It includes a close button,
-  a live-synced title, editable node contents, and a Quiz tab.
+  a live-synced title, a Learn tab, and a Quiz tab.
+- **Learn tab** — a Jupyter-style markdown cell. Rendered markdown fills the
+  tab in view mode; Edit splits the markdown source and a live preview side by
+  side, and Done returns to the full-width rendered view. Supports headings,
+  lists, task lists, quotes, fenced code, links, inline code, bold, italic,
+  highlights, and strikethrough.
 - **Study statuses** — each note is marked **To Do** (grey), **Doing** (blue),
   or **Done** (green). The solid status color outlines the node, a pastel tint
   fills it, and the text uses the matching deep color. A compact segmented
@@ -80,6 +85,7 @@ Open <http://localhost:5173>.
 frontend/src/
   graph.ts          Domain types, geometry, edge view-model builder
   interaction.ts    Pure hit-testing and target validation
+  markdown.tsx      Safe inline markdown renderer
   previews.ts       Pure preview geometry builders
   quiz.ts           Quiz schema and sample quiz generator
   status.ts         Study status types and color palette
@@ -179,7 +185,10 @@ quizzes) when real quiz authoring is added.
   screens), so the canvas keeps its dimensions. The panel is driven by the
   current selection, so changing nodes updates it in place. The panel uses the
   paper/ink theme, sharp corners, a square close button, a live title field, and
-  Contents/Quiz tabs. Node content is stored on the node itself.
+  Learn/Quiz tabs. Node content is stored on the node itself.
+- **Markdown cell:** The Learn tab toggles between a full-width rendered view and
+  a split edit view with source on the left and live preview on the right. The
+  renderer is line/block based and avoids injecting raw HTML.
 - **Quiz template:** Quizzes are a simple typed object (`title` plus questions
   with stable ids, prompts, options, and a correct index). The sample generator
   gives every node a three-item quiz for now, and the quiz view uses the accent

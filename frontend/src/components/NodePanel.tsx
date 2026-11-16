@@ -2,9 +2,10 @@ import { useState } from "react"
 
 import type { Node } from "../graph"
 import { NOTE_STATUSES, NOTE_STATUS_ORDER, type NoteStatus } from "../status"
+import { MarkdownCell } from "./MarkdownCell"
 import { NodeQuiz } from "./NodeQuiz"
 
-type PanelTab = "contents" | "quiz"
+type PanelTab = "learn" | "quiz"
 
 function CloseIcon() {
   return (
@@ -32,7 +33,7 @@ type Props = {
 }
 
 export function NodePanel({ node, onClose, onTitleChange, onContentChange, onStatusChange }: Props) {
-  const [tab, setTab] = useState<PanelTab>("contents")
+  const [tab, setTab] = useState<PanelTab>("learn")
 
   return (
     <aside
@@ -92,14 +93,14 @@ export function NodePanel({ node, onClose, onTitleChange, onContentChange, onSta
         <button
           type="button"
           role="tab"
-          aria-selected={tab === "contents"}
-          aria-controls="node-contents-panel"
-          onClick={() => setTab("contents")}
+          aria-selected={tab === "learn"}
+          aria-controls="node-learn-panel"
+          onClick={() => setTab("learn")}
           className={`-mb-px border-b-2 px-3 py-3 font-mono text-[10px] uppercase tracking-[0.08em] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
-            tab === "contents" ? "border-ink text-ink" : "border-transparent text-mutedink hover:text-ink"
+            tab === "learn" ? "border-ink text-ink" : "border-transparent text-mutedink hover:text-ink"
           }`}
         >
-          Contents
+          Learn
         </button>
         <button
           type="button"
@@ -115,20 +116,9 @@ export function NodePanel({ node, onClose, onTitleChange, onContentChange, onSta
         </button>
       </div>
 
-      {tab === "contents" ? (
-        <div
-          id="node-contents-panel"
-          role="tabpanel"
-          aria-label="Node contents"
-          className="flex min-h-0 flex-1 flex-col px-5 py-4"
-        >
-          <textarea
-            aria-label="Node contents"
-            value={node.content}
-            onChange={(e) => onContentChange(e.target.value)}
-            placeholder="Write notes for this node…"
-            className="min-h-0 flex-1 resize-none border-0 bg-transparent font-sans text-sm leading-6 text-ink outline-none placeholder:text-[#6b6a6a] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-          />
+      {tab === "learn" ? (
+        <div id="node-learn-panel" role="tabpanel" aria-label="Learn notes" className="min-h-0 flex-1">
+          <MarkdownCell key={node.id} content={node.content} onChange={onContentChange} />
         </div>
       ) : (
         <div id="node-quiz-panel" role="tabpanel" aria-label="Node quiz" className="min-h-0 flex-1">
