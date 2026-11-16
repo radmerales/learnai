@@ -2,6 +2,8 @@ import type { PointerEvent } from "react"
 
 import { HANDLE_R, type Point, type RenderedEdge } from "../graph"
 
+const EDGE_HANDLE_HIT_R = 36
+
 function Handle({
   point,
   onPointerDown,
@@ -14,7 +16,7 @@ function Handle({
       <circle
         cx={point.x}
         cy={point.y}
-        r={12}
+        r={EDGE_HANDLE_HIT_R}
         fill="transparent"
         className="cursor-crosshair"
         onPointerDown={onPointerDown}

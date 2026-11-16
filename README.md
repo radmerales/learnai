@@ -138,8 +138,9 @@ must stay under 300 lines.
   the future node position.
 - **Rewire affordance:** Finished edges stay clean with no endpoint circles.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
-  replaced by a dashed preview so the new connection is clear. Dropping outside
-  any node removes the edge.
+  replaced by a dashed preview so the new connection is clear. Endpoint hit
+  targets use a generous 36px radius, making the small handles easy to grab.
+  Dropping outside any node removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only
