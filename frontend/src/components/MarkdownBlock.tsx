@@ -37,7 +37,7 @@ function DeleteBlockButton({
       onDoubleClick={(e) => e.stopPropagation()}
       className={`flex items-center gap-1.5 border border-red-700 bg-red-600 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${className}`}
     >
-      <TrashIcon />
+      <TrashIcon size={13} strokeWidth={1.25} />
       Delete
     </button>
   )
