@@ -1,3 +1,10 @@
+"""HTTP-level tests for the mindmap API.
+
+Each test uses the `client` fixture from conftest.py. `pytest.mark.parametrize`
+runs the same test once per invalid mutation, which keeps validation coverage
+compact.
+"""
+
 import copy
 import json
 from pathlib import Path
@@ -110,6 +117,30 @@ def test_create_with_empty_body(client):
     assert resource["title"] == "Untitled mindmap"
     assert resource["nodes"] == []
     assert resource["links"] == []
+
+
+def test_lists_multiple_maps(client):
+    first = client.post("/api/mindmaps", json={"title": "First"}).json()
+    second = client.post("/api/mindmaps", json={"title": "Second"}).json()
+
+    response = client.get("/api/mindmaps")
+
+    assert response.status_code == 200
+    assert {item["id"] for item in response.json()} == {first["id"], second["id"]}
+
+
+def test_rejects_duplicate_question_ids(client):
+    payload = sample_document()
+    payload["nodes"][0]["quiz"]["questions"].append(
+        {
+            "id": "q_1",
+            "prompt": "Duplicate id?",
+            "options": ["A", "B"],
+            "answerIndex": 0,
+        }
+    )
+
+    assert client.post("/api/mindmaps", json=payload).status_code == 422
 
 
 def test_missing_mindmap_returns_404(client):
