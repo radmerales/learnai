@@ -1,9 +1,9 @@
-import { NODE_H, type Node } from "../graph"
+import { HANDLE_R, NODE_H, type Node } from "../graph"
 import type { Preview } from "../interaction"
 import { EdgeStroke } from "./EdgeStroke"
 
 function Marker({ x, y }: { x: number; y: number }) {
-  return <circle cx={x} cy={y} r={4.5} fill="#f5c518" stroke="#000000" strokeWidth={1} />
+  return <circle cx={x} cy={y} r={HANDLE_R} fill="#f5c518" stroke="#000000" strokeWidth={1} />
 }
 
 function PreviewLine({ preview }: { preview: Preview }) {

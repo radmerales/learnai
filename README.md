@@ -185,8 +185,8 @@ quizzes) when real quiz authoring is added.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
   replaced by a dashed preview so the new connection is clear. Endpoint hit
   targets use a 36px radius, matching the target-anchor halo used when starting
-  a new edge. Visible anchor dots use a 1.25px radius with a 1px outline.
-  Dropping outside any node removes the edge.
+  a new edge. Hover, create, and rewire dots share a 4.5px radius with a 1px
+  outline. Dropping outside any node removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only
