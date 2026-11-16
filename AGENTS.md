@@ -18,7 +18,7 @@
 - `frontend/src/previews.ts` — pure preview geometry builders
 - `frontend/src/quiz.ts` — quiz schema and sample quiz generator
 - `frontend/src/state/` — pure reducer and state transitions
-- `frontend/src/hooks/` — graph, label-editing, and pointer-interaction controllers
+- `frontend/src/hooks/` — graph, selection, marquee, edge-hover, label-editing, and pointer-interaction controllers
 - `frontend/src/components/` — presentational React components
 
 ## Commits

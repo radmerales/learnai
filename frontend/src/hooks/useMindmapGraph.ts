@@ -39,8 +39,8 @@ export function useMindmapGraph() {
     dispatch({ type: "set-content", id, content })
   }, [])
 
-  const moveNode = useCallback((id: string, x: number, y: number) => {
-    dispatch({ type: "move-node", id, x, y })
+  const moveNodes = useCallback((moves: { id: string; x: number; y: number }[]) => {
+    dispatch({ type: "move-nodes", moves })
   }, [])
 
   const addLink = useCallback((link: Omit<Link, "id">) => {
@@ -66,7 +66,7 @@ export function useMindmapGraph() {
     removeNode,
     renameNode,
     setNodeContent,
-    moveNode,
+    moveNodes,
     addLink,
     updateLink,
     removeLink,

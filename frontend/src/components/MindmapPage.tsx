@@ -4,6 +4,7 @@ import { buildRenderedEdges, type Node } from "../graph"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapGraph } from "../hooks/useMindmapGraph"
 import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
+import { useMindmapSelection } from "../hooks/useMindmapSelection"
 import { InlineNodeEditor } from "./InlineNodeEditor"
 import { MindmapCanvas } from "./MindmapCanvas"
 import { MindmapFooter } from "./MindmapFooter"
@@ -20,84 +21,67 @@ type ContextMenuState = {
 
 export function MindmapPage() {
   const graph = useMindmapGraph()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
-  const [panelOpen, setPanelOpen] = useState(false)
-  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+  const selection = useMindmapSelection()
   const editing = useLabelEditing({ byId: graph.byId, renameNode: graph.renameNode })
   const { cancelEditing } = editing
-
-  const selectNode = useCallback((id: string | null) => {
-    setSelectedId(id)
-    setSelectedEdgeId(null)
-    if (!id) setPanelOpen(false)
-  }, [])
-
-  const selectEdge = useCallback(
-    (id: string) => {
-      setSelectedId(null)
-      setSelectedEdgeId(id)
-      setPanelOpen(false)
-      cancelEditing()
-    },
-    [cancelEditing],
-  )
-
-  const handleNodeFocus = useCallback(
-    (id: string) => {
-      selectNode(id)
-      setPanelOpen(true)
-    },
-    [selectNode],
-  )
-
-  const clearEdgeSelection = useCallback(() => {
-    setSelectedEdgeId(null)
-  }, [])
-
-  const interactions = useMindmapInteractions({
-    nodes: graph.nodes,
-    links: graph.links,
-    byId: graph.byId,
-    moveNode: graph.moveNode,
-    addNode: graph.addNode,
-    addLink: graph.addLink,
-    updateLink: graph.updateLink,
-    removeLink: graph.removeLink,
+  const {
+    selectedNodeIds,
+    selectedEdgeIds,
+    panelOpen,
     selectNode,
+    focusNode,
+    selectEdge,
+    selectMarquee,
+    clearSelection,
     clearEdgeSelection,
-    onNodeFocus: handleNodeFocus,
-  })
-
-  const { svgRef, ...canvasInteractions } = interactions
-  const selected = selectedId ? graph.byId.get(selectedId) ?? null : null
-  const panelNode = panelOpen ? selected : null
+    closePanel,
+  } = selection
+  const { removeNode, removeLink, moveNodes } = graph
+  const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
 
   const edges = useMemo(
     () => buildRenderedEdges(graph.links, graph.byId),
     [graph.byId, graph.links],
   )
 
-  const { removeNode, removeLink } = graph
+  const interactions = useMindmapInteractions({
+    nodes: graph.nodes,
+    links: graph.links,
+    byId: graph.byId,
+    edges,
+    moveNodes,
+    addNode: graph.addNode,
+    addLink: graph.addLink,
+    updateLink: graph.updateLink,
+    removeLink,
+    selectedNodeIds,
+    selectNode,
+    focusNode,
+    selectMarquee,
+    clearEdgeSelection,
+  })
 
-  const deleteNode = useCallback(
+  const { svgRef, ...canvasInteractions } = interactions
+  const selectedNode =
+    selectedNodeIds.length === 1 ? graph.byId.get(selectedNodeIds[0]) ?? null : null
+  const panelNode = panelOpen && selectedNodeIds.length === 1 ? selectedNode : null
+  const selectedCount = selectedNodeIds.length + selectedEdgeIds.length
+
+  const deleteSelection = useCallback(() => {
+    selectedEdgeIds.forEach((id) => removeLink(id))
+    selectedNodeIds.forEach((id) => removeNode(id))
+    clearSelection()
+    cancelEditing()
+  }, [cancelEditing, clearSelection, removeLink, removeNode, selectedEdgeIds, selectedNodeIds])
+
+  const deleteNodeById = useCallback(
     (id: string) => {
       removeNode(id)
-      setSelectedId((current) => (current === id ? null : current))
-      setSelectedEdgeId(null)
-      setPanelOpen(false)
+      clearSelection()
       cancelEditing()
       setContextMenu(null)
     },
-    [cancelEditing, removeNode],
-  )
-
-  const deleteEdge = useCallback(
-    (id: string) => {
-      removeLink(id)
-      setSelectedEdgeId((current) => (current === id ? null : current))
-    },
-    [removeLink],
+    [cancelEditing, clearSelection, removeNode],
   )
 
   useEffect(() => {
@@ -109,16 +93,12 @@ export function MindmapPage() {
       if (target?.closest("input, textarea, select, [contenteditable='true']")) return
 
       e.preventDefault()
-      if (selectedEdgeId) {
-        deleteEdge(selectedEdgeId)
-      } else if (selectedId) {
-        deleteNode(selectedId)
-      }
+      if (selectedCount > 0) deleteSelection()
     }
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [deleteEdge, deleteNode, selectedEdgeId, selectedId])
+  }, [deleteSelection, selectedCount])
 
   function handleCreateFirstNode() {
     const { width, height } = interactions.canvasSize
@@ -126,15 +106,11 @@ export function MindmapPage() {
       x: width ? width / 2 : 420,
       y: height ? height / 2 : 220,
     })
-    handleNodeFocus(node.id)
+    focusNode(node.id)
   }
 
   function handleDeleteSelection() {
-    if (selectedEdgeId) {
-      deleteEdge(selectedEdgeId)
-      return
-    }
-    if (selected) deleteNode(selected.id)
+    if (selectedCount > 0) deleteSelection()
   }
 
   function handleNodeDoubleClick(node: Node) {
@@ -144,16 +120,23 @@ export function MindmapPage() {
 
   function handleNodeContextMenu(node: Node, e: MouseEvent<SVGGElement>) {
     selectNode(node.id)
-    setPanelOpen(false)
+    closePanel()
     setContextMenu({ nodeId: node.id, label: node.label, x: e.clientX, y: e.clientY })
   }
 
-  const deleteLabel = selectedEdgeId ? "Delete edge" : selected ? "Delete node" : "Delete"
+  const deleteLabel =
+    selectedCount > 1
+      ? `Delete ${selectedCount} items`
+      : selectedNodeIds.length === 1
+        ? "Delete node"
+        : selectedEdgeIds.length === 1
+          ? "Delete edge"
+          : "Delete"
 
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
       <MindmapHeader
-        canDelete={Boolean(selected || selectedEdgeId)}
+        canDelete={selectedCount > 0}
         deleteLabel={deleteLabel}
         onDelete={handleDeleteSelection}
       />
@@ -179,8 +162,8 @@ export function MindmapPage() {
         <MindmapCanvas
           nodes={graph.nodes}
           edges={edges}
-          selectedId={selectedId}
-          selectedEdgeId={selectedEdgeId}
+          selectedNodeIds={selectedNodeIds}
+          selectedEdgeIds={selectedEdgeIds}
           editingId={editing.editingId}
           svgRef={svgRef}
           interactions={canvasInteractions}
@@ -202,7 +185,7 @@ export function MindmapPage() {
         {panelNode && (
           <NodePanel
             node={panelNode}
-            onClose={() => setPanelOpen(false)}
+            onClose={closePanel}
             onTitleChange={(title) => graph.renameNode(panelNode.id, title)}
             onContentChange={(content) => graph.setNodeContent(panelNode.id, content)}
           />
@@ -210,8 +193,9 @@ export function MindmapPage() {
       </div>
 
       <MindmapFooter
-        selectedLabel={selected?.label ?? null}
-        selectedEdge={Boolean(selectedEdgeId)}
+        selectedLabel={selectedNode?.label ?? null}
+        selectedNodeCount={selectedNodeIds.length}
+        selectedEdgeCount={selectedEdgeIds.length}
         nodeCount={graph.nodes.length}
         linkCount={graph.links.length}
       />
@@ -221,7 +205,7 @@ export function MindmapPage() {
           label={contextMenu.label}
           x={contextMenu.x}
           y={contextMenu.y}
-          onDelete={() => deleteNode(contextMenu.nodeId)}
+          onDelete={() => deleteNodeById(contextMenu.nodeId)}
           onClose={() => setContextMenu(null)}
         />
       )}

@@ -33,6 +33,8 @@ export type EdgeDrag = {
 
 export type Preview = { path: string; start: Point; end: Point }
 
+export type SelectionResult = { nodeIds: string[]; edgeIds: string[] }
+
 export function hitTestNode(nodes: Node[], p: Point): Node | null {
   for (let i = nodes.length - 1; i >= 0; i--) {
     const n = nodes[i]

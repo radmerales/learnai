@@ -10,21 +10,21 @@ import { MindmapNode } from "./MindmapNode"
 type Props = {
   nodes: Node[]
   edges: RenderedEdge[]
-  selectedId: string | null
-  selectedEdgeId: string | null
+  selectedNodeIds: string[]
+  selectedEdgeIds: string[]
   editingId: string | null
   svgRef: MindmapInteractions["svgRef"]
   interactions: Omit<MindmapInteractions, "svgRef">
   onNodeDoubleClick: (node: Node) => void
   onNodeContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
-  onSelectEdge: (id: string) => void
+  onSelectEdge: (id: string, additive: boolean) => void
 }
 
 export function MindmapCanvas({
   nodes,
   edges,
-  selectedId,
-  selectedEdgeId,
+  selectedNodeIds,
+  selectedEdgeIds,
   editingId,
   svgRef,
   interactions,
@@ -53,7 +53,7 @@ export function MindmapCanvas({
       <EdgePaths
         edges={edges}
         hiddenEdgeId={interactions.edgeDrag?.edgeId ?? null}
-        selectedEdgeId={selectedEdgeId}
+        selectedEdgeIds={selectedEdgeIds}
         onHoverStart={interactions.showEdge}
         onHoverEnd={interactions.scheduleEdgeHide}
         onSelect={onSelectEdge}
@@ -74,7 +74,7 @@ export function MindmapCanvas({
           <MindmapNode
             key={node.id}
             node={node}
-            selected={node.id === selectedId}
+            selected={selectedNodeIds.includes(node.id)}
             dropTarget={dropTarget}
             anchorSide={anchorSide}
             showAnchors={dropTarget}
@@ -104,6 +104,20 @@ export function MindmapCanvas({
         connectPreview={interactions.connectPreview}
         edgePreview={interactions.edgePreview}
       />
+
+      {interactions.marquee && (
+        <rect
+          x={interactions.marquee.x}
+          y={interactions.marquee.y}
+          width={interactions.marquee.width}
+          height={interactions.marquee.height}
+          fill="#f5c518"
+          fillOpacity={0.12}
+          stroke="#3f3e3e"
+          strokeWidth={1}
+          pointerEvents="none"
+        />
+      )}
     </svg>
   )
 }

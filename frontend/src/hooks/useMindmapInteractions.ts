@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type PointerEvent } from "react"
+import { useRef, useState, type PointerEvent } from "react"
 
 import { oppositeSide, type RenderedEdge, type Side } from "../graph"
 import {
@@ -9,56 +9,35 @@ import {
   resolveEdgeTarget,
   type ConnectDrag,
   type EdgeDrag,
+  type SelectionResult,
 } from "../interaction"
 import { buildConnectPreview, buildEdgePreview, buildGhostNode } from "../previews"
 import { useCanvasSize } from "./useCanvasSize"
+import { useEdgeHover } from "./useEdgeHover"
+import { useMarqueeSelection } from "./useMarqueeSelection"
 import type { MindmapGraph } from "./useMindmapGraph"
 
-type Options = Pick<
-  MindmapGraph,
-  "nodes" | "links" | "byId" | "moveNode" | "addNode" | "addLink" | "updateLink" | "removeLink"
-> & {
-  selectNode: (id: string | null) => void
+type GraphActions = Pick<MindmapGraph, "nodes" | "links" | "byId" | "moveNodes" | "addNode" | "addLink" | "updateLink" | "removeLink">
+type Options = GraphActions & {
+  edges: RenderedEdge[]
+  selectedNodeIds: string[]
+  selectNode: (id: string, additive?: boolean) => void
+  focusNode: (id: string) => void
+  selectMarquee: (result: SelectionResult, additive: boolean) => void
   clearEdgeSelection: () => void
-  onNodeFocus: (id: string) => void
 }
 
-type DragState = {
-  id: string
-  ox: number
-  oy: number
-  startX: number
-  startY: number
-  moved: boolean
-}
+type DragState = { ids: string[]; starts: Record<string, { x: number; y: number }>; startX: number; startY: number; moved: boolean; additive: boolean; anchorId: string }
 
-export function useMindmapInteractions({
-  nodes,
-  links,
-  byId,
-  moveNode,
-  addNode,
-  addLink,
-  updateLink,
-  removeLink,
-  selectNode,
-  clearEdgeSelection,
-  onNodeFocus,
-}: Options) {
+export function useMindmapInteractions(options: Options) {
+  const { nodes, links, byId, edges, moveNodes, addNode, addLink, updateLink, removeLink, selectedNodeIds, selectNode, focusNode, selectMarquee, clearEdgeSelection } = options
   const [drag, setDrag] = useState<DragState | null>(null)
   const [connect, setConnect] = useState<ConnectDrag | null>(null)
   const [edgeDrag, setEdgeDrag] = useState<EdgeDrag | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
-  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null)
   const svgRef = useRef<SVGSVGElement | null>(null)
   const canvasSize = useCanvasSize(svgRef)
-  const edgeHoverTimer = useRef<number | null>(null)
-
-  useEffect(() => {
-    return () => {
-      if (edgeHoverTimer.current !== null) window.clearTimeout(edgeHoverTimer.current)
-    }
-  }, [])
+  const edgeHover = useEdgeHover()
 
   function toSvgPoint(clientX: number, clientY: number) {
     const svg = svgRef.current
@@ -72,6 +51,8 @@ export function useMindmapInteractions({
     return { x: p.x, y: p.y }
   }
 
+  const marquee = useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect: selectMarquee })
+
   function nodeAtPoint(p: { x: number; y: number }) {
     return hitTestNode(nodes, p)
   }
@@ -80,29 +61,8 @@ export function useMindmapInteractions({
     return clampNewNodePoint(p, canvasSize.width, canvasSize.height)
   }
 
-  function clearEdgeHoverTimer() {
-    if (edgeHoverTimer.current !== null) {
-      window.clearTimeout(edgeHoverTimer.current)
-      edgeHoverTimer.current = null
-    }
-  }
-
-  function showEdge(id: string) {
-    clearEdgeHoverTimer()
-    setHoveredEdgeId(id)
-  }
-
-  function scheduleEdgeHide(id: string) {
-    clearEdgeHoverTimer()
-    edgeHoverTimer.current = window.setTimeout(() => {
-      setHoveredEdgeId((prev) => (prev === id ? null : prev))
-      edgeHoverTimer.current = null
-    }, 180)
-  }
-
   function onBackgroundPointerDown(e: PointerEvent<SVGSVGElement>) {
-    if (e.button !== 0) return
-    selectNode(null)
+    marquee.start(e)
   }
 
   function onNodePointerDown(e: PointerEvent<SVGGElement>, id: string) {
@@ -110,11 +70,36 @@ export function useMindmapInteractions({
     if (e.button !== 0) return
     const node = byId.get(id)
     if (!node) return
-    clearEdgeHoverTimer()
-    setHoveredEdgeId(null)
+
+    edgeHover.reset()
     const p = toSvgPoint(e.clientX, e.clientY)
-    selectNode(id)
-    setDrag({ id, ox: p.x - node.x, oy: p.y - node.y, startX: p.x, startY: p.y, moved: false })
+    const additive = e.shiftKey || e.metaKey || e.ctrlKey
+    selectNode(id, additive)
+
+    const alreadySelected = selectedNodeIds.includes(id)
+    const ids = additive
+      ? alreadySelected
+        ? selectedNodeIds
+        : [...selectedNodeIds, id]
+      : alreadySelected
+        ? selectedNodeIds
+        : [id]
+
+    const starts: DragState["starts"] = {}
+    ids.forEach((dragId) => {
+      const dragNode = byId.get(dragId)
+      if (dragNode) starts[dragId] = { x: dragNode.x, y: dragNode.y }
+    })
+
+    setDrag({
+      ids,
+      starts,
+      startX: p.x,
+      startY: p.y,
+      moved: false,
+      additive,
+      anchorId: id,
+    })
     ;(e.currentTarget as SVGGElement).setPointerCapture?.(e.pointerId)
   }
 
@@ -130,8 +115,7 @@ export function useMindmapInteractions({
     e.stopPropagation()
     if (e.button !== 0) return
     clearEdgeSelection()
-    clearEdgeHoverTimer()
-    setHoveredEdgeId(null)
+    edgeHover.reset()
     const p = toSvgPoint(e.clientX, e.clientY)
     setConnect({ sourceId: id, sourceSide: side, x: p.x, y: p.y, targetId: null, targetSide: null })
   }
@@ -140,8 +124,7 @@ export function useMindmapInteractions({
     e.stopPropagation()
     if (e.button !== 0) return
     clearEdgeSelection()
-    clearEdgeHoverTimer()
-    setHoveredEdgeId(edge.id)
+    edgeHover.reset()
     const fixed = moving === "from" ? edge.to : edge.from
     const fixedSide = moving === "from" ? edge.toSide : edge.fromSide
     const p = toSvgPoint(e.clientX, e.clientY)
@@ -158,11 +141,24 @@ export function useMindmapInteractions({
   }
 
   function onPointerMove(e: PointerEvent<SVGSVGElement>) {
+    if (marquee.active) {
+      marquee.move(e)
+      return
+    }
+
     const p = toSvgPoint(e.clientX, e.clientY)
 
     if (drag) {
       const moved = drag.moved || Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3
-      moveNode(drag.id, p.x - drag.ox, p.y - drag.oy)
+      const dx = p.x - drag.startX
+      const dy = p.y - drag.startY
+      moveNodes(
+        Object.entries(drag.starts).map(([id, start]) => ({
+          id,
+          x: start.x + dx,
+          y: start.y + dy,
+        })),
+      )
       if (moved !== drag.moved) setDrag((prev) => (prev ? { ...prev, moved } : prev))
       return
     }
@@ -193,6 +189,11 @@ export function useMindmapInteractions({
   }
 
   function onPointerUp(e: PointerEvent<SVGSVGElement>) {
+    if (marquee.active) {
+      marquee.finish(e)
+      return
+    }
+
     const p = toSvgPoint(e.clientX, e.clientY)
 
     if (connect) {
@@ -214,7 +215,7 @@ export function useMindmapInteractions({
           fromSide: connect.sourceSide,
           toSide: oppositeSide(connect.sourceSide),
         })
-        onNodeFocus(node.id)
+        focusNode(node.id)
       }
       setConnect(null)
       return
@@ -241,7 +242,7 @@ export function useMindmapInteractions({
 
     if (drag && !drag.moved) {
       const moved = Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3
-      if (!moved) onNodeFocus(drag.id)
+      if (!moved && !drag.additive) focusNode(drag.anchorId)
     }
 
     setDrag(null)
@@ -251,8 +252,8 @@ export function useMindmapInteractions({
     setDrag(null)
     setConnect(null)
     setEdgeDrag(null)
-    clearEdgeHoverTimer()
-    setHoveredEdgeId(null)
+    marquee.cancel()
+    edgeHover.reset()
   }
 
   const connectPoint = connect ? clampPoint({ x: connect.x, y: connect.y }) : null
@@ -264,11 +265,12 @@ export function useMindmapInteractions({
   return {
     svgRef,
     canvasSize,
+    marquee: marquee.rect,
     drag,
     connect,
     edgeDrag,
     hoveredId,
-    hoveredEdgeId,
+    hoveredEdgeId: edgeHover.hoveredEdgeId,
     ghostNode,
     connectPreview,
     edgePreview,
@@ -278,9 +280,9 @@ export function useMindmapInteractions({
     onNodePointerLeave,
     startConnect,
     startEdgeDrag,
-    showEdge,
-    scheduleEdgeHide,
-    clearEdgeHoverTimer,
+    showEdge: edgeHover.show,
+    scheduleEdgeHide: edgeHover.scheduleHide,
+    clearEdgeHoverTimer: edgeHover.clear,
     onPointerMove,
     onPointerUp,
     onPointerLeave,

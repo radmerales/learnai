@@ -4,19 +4,19 @@ import { EdgeStroke } from "./EdgeStroke"
 type Props = {
   edges: RenderedEdge[]
   hiddenEdgeId: string | null
-  selectedEdgeId: string | null
+  selectedEdgeIds: string[]
   onHoverStart: (id: string) => void
   onHoverEnd: (id: string) => void
-  onSelect: (id: string) => void
+  onSelect: (id: string, additive: boolean) => void
 }
 
-export function EdgePaths({ edges, hiddenEdgeId, selectedEdgeId, onHoverStart, onHoverEnd, onSelect }: Props) {
+export function EdgePaths({ edges, hiddenEdgeId, selectedEdgeIds, onHoverStart, onHoverEnd, onSelect }: Props) {
   return (
     <>
       {edges.map((edge) =>
         edge.id === hiddenEdgeId ? null : (
           <g key={edge.id} pointerEvents="none">
-            <EdgeStroke path={edge.path} selected={edge.id === selectedEdgeId} />
+            <EdgeStroke path={edge.path} selected={selectedEdgeIds.includes(edge.id)} />
           </g>
         ),
       )}
@@ -35,7 +35,7 @@ export function EdgePaths({ edges, hiddenEdgeId, selectedEdgeId, onHoverStart, o
             onPointerLeave={() => onHoverEnd(edge.id)}
             onPointerDown={(e) => {
               e.stopPropagation()
-              onSelect(edge.id)
+              onSelect(edge.id, e.shiftKey || e.metaKey || e.ctrlKey)
             }}
           />
         ),

@@ -27,12 +27,16 @@ dragging a connection from a node’s side handle.
 - **Curved connectors** — edges are cubic Bézier curves that leave and enter a
   node perpendicular to the middle of the anchor side.
 - **Drag to move** — reposition nodes freely on the canvas; edges follow.
-- **Select and delete edges** — click an edge to select it; the selected edge
-  uses a thicker dark stroke. Press `Delete` or `Backspace`, or use the header
-  action, to remove it.
-- **Delete nodes** — select a node and press `Delete` or `Backspace`, use the
-  header action, or right-click the node for a themed context menu with a red
-  trash action.
+- **Multi-select** — drag on empty canvas to draw a marquee and select all
+  intersecting nodes and edges. Hold Shift, Ctrl, or Cmd while clicking to add
+  nodes or edges to the current selection.
+- **Move a selection** — drag any selected node to move the whole selected node
+  group; attached edges follow. The marquee uses the accent colour at low
+  opacity, selected nodes use the accent fill, and selected edges use a thicker
+  dark stroke.
+- **Delete a selection** — press `Delete` or `Backspace`, or use the header
+  action, to remove every selected node and edge. Right-clicking a node still
+  offers a themed context menu with a red trash action.
 - **Inline labels** — double-click a node to edit its label in place; Enter
   commits, Escape cancels, and blur commits. Node width grows to fit the full
   label while keeping the original 140px width as the minimum.
@@ -170,9 +174,13 @@ quizzes) when real quiz authoring is added.
   with stable ids, prompts, options, and a correct index). The sample generator
   gives every node a three-item quiz for now, and the quiz view uses the accent
   color for the correct option and red for an incorrect selection.
-- **Clear selection state:** The selected node uses the accent color so the
-  target for delete or rename is always obvious. Edges are neutral so structure
-  reads without competing with nodes.
+- **Clear selection state:** Selected nodes use the accent fill and selected
+  edges use a thicker dark stroke so the active set is obvious. A marquee adds a
+  translucent accent field while dragging. Group dragging captures each selected
+  node’s starting position once, then applies one shared delta so the selection
+  moves together without drift.
+- **Selection-aware chrome:** The header labels the delete action for the current
+  selection size, and the footer reports node/edge selection counts.
 - **Connection affordance:** Hovering a node reveals four small circular handles
   10px outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start
