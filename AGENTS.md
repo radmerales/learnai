@@ -16,6 +16,7 @@
 - `frontend/src/graph.ts` — domain types, geometry, and edge view-model builder
 - `frontend/src/interaction.ts` — pure hit-testing, target validation, and canvas clamping
 - `frontend/src/markdown.tsx` — safe inline markdown renderer
+- `frontend/src/components/Latex.tsx` — KaTeX inline/block math renderer
 - `frontend/src/previews.ts` — pure preview geometry builders
 - `frontend/src/quiz.ts` — quiz schema and sample quiz generator
 - `frontend/src/status.ts` — study status types and color palette

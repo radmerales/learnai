@@ -1,12 +1,14 @@
 import type { ReactNode } from "react"
 
+import { Latex } from "./components/Latex"
+
 function safeHref(url: string): string | undefined {
   return /^(https?:\/\/|mailto:|#)/i.test(url) ? url : undefined
 }
 
 export function parseInlineMarkdown(text: string): ReactNode[] {
   const nodes: ReactNode[] = []
-  const pattern = /(`[^`]+`|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|==[^=]+==|\*[^*]+\*|_[^_]+_|\[[^\]]+\]\([^)]+\))/g
+  const pattern = /(`[^`]+`|\$[^$\n]+\$|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|==[^=]+==|\*[^*]+\*|_[^_]+_|\[[^\]]+\]\([^)]+\))/g
   let lastIndex = 0
   let key = 0
   let match: RegExpExecArray | null
@@ -21,6 +23,8 @@ export function parseInlineMarkdown(text: string): ReactNode[] {
           {token.slice(1, -1)}
         </code>,
       )
+    } else if (token.startsWith("$")) {
+      nodes.push(<Latex key={`math-${key++}`} formula={token.slice(1, -1)} />)
     } else if (token.startsWith("**") || token.startsWith("__")) {
       nodes.push(
         <strong key={`strong-${key++}`} className="font-semibold">
@@ -85,6 +89,15 @@ const HEADING_CLASSES = [
 ]
 
 export function renderMarkdownLine(line: string): ReactNode {
+  const displayMath = line.trim().match(/^\$\$(.+)\$\$$/)
+  if (displayMath) {
+    return (
+      <div className="my-2 overflow-x-auto text-center">
+        <Latex formula={displayMath[1]} displayMode />
+      </div>
+    )
+  }
+
   const heading = line.match(/^(#{1,6})\s+(.*)$/)
   if (heading) {
     const level = heading[1].length

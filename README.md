@@ -58,7 +58,9 @@ dragging a connection from a node’s side handle.
   invisible row reveals a plus/add-block action on hover; when the note is
   blank, that row is always visible with “Click here to add new block.”
   Supports headings, lists, task lists, quotes, fenced code, links, inline
-  code, bold, italic, highlights, and strikethrough.
+  code, bold, italic, highlights, strikethrough, and Obsidian-style LaTeX.
+- **LaTeX math** — inline `$...$` and block `$$ ... $$` formulas are rendered
+  with KaTeX in the markdown preview. Block math can span multiple lines.
 - **Study statuses** — each note is marked **To Do** (grey), **Doing** (blue),
   or **Done** (green). The solid status color outlines the node, a pastel tint
   fills it, and the text uses the matching deep color. A compact segmented
@@ -73,7 +75,7 @@ dragging a connection from a node’s side handle.
 
 | Layer    | Technology                                      |
 | -------- | ----------------------------------------------- |
-| Frontend | React 19 + Vite + TypeScript, Tailwind CSS       |
+| Frontend | React 19 + Vite + TypeScript, Tailwind CSS, KaTeX |
 
 ## Quick start
 
@@ -198,7 +200,9 @@ quizzes) when real quiz authoring is added.
   switches only that block
   to a source/live-preview split. The final add row is invisible until hover,
   except in the blank-note state where it is the only visible call to action.
-  The renderer is line/block based and avoids injecting raw HTML.
+  The renderer is line/block based and avoids injecting raw HTML. Inline math
+  uses `$...$`; display math uses a `$$` fence with multi-line support, matching
+  the common Obsidian structure.
 - **Quiz template:** Quizzes are a simple typed object (`title` plus questions
   with stable ids, prompts, options, and a correct index). The sample generator
   gives every node a three-item quiz for now, and the quiz view uses the accent
