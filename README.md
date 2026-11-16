@@ -1,251 +1,348 @@
 # learn.ai
 
-A simple one-page node network. There is no root/child distinction — the map is
-just nodes and explicit edges. Start with a single node, then grow the map by
-dragging a connection from a node’s side handle.
+learn.ai is a small visual study workspace. You build a mindmap of topics, write
+markdown notes for each topic in the **Learn** tab, and author multiple-choice
+questions in the **Quiz** tab. Maps are saved to a Python backend, so refreshing
+the page does not lose your work.
 
-## Features (MVP)
+The project is intentionally small, but it is a complete full-stack app: a
+React/TypeScript frontend, a FastAPI/Python backend, a SQLite database, unit and
+component tests, and a documented JSON format.
 
-- **Single-page app** — everything runs in the browser, no backend or auth.
-- **First node** — an empty canvas shows a single “Create first node” action.
-- **Grow through edges** — subsequent nodes are created by dragging from a
-  node’s side handle onto empty canvas. A dashed “New node” ghost previews the
-  result before release, with its receiving anchor fixed to the side opposite
-  the dragged handle so the preview stays stable.
-- **Double-click to create** — double-clicking empty canvas creates and focuses
-  a node at that position, without needing to drag from an existing edge.
-- **Connect existing nodes** — drag a handle onto another node to create an
-  explicit edge between them.
-- **Edit edges** — hover an edge to reveal endpoint handles, then drag either
-  endpoint onto another node to reconnect it. Releasing outside any node deletes
-  the edge.
-- **Specific anchor targeting** — while reconnecting, the target node shows four
-  anchor dots at its edge midpoints. The dot nearest the pointer is highlighted,
-  so the edge lands on the chosen side rather than anywhere on the node.
-- **Stable anchors** — moving a node never re-picks which side an edge attaches
-  to. The edge follows its node, but its anchor side stays where it was set.
-- **Clean resting state** — endpoint circles are only shown while connecting or
-  rewiring, not on finished edges.
-- **Curved connectors** — edges are cubic Bézier curves that leave and enter a
-  node perpendicular to the middle of the anchor side.
-- **Drag to move** — reposition nodes freely on the canvas; edges follow.
-- **Multi-select** — drag on empty canvas to draw a marquee and select all
-  intersecting nodes and edges. Hold Shift, Ctrl, or Cmd while clicking to add
-  nodes or edges to the current selection.
-- **Move a selection** — drag any selected node to move the whole selected node
-  group; attached edges follow. The marquee uses the accent colour at low
-  opacity, selected nodes use a 3× status-colored border, selected edges use a
-  thicker dark stroke, and a dashed rectangle surrounds the full multi-selection.
-- **Delete a selection** — press `Delete` or `Backspace` to remove every
-  selected node and edge. Right-clicking either a node or an edge opens the same
-  themed context menu with a red trash action.
-- **Inline labels** — double-click a node to edit its label in place; Enter
-  commits, Escape cancels, and blur commits. While editing, the node keeps its
-  status background and uses the same 3× status-colored border as selection.
-  Node width grows to fit the full label while keeping the original 140px width
-  as the minimum.
-- **Node note panel** — the open panel always reflects the currently selected
-  node. Focusing a node opens a right-hand panel that overlays the canvas
-  without resizing it; creating a new node focuses it and opens the same panel.
-  On smaller screens the panel takes the full width. It includes a close button,
-  a live-synced title, a Learn tab, and a Quiz tab.
-- **Learn tab** — a block-by-block Jupyter-style markdown editor. Each block
-  shows an outline only on hover; double-click or press Enter to edit it. The
-  editing block splits source and live preview side by side, and Done returns
-  to the rendered block. Preview blocks expose a hover-only red Delete button
-  with a trash icon at the right; editing blocks show the same action in their
-  header. A final
-  invisible row reveals a plus/add-block action on hover; when the note is
-  blank, that row is always visible with “Click here to add new block.”
-  Supports headings, lists, task lists, quotes, fenced code, links, inline
-  code, bold, italic, highlights, strikethrough, and Obsidian-style LaTeX.
-- **LaTeX math** — inline `$...$` and block `$$ ... $$` formulas are rendered
-  with KaTeX in the markdown preview. Block math can span multiple lines.
-- **Study statuses** — each note is marked **To Do** (grey), **Doing** (blue),
-  or **Done** (green). The solid status color outlines the node, a pastel tint
-  fills it, and the text uses the matching deep color. A compact segmented
-  control beside the panel title changes the status live.
-- **Sample quizzes** — every node currently gets a three-question sample quiz
-  built from the node title. Options give immediate correct/incorrect feedback,
-  and the quiz can be reset.
-- **Local-only state** — the map lives in memory for the current session (no
-  persistence in this MVP).
+## Start here: web terms for Python developers
+
+If you know Python but not web development, these are the ideas the code uses:
+
+| Web term | Python comparison |
+| --- | --- |
+| **Frontend** | Code that runs in the browser. Here: React + TypeScript. |
+| **Backend** | Code that runs on a server. Here: FastAPI + Python. |
+| **HTTP API** | Functions exposed over URLs. `GET /api/mindmaps` is like calling `list_mindmaps()`, but over the network. |
+| **JSON** | A text format for nested dict/list data. Roughly `json.loads` / `json.dumps`, but every language understands it. |
+| **Endpoint** | One URL + HTTP method (`GET`, `POST`, `PUT`, `DELETE`). |
+| **React component** | A function that returns UI. Props are arguments; state is data that can trigger a re-render. |
+| **Hook** | A reusable function starting with `use` that lets components share stateful behavior. |
+| **TypeScript type** | Like a Python `TypedDict` for the editor. It is erased at runtime, so the backend validates too. |
+| **`fetch` / Promise** | The browser's HTTP client. A Promise is similar to an `asyncio` task; `await` waits for it. |
+| **SQLite** | A database stored in one file. No separate database server. |
+| **ORM** | Maps Python classes to tables/rows. Here: SQLAlchemy. |
+| **CORS** | Browser security rules for calling a backend on another origin. The Vite dev proxy avoids this in development. |
+
+## Features
+
+- **Mindmap canvas** — create nodes, drag them, and connect them with curved
+  edges. Drag from a side handle onto empty canvas to create a connected node.
+- **Multi-select** — marquee-select, move groups, and delete selections with
+  `Delete`/`Backspace`.
+- **Study status** — each node is **To Do** (grey), **Doing** (blue), or
+  **Done** (green). The node border and its anchor circles use the same color.
+- **Learn tab** — block-by-block markdown editing with live preview. Supports
+  headings, lists, task lists, quotes, code fences, links, inline formatting,
+  and Obsidian-style LaTeX (`$...$`, `$$...$$`).
+- **Quiz tab** — add multiple-choice questions, edit the question and answer
+  options, mark the correct option, delete questions/options, and check answers.
+- **Saved maps** — multiple maps, an editable title, a map picker, and
+  debounced autosave with a visible save status.
+- **Safe markdown** — the renderer builds React elements instead of injecting
+  raw HTML, and links with unsafe protocols are rendered as plain text.
 
 ## Stack
 
-| Layer    | Technology                                      |
-| -------- | ----------------------------------------------- |
-| Frontend | React 19 + Vite + TypeScript, Tailwind CSS, KaTeX |
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS, KaTeX |
+| Backend | Python 3.12, FastAPI, Pydantic, SQLAlchemy |
+| Database | SQLite (one file, `learnai.db`) |
+| Frontend tests | Vitest, jsdom, Testing Library |
+| Backend tests | pytest, FastAPI TestClient |
 
 ## Quick start
 
+### Option A: dev container
+
+Open the repository in its dev container. The `postCreateCommand` installs both
+Python and Node dependencies. Then run:
+
 ```bash
+./scripts/dev.sh
+```
+
+### Option B: local environment
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r backend/requirements-dev.txt
 npm --prefix frontend install
+./scripts/dev.sh
+```
+
+Open <http://localhost:5173>. The API runs on <http://localhost:8000>, and
+FastAPI's interactive API explorer is at <http://localhost:8000/docs>.
+
+You can also run the two servers separately:
+
+```bash
+# terminal 1
+cd backend
+../.venv/bin/uvicorn app.main:app --reload --port 8000
+
+# terminal 2
 npm --prefix frontend run dev
 ```
 
-Open <http://localhost:5173>.
+The Vite development server proxies `/api` to port 8000 (see
+`frontend/vite.config.ts`), so the browser can call the backend without CORS
+configuration.
+
+## Configuration
+
+Settings are environment variables read by `backend/app/config.py`:
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `LEARN_AI_DATABASE_URL` | `<repo>/learnai.db` | SQLAlchemy database URL. |
+| `LEARN_AI_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated browser origins allowed to call the API directly. |
+
+Copy `.env.example` to `.env` to override them locally. The dev container sets
+`LEARN_AI_DATABASE_URL` in `docker-compose.yml`. The database file is ignored by
+git.
+
+## How data flows
+
+```
+React graph state
+      │  toMindmapDocument()
+      ▼
+JSON document ── PUT /api/mindmaps/{id} ──► Pydantic validation
+      ▲                                             │
+      │                                             ▼
+frontend/src/persistence.ts                  SQLite mindmaps table
+      │                                             │
+      └──── fromMindmapDocument() ◄── GET /api/mindmaps/{id}
+```
+
+1. On page load, `useMindmapSync` asks for the map list and loads the remembered
+   map, the most recently updated map, or a new empty map.
+2. The JSON document is converted into the frontend's `Node`/`Link` objects and
+   copied into the graph reducer.
+3. Canvas, Learn, and Quiz edits update that graph state.
+4. `useMindmapAutosave` waits 800 ms after the last edit, then sends the whole
+   document with `PUT`.
+5. FastAPI validates it with Pydantic, stores it in SQLite, and returns the
+   saved resource with server timestamps.
+
+A full document replace keeps the API simple. Last write wins, which is fine for
+the current single-user setup.
+
+## JSON format (schema version 1)
+
+`GET /api/mindmaps/{id}` returns this shape:
+
+```json
+{
+  "schemaVersion": 1,
+  "id": "mm_7f3a9c2e",
+  "title": "Biology review",
+  "createdAt": "2026-11-16T10:00:00.000Z",
+  "updatedAt": "2026-11-16T10:42:11.000Z",
+  "nodes": [
+    {
+      "id": "n_1a2b3c4",
+      "label": "Cell respiration",
+      "status": "doing",
+      "x": 420,
+      "y": 220,
+      "width": 168,
+      "learn": {
+        "blocks": [
+          "## Overview\n\nGlycolysis happens in the cytosol.",
+          "- Inputs: glucose, NAD⁺\n- Outputs: pyruvate, ATP, NADH"
+        ]
+      },
+      "quiz": {
+        "questions": [
+          {
+            "id": "q_9d8e7f6",
+            "prompt": "Where does glycolysis take place?",
+            "options": ["Cytosol", "Mitochondrial matrix", "Nucleus", "Golgi apparatus"],
+            "answerIndex": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "n_5f6g7h8",
+      "label": "Krebs cycle",
+      "status": "todo",
+      "x": 700,
+      "y": 220,
+      "width": 140,
+      "learn": { "blocks": [""] },
+      "quiz": { "questions": [] }
+    }
+  ],
+  "links": [
+    {
+      "id": "l_2b3c4d5",
+      "from": "n_1a2b3c4",
+      "to": "n_5f6g7h8",
+      "fromSide": "right",
+      "toSide": "left"
+    }
+  ]
+}
+```
+
+`POST` and `PUT` bodies use the same document without `id`, `createdAt`, and
+`updatedAt`; the server owns those fields.
+
+### Field notes
+
+- `schemaVersion` — currently `1`. The backend rejects unknown versions.
+- `status` — `"todo"`, `"doing"`, or `"done"`.
+- `x`, `y`, `width` — canvas position and measured node width, in pixels.
+- `learn.blocks` — ordered markdown strings. Empty strings preserve blank
+  editor blocks.
+- `quiz.questions` — each question needs at least two options and a zero-based
+  `answerIndex` pointing at a valid option.
+- `fromSide` / `toSide` — `"top"`, `"right"`, `"bottom"`, or `"left"`. Storing
+  the side keeps an edge anchored when its node moves.
+- IDs are opaque strings, unique inside their collection.
+- Links must reference existing nodes, cannot connect a node to itself, and
+  cannot duplicate another connection.
+
+The generated JSON Schema is at [`docs/mindmap.schema.json`](docs/mindmap.schema.json),
+and a complete example is at
+[`backend/examples/mindmap.json`](backend/examples/mindmap.json).
+
+Regenerate the schema after changing the Pydantic models:
+
+```bash
+cd backend
+../.venv/bin/python -m app.schema_export
+```
+
+## API
+
+| Method | Path | Purpose | Success |
+| --- | --- | --- | --- |
+| `GET` | `/api/health` | Health check | `200` |
+| `GET` | `/api/mindmaps` | List map summaries | `200` |
+| `POST` | `/api/mindmaps` | Create a map | `201` |
+| `GET` | `/api/mindmaps/{id}` | Load one full map | `200` |
+| `PUT` | `/api/mindmaps/{id}` | Replace a map (autosave) | `200` |
+| `DELETE` | `/api/mindmaps/{id}` | Delete a map | `204` |
+
+Validation failures return `422` with details from FastAPI/Pydantic. Missing
+maps return `404`.
 
 ## Project layout
 
 ```
-frontend/src/
-  graph.ts          Domain types, geometry, edge view-model builder
-  interaction.ts    Pure hit-testing and target validation
-  markdown.tsx      Safe inline markdown renderer
-  previews.ts       Pure preview geometry builders
-  quiz.ts           Quiz schema and sample quiz generator
-  status.ts         Study status types and color palette
-  selectionBounds.ts Exact multi-selection bounds
-  state/            Reducer and graph state transitions
-  hooks/            Graph, selection, marquee, label-editing, and interaction controllers
-  components/       Presentational canvas, node, edge, panel, header, footer
+backend/
+  app/
+    main.py            FastAPI app, CORS, startup
+    config.py          Environment settings
+    database.py        SQLAlchemy engine and request-scoped session
+    models.py          mindmaps table
+    schemas.py         Pydantic validation models
+    documents.py       Row <-> API model conversion and timestamps
+    routers/
+      mindmaps.py      CRUD endpoints
+      health.py        /api/health
+    schema_export.py   Generates docs/mindmap.schema.json
+  tests/               pytest API and validation tests
+  examples/            Example JSON document
+
+frontend/
+  src/
+    api/               Typed fetch client and API document types
+    persistence.ts     JSON <-> graph-state conversion
+    mindmapLibrary.ts  localStorage helpers and map summaries
+    graph.ts           Domain types, node geometry, edge rendering
+    interaction.ts     Hit-testing and connection rules
+    markdown.tsx       Safe inline markdown renderer
+    quiz.ts            Quiz schema and pure question helpers
+    status.ts          Study statuses and colors
+    state/             Pure reducer and graph transitions
+    hooks/
+      useMindmapSync.ts     Load/create/switch maps, orchestrate saves
+      useMindmapAutosave.ts Debounced PUT queue and save status
+      useMindmapGraph.ts    Graph state and mutations
+      ...                   Selection, marquee, labels, pointer interaction
+    components/        Presentational React components
+    test/              Shared test fixtures and setup
+
+docs/mindmap.schema.json   Generated JSON Schema
+scripts/dev.sh             Run backend + frontend together
 ```
 
-Project-specific engineering rules are kept in `AGENTS.md`; every source file
-must stay under 300 lines.
+Source files stay under 300 lines. The project-specific rule and architecture
+map are in `AGENTS.md`.
 
-## Defining quizzes
+## Tests
 
-Quizzes are plain data:
+Run everything:
 
-```ts
-type Quiz = {
-  title: string
-  questions: {
-    id: string
-    prompt: string
-    options: string[]
-    answerIndex: number
-  }[]
-}
+```bash
+npm --prefix frontend run test
+cd backend && ../.venv/bin/python -m pytest
 ```
 
-`createSampleQuiz` in `frontend/src/quiz.ts` builds the placeholder three-item
-quiz used by every node. Replace that function (or back it with stored per-node
-quizzes) when real quiz authoring is added.
+The frontend suite uses Vitest + jsdom + Testing Library. It covers:
+
+- JSON serialization/deserialization and schema-version rejection
+- quiz helper rules and reducer transitions
+- hit-testing, connection rules, node geometry, and selection bounds
+- markdown rendering and unsafe-link handling
+- the quiz editor, header save states, and canvas overlays
+- the autosave debounce/queue and initial map-loading hook
+
+The backend suite uses a temporary SQLite database and FastAPI's TestClient. It
+covers CRUD, round-trip persistence of Learn/Quiz content, validation failures,
+the generated JSON Schema, and the example document.
+
+Other useful checks:
+
+```bash
+npm --prefix frontend run build
+npm --prefix frontend run lint
+cd backend && ../.venv/bin/ruff check .
+```
+
+## What is saved (and what is not)
+
+Saved: map title, nodes, positions, widths, statuses, Learn blocks, Quiz
+questions, links, and anchor sides.
+
+Not saved: current selection, open panel/tab, edits still inside the 800 ms
+autosave window when the tab closes, and quiz answer selections. Quiz answers
+are intentionally a temporary practice aid; only the questions themselves are
+part of the document.
 
 ## Design decisions
 
-### Architecture
+- **One JSON document per map.** The UI saves and loads a map as one unit, so a
+  single JSON column is simpler than separate node/block/question tables.
+- **Server-side validation.** TypeScript types disappear at runtime; Pydantic
+  enforces the real contract before anything is stored.
+- **Debounced full-document saves.** Dragging fires many state updates, so the
+  browser waits for quiet and sends one replacement request.
+- **No authentication.** This is a local development app. Do not expose it to
+  the public internet without adding authentication and authorization.
+- **SQLite for the first version.** No external database service is needed.
+  `Base.metadata.create_all()` creates the table; add Alembic before making
+  production table-schema changes.
 
-- **Frontend-only SPA:** The MVP goal is interaction (create/connect/drag), so a
-  server adds complexity without value. All state is held in React component
-  state; this keeps the app easy to run and reason about. Persistence (local
-  storage/export) is intentionally deferred.
-- **Small, responsibility-based modules:** Graph state lives in a pure reducer,
-  pointer behavior in dedicated hooks, geometry and hit-testing in pure helpers,
-  and rendering in presentational components. Every source file stays under 300
-  lines; the rule is documented in `AGENTS.md` as a project-specific system
-  instruction.
-- **Nodes and edges only:** Nodes are stored as
-  `{ id, label, blocks, status, x, y, width }`; all connections are explicit links stored as
-  `{ id, from, to, fromSide, toSide }`. There is no `parentId`, no derived tree
-  edge, and no root/child distinction. Deleting a node removes its incident
-  edges; other nodes remain untouched.
-- **One creation path for subsequent nodes:** Releasing a new connection on
-  empty canvas inserts a node at the pointer position (clamped to the visible
-  canvas) and creates an edge from the source. The source side comes from the
-  handle the drag started on; the new node’s side faces the source.
-- **Uniform edge editing:** All edges behave the same. Hovering an edge reveals
-  endpoint handles; dragging an endpoint updates that endpoint and its snapped
-  side, and releasing outside any node removes the edge. There is no special
-  reparenting behavior.
-- **Curved SVG canvas:** Nodes and edges render in one SVG layer sized to the
-  viewport. Connectors are cubic Bézier paths; the first and last control points
-  extend along the side normal, so outgoing and incoming tangents are
-  perpendicular to the anchor side while the middle of the path curves.
-- **Edge midpoint snapping:** Every endpoint snaps to the middle of one of the
-  four node sides, offset 10px outward from the node shape so edges and anchor
-  dots sit clear of the border. While dragging an endpoint, the target node
-  renders all four anchor dots and highlights the one nearest the pointer,
-  chosen with aspect-normalized node coordinates rather than the node as a
-  whole. Links persist both chosen sides (`fromSide` / `toSide`), so moving a
-  node does not automatically switch an edge to another side. Hovering a drop
-  target previews the snap point before release, and only an explicit endpoint
-  drag changes the anchor.
-- **Pointer-event dragging and connecting:** Dragging uses pointer events so
-  movement stays smooth and works with mouse/touch/pen. Connection drops are
-  hit-tested against node bounds, which makes targets reliable even as nodes
-  overlap. Edge endpoints also use a forgiving invisible hit path plus a short
-  hover grace period so moving from an edge to its handle does not dismiss it.
+## Troubleshooting
 
-### UI
-
-- **Theme:** Applied the provided visual direction — warm paper ground
-  `#e9e9e5` / alternate `#e1e0dd`, accent `#f5c518` for primary actions and
-  selection, ink text (`#000000` / `#1d1d1d`), sharp corners (`0px` radius),
-  hairline borders (`#cbcac7`), and a compact, utilitarian layout.
-- **Typography:** IBM Plex Sans for UI/display and IBM Plex Mono for small
-  labels/meta, matching the requested pairing and reinforcing a tool-like feel.
-- **One-page workspace:** A simple header plus a large canvas maximizes space for
-  the map. The header only carries delete; node creation happens on-canvas. The
-  empty state offers one “Create first node” action, and subsequent nodes come
-  from the edge-drag-to-empty flow. Labels are edited directly via
-  double-click rather than through a persistent form field.
-- **Label-sized nodes:** Labels are measured with the same 14px IBM Plex Sans
-  font used by the SVG text. A node grows from its 140px minimum width to fit
-  the full label, and edges use the measured width when attaching to side
-  midpoints.
-- **Overlay note panel:** Clicking a node without dragging opens a note panel
-  absolutely positioned over the right half of the canvas (full width on small
-  screens), so the canvas keeps its dimensions. The panel is driven by the
-  current selection, so changing nodes updates it in place. The panel uses the
-  paper/ink theme, sharp corners, a square close button, a live title field, and
-  Learn/Quiz tabs. Markdown blocks are stored on the node itself.
-- **Markdown blocks:** The Learn tab renders each block independently. Blocks
-  are transparent at rest and reveal a hairline outline on hover. A red Delete
-  button with a trash icon sits at the right edge on hover in preview mode,
-  while edit mode keeps it in the block header beside Done. Editing a block
-  switches only that block
-  to a source/live-preview split. The final add row is invisible until hover,
-  except in the blank-note state where it is the only visible call to action.
-  The renderer is line/block based and avoids injecting raw HTML. Inline math
-  uses `$...$`; display math uses a `$$` fence with multi-line support, matching
-  the common Obsidian structure.
-- **Quiz template:** Quizzes are a simple typed object (`title` plus questions
-  with stable ids, prompts, options, and a correct index). The sample generator
-  gives every node a three-item quiz for now, and the quiz view uses the accent
-  color for the correct option and red for an incorrect selection.
-- **Clear selection state:** Selected nodes triple their status-colored border
-  weight, and inline title editing uses the same thicker border while preserving
-  the node’s status background. Selected edges use a thicker dark stroke so the
-  active set is obvious. A dashed bounding box encloses the entire
-  multi-selection, while a marquee adds a translucent accent field during drag.
-  Group dragging captures each selected node’s starting position once, then
-  applies one shared delta so the selection moves together without drift.
-- **Selection-aware chrome:** The footer reports node/edge selection counts and
-  the available keyboard actions.
-- **Study status palette:** Status colors are defined once in `status.ts` and
-  applied consistently: solid outline, pastel background, deep text color, and a
-  matching active segment in the panel control. Selection thickens the node’s
-  status-colored border to three times its resting weight, so the palette stays
-  intact without an extra ring.
-- **Segmented status control:** The three status buttons share inner borders
-  and the group clips to a rounded outer shape, keeping adjacent segments flush
-  while the first and last outer corners are rounded. Inactive segments stay
-  neutral; the active segment takes its solid status color and a bold label.
-  The control sits beside the node title rather than taking its own row.
-- **Connection affordance:** Hovering a node reveals four small circular handles
-  10px outside the side midpoints. Each handle uses an outward-only half-disc hit
-  area, so the node body stays fully draggable and does not accidentally start
-  an edge. Dragging from a handle shows a dashed curved preview and a live
-  endpoint marker; moving within the same 36px threshold of a target anchor
-  shows its four anchor dots and snaps the preview to the specific side midpoint
-  before the link is dropped. Hovering blank canvas shows a dashed “New node”
-  ghost at the future node position.
-- **Rewire affordance:** Finished edges stay clean with no endpoint circles.
-  Hovering an edge reveals endpoint handles, and the edge being dragged is
-  replaced by a dashed preview so the new connection is clear. Endpoint hit
-  targets use a 36px radius, matching the target-anchor halo used when starting
-  a new edge. Hover, create, and rewire dots share a 4.5px radius with a 1px
-  outline. Dropping outside any node removes the edge.
-- **Edge treatment:** Edges use a single dashed dark-grey stroke with a
-  transparent outline — no halo, fill, or double stroke. The same dashed line
-  style is used for finished edges and drag previews, with anchor dots only
-  appearing while choosing a connection target.
-- **Direct manipulation:** Nodes are moved by dragging rather than through
-  forms, matching the mental model of arranging a mindmap on a board. New nodes
-  are added where an edge is dropped or where the canvas is double-clicked, not
-  from a separate “add child” form.
-
+- **"Could not load map"** — make sure the backend is running on port 8000 and
+  that `/api/health` returns `{"status":"ok"}`.
+- **"Save failed"** — the frontend keeps your local changes and offers Retry.
+  Check the backend terminal for validation or database errors.
+- **Start over** — stop the servers and delete `learnai.db`. The next request
+  creates a fresh database.
+- **Schema test fails** — regenerate `docs/mindmap.schema.json` with the
+  command above.
+- **Port already in use** — stop the old process or change the backend port in
+  `scripts/dev.sh` and the Vite proxy target.

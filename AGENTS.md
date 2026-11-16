@@ -9,7 +9,9 @@
   - pointer interaction state lives in the interaction hook
   - rendering components stay presentational
 - Reuse the existing theme tokens and visual language (paper/surface/accent/ink, sharp corners, IBM Plex).
-- Verify changes with `npm --prefix frontend run build` before finishing.
+- Write comments for a working Python developer who is new to TypeScript and web engineering. Explain hooks, HTTP/JSON, browser APIs, and test tooling where the code is not self-explanatory.
+- Add or update basic tests when behavior changes. Run `npm --prefix frontend run test` and `cd backend && ../.venv/bin/python -m pytest` before finishing.
+- Verify changes with `npm --prefix frontend run build` and `npm --prefix frontend run lint` before finishing.
 
 ## Architecture map
 
@@ -18,12 +20,20 @@
 - `frontend/src/markdown.tsx` — safe inline markdown renderer
 - `frontend/src/components/Latex.tsx` — KaTeX inline/block math renderer
 - `frontend/src/previews.ts` — pure preview geometry builders
-- `frontend/src/quiz.ts` — quiz schema and sample quiz generator
+- `frontend/src/quiz.ts` — quiz schema and pure question helpers
 - `frontend/src/status.ts` — study status types and color palette
 - `frontend/src/selectionBounds.ts` — exact multi-selection bounds
+- `frontend/src/persistence.ts` — JSON document <-> graph-state serialization
+- `frontend/src/mindmapLibrary.ts` — local-storage helpers and map summaries
+- `frontend/src/api/` — typed HTTP client and API document types
 - `frontend/src/state/` — pure reducer and state transitions
-- `frontend/src/hooks/` — graph, selection, marquee, edge-hover, label-editing, and pointer-interaction controllers
+- `frontend/src/hooks/` — graph, persistence, selection, marquee, edge-hover, label-editing, and pointer-interaction controllers
 - `frontend/src/components/` — presentational React components
+- `frontend/src/test/` — Vitest setup and shared fixtures
+- `backend/app/` — FastAPI app, SQLAlchemy models, Pydantic schemas, and routes
+- `backend/tests/` — pytest API, validation, and persistence tests
+- `docs/mindmap.schema.json` — generated JSON Schema for the document format
+- `scripts/dev.sh` — run the backend and frontend together
 
 ## Commits
 

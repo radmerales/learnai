@@ -1,3 +1,13 @@
+"""Generate the checked-in JSON Schema from the Pydantic models.
+
+Run from backend/:
+    ../.venv/bin/python -m app.schema_export
+
+A JSON Schema is a machine-readable description of a JSON document. Keeping it
+generated from the same models that validate requests prevents documentation
+and implementation from drifting apart.
+"""
+
 import json
 from pathlib import Path
 
@@ -16,6 +26,8 @@ def build_schema() -> dict:
 
 
 def render_schema() -> str:
+    # sort_keys makes the generated file deterministic, so CI/tests can compare
+    # it byte-for-byte.
     return json.dumps(build_schema(), indent=2, sort_keys=True) + "\n"
 
 
