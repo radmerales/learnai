@@ -83,8 +83,8 @@ export function MindmapNode({
                 cx={p.x}
                 cy={p.y}
                 r={active ? 7 : 5.5}
-                fill={active ? "#000000" : "#e1e0dd"}
-                stroke={active ? "#f5c518" : "#3f3e3e"}
+                fill={active ? status.outline : status.background}
+                stroke={status.outline}
                 strokeWidth={1}
               />
             )
@@ -111,8 +111,8 @@ export function MindmapNode({
                 cx={p.x}
                 cy={p.y}
                 r={HANDLE_R}
-                fill="#f5c518"
-                stroke="#000000"
+                fill={status.outline}
+                stroke={status.outline}
                 strokeWidth={1}
                 pointerEvents="none"
               />

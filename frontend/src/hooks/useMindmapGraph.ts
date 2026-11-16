@@ -20,6 +20,7 @@ export function useMindmapGraph() {
       id: uid(),
       label,
       blocks: [""],
+      questions: [],
       status: DEFAULT_NOTE_STATUS,
       x: point.x,
       y: point.y,
@@ -39,6 +40,10 @@ export function useMindmapGraph() {
 
   const setNodeBlocks = useCallback((id: string, blocks: string[]) => {
     dispatch({ type: "set-blocks", id, blocks })
+  }, [])
+
+  const setNodeQuestions = useCallback((id: string, questions: Node["questions"]) => {
+    dispatch({ type: "set-questions", id, questions })
   }, [])
 
   const setNodeStatus = useCallback((id: string, status: Node["status"]) => {
@@ -72,6 +77,7 @@ export function useMindmapGraph() {
     removeNode,
     renameNode,
     setNodeBlocks,
+    setNodeQuestions,
     setNodeStatus,
     moveNodes,
     addLink,

@@ -1,9 +1,11 @@
+import type { QuizQuestion } from "./quiz"
 import type { NoteStatus } from "./status"
 
 export type Node = {
   id: string
   label: string
   blocks: string[]
+  questions: QuizQuestion[]
   status: NoteStatus
   x: number
   y: number

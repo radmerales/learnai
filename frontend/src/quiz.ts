@@ -1,3 +1,5 @@
+import { uid } from "./graph"
+
 export type QuizQuestion = {
   id: string
   prompt: string
@@ -5,45 +7,44 @@ export type QuizQuestion = {
   answerIndex: number
 }
 
-export type Quiz = {
-  title: string
-  questions: QuizQuestion[]
+export const MIN_QUIZ_OPTIONS = 2
+export const DEFAULT_QUIZ_OPTIONS = 4
+
+/** New questions start with four empty MCQ options and the first marked correct. */
+export function createQuestion(): QuizQuestion {
+  return {
+    id: uid(),
+    prompt: "",
+    options: Array.from({ length: DEFAULT_QUIZ_OPTIONS }, () => ""),
+    answerIndex: 0,
+  }
+}
+
+export function updateOption(question: QuizQuestion, optionIndex: number, value: string): QuizQuestion {
+  return {
+    ...question,
+    options: question.options.map((option, index) => (index === optionIndex ? value : option)),
+  }
+}
+
+export function addOption(question: QuizQuestion): QuizQuestion {
+  return { ...question, options: [...question.options, ""] }
 }
 
 /**
- * Basic quiz template.
- *
- * To define a quiz, add questions with a stable `id`, a prompt, an options
- * array, and the zero-based index of the correct option. The sample below is
- * generated for every node until custom node quizzes are persisted.
+ * Remove an option while keeping `answerIndex` pointing at the same answer.
+ * Removing the correct option moves the mark to the nearest remaining option.
  */
-export function createSampleQuiz(nodeLabel: string): Quiz {
-  return {
-    title: `${nodeLabel} — sample quiz`,
-    questions: [
-      {
-        id: "q1",
-        prompt: "Which concept is this quiz attached to?",
-        options: [nodeLabel, "A deleted edge", "An unrelated note", "An empty canvas"],
-        answerIndex: 0,
-      },
-      {
-        id: "q2",
-        prompt: "What is the best next step after adding a node?",
-        options: [
-          "Write notes and connect related ideas",
-          "Delete all of its edges",
-          "Close the panel immediately",
-          "Ignore the node",
-        ],
-        answerIndex: 0,
-      },
-      {
-        id: "q3",
-        prompt: "Which panel tab holds the node's markdown notes?",
-        options: ["Learn", "Quiz", "Close", "Canvas"],
-        answerIndex: 0,
-      },
-    ],
+export function deleteOption(question: QuizQuestion, optionIndex: number): QuizQuestion {
+  if (question.options.length <= MIN_QUIZ_OPTIONS) return question
+
+  const options = question.options.filter((_, index) => index !== optionIndex)
+  let answerIndex = question.answerIndex
+  if (optionIndex < answerIndex) {
+    answerIndex -= 1
+  } else if (optionIndex === answerIndex) {
+    answerIndex = Math.min(answerIndex, options.length - 1)
   }
+
+  return { ...question, options, answerIndex }
 }

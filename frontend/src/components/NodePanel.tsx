@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import type { Node } from "../graph"
+import type { QuizQuestion } from "../quiz"
 import { NOTE_STATUSES, NOTE_STATUS_ORDER, type NoteStatus } from "../status"
 import { LearnTab } from "./LearnTab"
 import { NodeQuiz } from "./NodeQuiz"
@@ -29,10 +30,18 @@ type Props = {
   onClose: () => void
   onTitleChange: (title: string) => void
   onBlocksChange: (blocks: string[]) => void
+  onQuestionsChange: (questions: QuizQuestion[]) => void
   onStatusChange: (status: NoteStatus) => void
 }
 
-export function NodePanel({ node, onClose, onTitleChange, onBlocksChange, onStatusChange }: Props) {
+export function NodePanel({
+  node,
+  onClose,
+  onTitleChange,
+  onBlocksChange,
+  onQuestionsChange,
+  onStatusChange,
+}: Props) {
   const [tab, setTab] = useState<PanelTab>("learn")
 
   return (
@@ -122,7 +131,7 @@ export function NodePanel({ node, onClose, onTitleChange, onBlocksChange, onStat
         </div>
       ) : (
         <div id="node-quiz-panel" role="tabpanel" aria-label="Node quiz" className="min-h-0 flex-1">
-          <NodeQuiz key={node.id} nodeLabel={node.label} />
+          <NodeQuiz key={node.id} questions={node.questions} onChange={onQuestionsChange} />
         </div>
       )}
     </aside>

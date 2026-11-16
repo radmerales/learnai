@@ -1,22 +1,62 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 
-import { createSampleQuiz } from "../quiz"
+import { createQuestion, type QuizQuestion } from "../quiz"
+import { PlusIcon } from "./PlusIcon"
+import { QuizQuestionBlock } from "./QuizQuestionBlock"
 
 type Props = {
-  nodeLabel: string
+  questions: QuizQuestion[]
+  onChange: (questions: QuizQuestion[]) => void
 }
 
-export function NodeQuiz({ nodeLabel }: Props) {
-  const quiz = useMemo(() => createSampleQuiz(nodeLabel), [nodeLabel])
+export function NodeQuiz({ questions, onChange }: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [answers, setAnswers] = useState<Record<string, number>>({})
   const answeredCount = Object.keys(answers).length
 
+  function addQuestion() {
+    const question = createQuestion()
+    onChange([...questions, question])
+    setEditingId(question.id)
+  }
+
+  function updateQuestion(next: QuizQuestion) {
+    onChange(questions.map((question) => (question.id === next.id ? next : question)))
+  }
+
+  function deleteQuestion(id: string) {
+    onChange(questions.filter((question) => question.id !== id))
+    setEditingId(null)
+    setAnswers((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+  }
+
+  if (questions.length === 0) {
+    return (
+      <div className="h-full overflow-y-auto px-3 py-3">
+        <button
+          type="button"
+          onClick={addQuestion}
+          className="flex w-full items-center justify-center gap-2 border border-hairline px-3 py-3 text-center font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:border-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        >
+          <PlusIcon />
+          Click here to add a new question
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className="h-full overflow-y-auto px-5 py-4">
-      <div className="flex items-baseline justify-between gap-3">
+    <div className="h-full overflow-y-auto px-3 py-3">
+      <div className="flex items-baseline justify-between gap-3 px-2 pb-3">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink">Sample quiz</p>
-          <p className="mt-1 text-sm text-[#3f3e3e]">A three-item placeholder for this node.</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink">
+            Multiple choice
+          </p>
+          <p className="mt-1 text-sm text-[#3f3e3e]">Add questions, then pick one answer per question.</p>
         </div>
         {answeredCount > 0 && (
           <button
@@ -29,57 +69,36 @@ export function NodeQuiz({ nodeLabel }: Props) {
         )}
       </div>
 
-      <ol className="mt-5 space-y-6">
-        {quiz.questions.map((question, questionIndex) => {
-          const answer = answers[question.id]
-          const answered = answer !== undefined
+      <div className="space-y-2">
+        {questions.map((question, index) => (
+          <QuizQuestionBlock
+            key={question.id}
+            question={question}
+            index={index}
+            editing={editingId === question.id}
+            answer={answers[question.id]}
+            onChange={updateQuestion}
+            onAnswer={(optionIndex) =>
+              setAnswers((prev) => ({ ...prev, [question.id]: optionIndex }))
+            }
+            onEdit={() => setEditingId(question.id)}
+            onDone={() => setEditingId(null)}
+            onDelete={() => deleteQuestion(question.id)}
+          />
+        ))}
+      </div>
 
-          return (
-            <li key={question.id}>
-              <p className="text-sm font-medium leading-5 text-ink">
-                <span className="mr-2 font-mono text-xs text-mutedink">{questionIndex + 1}.</span>
-                {question.prompt}
-              </p>
-
-              <div className="mt-3 space-y-2">
-                {question.options.map((option, optionIndex) => {
-                  const isCorrectAnswer = answered && optionIndex === question.answerIndex
-                  const isWrongPick = answered && answer === optionIndex && optionIndex !== question.answerIndex
-                  const tone = isCorrectAnswer
-                    ? "border-ink bg-accent text-accentink"
-                    : isWrongPick
-                      ? "border-red-700 bg-red-600 text-white"
-                      : "border-hairline bg-paper text-ink enabled:hover:bg-surface"
-
-                  return (
-                    <button
-                      key={optionIndex}
-                      type="button"
-                      disabled={answered}
-                      aria-pressed={answer === optionIndex}
-                      onClick={() => setAnswers((prev) => ({ ...prev, [question.id]: optionIndex }))}
-                      className={`w-full border px-3 py-2 text-left text-sm leading-5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink disabled:cursor-default ${tone}`}
-                    >
-                      {option}
-                    </button>
-                  )
-                })}
-              </div>
-
-              {answered && (
-                <p
-                  aria-live="polite"
-                  className="mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink"
-                >
-                  {answer === question.answerIndex
-                    ? "Correct"
-                    : `Correct answer: ${question.options[question.answerIndex]}`}
-                </p>
-              )}
-            </li>
-          )
-        })}
-      </ol>
+      <div className="group mt-2 border border-transparent hover:border-hairline">
+        <button
+          type="button"
+          aria-label="Add quiz question"
+          onClick={addQuestion}
+          className="flex h-10 w-full items-center justify-center gap-2 px-3 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink opacity-0 hover:text-ink focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink group-hover:opacity-100"
+        >
+          <PlusIcon />
+          Add question
+        </button>
+      </div>
     </div>
   )
 }
