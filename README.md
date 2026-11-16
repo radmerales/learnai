@@ -47,10 +47,10 @@ dragging a connection from a node’s side handle.
   without resizing it; creating a new node focuses it and opens the same panel.
   On smaller screens the panel takes the full width. It includes a close button,
   a live-synced title, editable node contents, and a Quiz tab.
-- **Study statuses** — each note is marked **To do** (grey), **Learn** (blue),
-  **Quiz** (purple), or **Master** (green). The solid status color outlines the
-  node, a pastel tint fills it, and the text uses the matching deep color. A
-  segmented control in the panel changes the status live.
+- **Study statuses** — each note is marked **To Do** (grey), **Doing** (blue),
+  or **Done** (green). The solid status color outlines the node, a pastel tint
+  fills it, and the text uses the matching deep color. A compact segmented
+  control beside the panel title changes the status live.
 - **Sample quizzes** — every node currently gets a three-question sample quiz
   built from the node title. Options give immediate correct/incorrect feedback,
   and the quiz can be reset.
@@ -192,9 +192,10 @@ quizzes) when real quiz authoring is added.
   applied consistently: solid outline, pastel background, deep text color, and a
   matching active segment in the panel control. Selection adds an accent ring
   around the node so the status palette stays intact.
-- **Segmented status control:** The four status buttons share inner borders and
-  the group clips to a rounded outer shape, keeping adjacent segments flush
-  while the first and last outer corners are rounded.
+- **Segmented status control:** The three status buttons share inner borders
+  and the group clips to a rounded outer shape, keeping adjacent segments flush
+  while the first and last outer corners are rounded. The control sits beside
+  the node title rather than taking its own row.
 - **Connection affordance:** Hovering a node reveals four small circular handles
   10px outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start

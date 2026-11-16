@@ -41,12 +41,41 @@ export function NodePanel({ node, onClose, onTitleChange, onContentChange, onSta
     >
       <div className="flex items-start justify-between gap-4 border-b border-hairline px-5 py-4">
         <div className="min-w-0 flex-1">
-          <input
-            aria-label="Node title"
-            value={node.label}
-            onChange={(e) => onTitleChange(e.target.value)}
-            className="mt-2 w-full border-b border-transparent bg-transparent text-2xl font-semibold leading-tight text-ink outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              aria-label="Node title"
+              value={node.label}
+              onChange={(e) => onTitleChange(e.target.value)}
+              className="min-w-0 flex-1 border-b border-transparent bg-transparent text-2xl font-semibold leading-tight text-ink outline-none focus:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink"
+            />
+            <div
+              role="group"
+              aria-label="Note status"
+              className="inline-flex shrink-0 overflow-hidden rounded-md border border-ink"
+            >
+              {NOTE_STATUS_ORDER.map((status, index) => {
+                const style = NOTE_STATUSES[status]
+                const active = node.status === status
+                return (
+                  <button
+                    key={status}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => onStatusChange(status)}
+                    style={{
+                      backgroundColor: active ? style.outline : style.background,
+                      color: active ? "#ffffff" : style.text,
+                    }}
+                    className={`${
+                      index < NOTE_STATUS_ORDER.length - 1 ? "border-r border-hairline" : ""
+                    } px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink`}
+                  >
+                    {style.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
         </div>
         <button
           type="button"
@@ -56,33 +85,6 @@ export function NodePanel({ node, onClose, onTitleChange, onContentChange, onSta
         >
           <CloseIcon />
         </button>
-      </div>
-
-      <div className="flex flex-wrap items-center gap-3 border-b border-hairline px-5 py-3">
-        <span className="font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink">Status</span>
-        <div role="group" aria-label="Note status" className="inline-flex overflow-hidden rounded-md border border-ink">
-          {NOTE_STATUS_ORDER.map((status, index) => {
-            const style = NOTE_STATUSES[status]
-            const active = node.status === status
-            return (
-              <button
-                key={status}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onStatusChange(status)}
-                style={{
-                  backgroundColor: active ? style.outline : style.background,
-                  color: active ? "#ffffff" : style.text,
-                }}
-                className={`${
-                  index < NOTE_STATUS_ORDER.length - 1 ? "border-r border-hairline" : ""
-                } px-2.5 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink`}
-              >
-                {style.label}
-              </button>
-            )
-          })}
-        </div>
       </div>
 
       <div role="tablist" aria-label="Node details sections" className="flex border-b border-hairline px-5">
