@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useReducer, useRef } from "react"
 
-import { uid, type Link, type Node, type Point } from "../graph"
+import { measureNodeWidth, uid, type Link, type Node, type Point } from "../graph"
 import { initialMindmapState, mindmapReducer } from "../state/mindmapReducer"
 
 export function useMindmapGraph() {
@@ -14,11 +14,13 @@ export function useMindmapGraph() {
   }, [state.nodes])
 
   const addNode = useCallback((point: Point) => {
+    const label = `Node ${labelCounter.current++}`
     const node: Node = {
       id: uid(),
-      label: `Node ${labelCounter.current++}`,
+      label,
       x: point.x,
       y: point.y,
+      width: measureNodeWidth(label),
     }
     dispatch({ type: "add-node", node })
     return node
@@ -29,7 +31,7 @@ export function useMindmapGraph() {
   }, [])
 
   const renameNode = useCallback((id: string, label: string) => {
-    dispatch({ type: "rename", id, label })
+    dispatch({ type: "rename", id, label, width: measureNodeWidth(label) })
   }, [])
 
   const moveNode = useCallback((id: string, x: number, y: number) => {

@@ -1,4 +1,4 @@
-import { NODE_H, NODE_W, type Node } from "../graph"
+import { NODE_H, type Node } from "../graph"
 import type { Preview } from "../interaction"
 import { EdgeStroke } from "./EdgeStroke"
 
@@ -28,9 +28,9 @@ export function EdgePreview({ ghostNode, connectPreview, edgePreview }: Props) {
       {ghostNode && (
         <g pointerEvents="none">
           <rect
-            x={ghostNode.x - NODE_W / 2}
+            x={ghostNode.x - ghostNode.width / 2}
             y={ghostNode.y - NODE_H / 2}
-            width={NODE_W}
+            width={ghostNode.width}
             height={NODE_H}
             fill="#e1e0dd"
             stroke="#3f3e3e"

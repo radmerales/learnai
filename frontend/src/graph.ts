@@ -3,6 +3,7 @@ export type Node = {
   label: string
   x: number
   y: number
+  width: number
 }
 
 export type Side = "top" | "right" | "bottom" | "left"
@@ -33,6 +34,29 @@ export const NODE_H = 44
 export const HANDLE_R = 5
 export const SIDES: Side[] = ["top", "right", "bottom", "left"]
 
+const NODE_TEXT_FONT = '14px "IBM Plex Sans", sans-serif'
+const NODE_TEXT_PADDING = 32
+
+let measureContext: CanvasRenderingContext2D | null | undefined
+
+function getMeasureContext() {
+  if (measureContext !== undefined) return measureContext
+  if (typeof document === "undefined") {
+    measureContext = null
+    return measureContext
+  }
+  measureContext = document.createElement("canvas").getContext("2d")
+  return measureContext
+}
+
+/** Grow the node from its 140px minimum until the single-line label fits. */
+export function measureNodeWidth(label: string): number {
+  const context = getMeasureContext()
+  if (!context) return Math.max(NODE_W, label.length * 8 + NODE_TEXT_PADDING)
+  context.font = NODE_TEXT_FONT
+  return Math.max(NODE_W, Math.ceil(context.measureText(label).width + NODE_TEXT_PADDING))
+}
+
 export function uid() {
   return Math.random().toString(36).slice(2, 9)
 }
@@ -42,11 +66,11 @@ export function sidePoint(node: Node, side: Side): Point {
     case "top":
       return { x: node.x, y: node.y - NODE_H / 2 }
     case "right":
-      return { x: node.x + NODE_W / 2, y: node.y }
+      return { x: node.x + node.width / 2, y: node.y }
     case "bottom":
       return { x: node.x, y: node.y + NODE_H / 2 }
     case "left":
-      return { x: node.x - NODE_W / 2, y: node.y }
+      return { x: node.x - node.width / 2, y: node.y }
   }
 }
 
@@ -63,14 +87,14 @@ export function sideNormal(side: Side): Point {
   }
 }
 
-export function localHandlePoint(side: Side): Point {
+export function localHandlePoint(width: number, side: Side): Point {
   switch (side) {
     case "top":
-      return { x: NODE_W / 2, y: 0 }
+      return { x: width / 2, y: 0 }
     case "right":
-      return { x: NODE_W, y: NODE_H / 2 }
+      return { x: width, y: NODE_H / 2 }
     case "bottom":
-      return { x: NODE_W / 2, y: NODE_H }
+      return { x: width / 2, y: NODE_H }
     case "left":
       return { x: 0, y: NODE_H / 2 }
   }
@@ -89,7 +113,7 @@ export function nearestSide(from: Node, to: Node): Side {
  * just because the node is rectangular.
  */
 export function sideTowardPoint(node: Node, point: Point): Side {
-  const dx = (point.x - node.x) / (NODE_W / 2)
+  const dx = (point.x - node.x) / (node.width / 2)
   const dy = (point.y - node.y) / (NODE_H / 2)
   if (Math.abs(dx) >= Math.abs(dy)) return dx >= 0 ? "right" : "left"
   return dy >= 0 ? "bottom" : "top"

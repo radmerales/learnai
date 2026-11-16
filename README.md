@@ -27,7 +27,8 @@ dragging a connection from a node’s side handle.
   node perpendicular to the middle of the anchor side.
 - **Drag to move** — reposition nodes freely on the canvas; edges follow.
 - **Inline labels** — double-click a node to edit its label in place; Enter
-  commits, Escape cancels, and blur commits.
+  commits, Escape cancels, and blur commits. Node width grows to fit the full
+  label while keeping the original 140px width as the minimum.
 - **Local-only state** — the map lives in memory for the current session (no
   persistence in this MVP).
 
@@ -74,7 +75,7 @@ must stay under 300 lines.
   and rendering in presentational components. Every source file stays under 300
   lines; the rule is documented in `AGENTS.md` as a project-specific system
   instruction.
-- **Nodes and edges only:** Nodes are stored as `{ id, label, x, y }`; all
+- **Nodes and edges only:** Nodes are stored as `{ id, label, x, y, width }`; all
   connections are explicit links stored as
   `{ id, from, to, fromSide, toSide }`. There is no `parentId`, no derived tree
   edge, and no root/child distinction. Deleting a node removes its incident
@@ -118,6 +119,10 @@ must stay under 300 lines.
   empty state offers one “Create first node” action, and subsequent nodes come
   from the edge-drag-to-empty flow. Labels are edited directly via
   double-click rather than through a persistent form field.
+- **Label-sized nodes:** Labels are measured with the same 14px IBM Plex Sans
+  font used by the SVG text. A node grows from its 140px minimum width to fit
+  the full label, and edges use the measured width when attaching to side
+  midpoints.
 - **Clear selection state:** The selected node uses the accent color so the
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.

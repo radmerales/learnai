@@ -13,7 +13,7 @@ export const initialMindmapState: MindmapState = {
 export type MindmapAction =
   | { type: "add-node"; node: Node }
   | { type: "remove-node"; id: string }
-  | { type: "rename"; id: string; label: string }
+  | { type: "rename"; id: string; label: string; width: number }
   | { type: "move-node"; id: string; x: number; y: number }
   | { type: "add-link"; link: Link }
   | { type: "update-link"; id: string; patch: Partial<Pick<Link, "from" | "to" | "fromSide" | "toSide">> }
@@ -34,7 +34,9 @@ export function mindmapReducer(state: MindmapState, action: MindmapAction): Mind
     case "rename":
       return {
         ...state,
-        nodes: state.nodes.map((n) => (n.id === action.id ? { ...n, label: action.label } : n)),
+        nodes: state.nodes.map((n) =>
+          n.id === action.id ? { ...n, label: action.label, width: action.width } : n,
+        ),
       }
 
     case "move-node":

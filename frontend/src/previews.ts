@@ -1,4 +1,4 @@
-import { curvePath, nearestSide, sideFromVector, sidePoint, type Node, type Point } from "./graph"
+import { NODE_W, curvePath, nearestSide, sideFromVector, sidePoint, type Node, type Point } from "./graph"
 import type { ConnectDrag, EdgeDrag, Preview } from "./interaction"
 
 export function buildGhostNode(connect: ConnectDrag | null, point: Point | null, hoverNode: Node | null): Node | null {
@@ -8,6 +8,7 @@ export function buildGhostNode(connect: ConnectDrag | null, point: Point | null,
     label: "New node",
     x: point.x,
     y: point.y,
+    width: NODE_W,
   }
 }
 

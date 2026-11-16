@@ -1,5 +1,4 @@
-import type { Node } from "../graph"
-import { NODE_H, NODE_W } from "../graph"
+import { NODE_H, type Node } from "../graph"
 
 type Props = {
   node: Node
@@ -30,9 +29,9 @@ export function InlineNodeEditor({ node, value, onChange, onCommit, onCancel }: 
         }
       }}
       style={{
-        left: node.x - NODE_W / 2,
+        left: node.x - node.width / 2,
         top: node.y - NODE_H / 2,
-        width: NODE_W,
+        width: node.width,
         height: NODE_H,
       }}
       className="absolute z-10 border-2 border-ink bg-accent px-2 text-center font-sans text-sm text-accentink outline-none focus:ring-2 focus:ring-ink"

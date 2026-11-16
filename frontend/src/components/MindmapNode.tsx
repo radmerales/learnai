@@ -1,6 +1,6 @@
 import type { PointerEvent } from "react"
 
-import { HANDLE_R, NODE_H, NODE_W, SIDES, localHandlePoint, type Node, type Side } from "../graph"
+import { HANDLE_R, NODE_H, SIDES, localHandlePoint, type Node, type Side } from "../graph"
 
 type Props = {
   node: Node
@@ -35,7 +35,7 @@ export function MindmapNode({
 
   return (
     <g
-      transform={`translate(${node.x - NODE_W / 2}, ${node.y - NODE_H / 2})`}
+      transform={`translate(${node.x - node.width / 2}, ${node.y - NODE_H / 2})`}
       onPointerDown={(e) => onPointerDown(e, node.id)}
       onPointerEnter={() => onPointerEnter(node.id)}
       onPointerLeave={() => onPointerLeave(node.id)}
@@ -46,7 +46,7 @@ export function MindmapNode({
       className="cursor-grab active:cursor-grabbing"
     >
       <rect
-        width={NODE_W}
+        width={node.width}
         height={NODE_H}
         fill={filled ? "#f5c518" : "#e1e0dd"}
         stroke={filled ? "#000000" : "#cbcac7"}
@@ -56,21 +56,21 @@ export function MindmapNode({
 
       {!editing && (
         <text
-          x={NODE_W / 2}
+          x={node.width / 2}
           y={NODE_H / 2 + 5}
           textAnchor="middle"
           fontSize="14"
           fontFamily="IBM Plex Sans, sans-serif"
           fill={filled ? "#040404" : "#000000"}
         >
-          {node.label.length > 16 ? node.label.slice(0, 15) + "…" : node.label}
+          {node.label}
         </text>
       )}
 
       {showAnchors && (
         <g pointerEvents="none">
           {SIDES.map((side) => {
-            const p = localHandlePoint(side)
+            const p = localHandlePoint(node.width, side)
             const active = side === anchorSide
             return (
               <circle
@@ -90,7 +90,7 @@ export function MindmapNode({
       {showHandles && (
         <g>
           {SIDES.map((side) => {
-            const p = localHandlePoint(side)
+            const p = localHandlePoint(node.width, side)
             return (
               <g key={side}>
                 <circle

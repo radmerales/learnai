@@ -25,7 +25,7 @@ export type Preview = { path: string; start: Point; end: Point }
 export function hitTestNode(nodes: Node[], p: Point): Node | null {
   for (let i = nodes.length - 1; i >= 0; i--) {
     const n = nodes[i]
-    if (Math.abs(p.x - n.x) <= NODE_W / 2 && Math.abs(p.y - n.y) <= NODE_H / 2) {
+    if (Math.abs(p.x - n.x) <= n.width / 2 && Math.abs(p.y - n.y) <= NODE_H / 2) {
       return n
     }
   }
