@@ -6,6 +6,8 @@ import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapGraph } from "../hooks/useMindmapGraph"
 import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
 import { useMindmapSelection } from "../hooks/useMindmapSelection"
+import { useMindmapSync } from "../hooks/useMindmapSync"
+import { CanvasStatusOverlay } from "./CanvasStatusOverlay"
 import { InlineNodeEditor } from "./InlineNodeEditor"
 import { ContextMenu } from "./ContextMenu"
 import { MindmapCanvas } from "./MindmapCanvas"
@@ -24,6 +26,13 @@ type ContextMenuState = {
 
 export function MindmapPage() {
   const graph = useMindmapGraph()
+  // `onLoad` is how loaded JSON enters the graph reducer; the sync hook also
+  // reads nodes/links so it knows when the document has changed.
+  const sync = useMindmapSync({
+    nodes: graph.nodes,
+    links: graph.links,
+    onLoad: graph.replaceState,
+  })
   const selection = useMindmapSelection()
   const editing = useLabelEditing({ byId: graph.byId, renameNode: graph.renameNode })
   const { cancelEditing } = editing
@@ -41,6 +50,12 @@ export function MindmapPage() {
   } = selection
   const { removeNode, removeLink, moveNodes } = graph
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
+
+  // A map switch replaces every node ID, so old selections no longer point at
+  // real nodes. Clearing them also closes the note panel.
+  useEffect(() => {
+    clearSelection()
+  }, [clearSelection, sync.currentId])
 
   const edges = useMemo(
     () => buildRenderedEdges(graph.links, graph.byId),
@@ -116,6 +131,14 @@ export function MindmapPage() {
     focusNode(node.id)
   }
 
+  function handleDeleteMap() {
+    if (!sync.currentId) return
+    const label = sync.title.trim() || "Untitled mindmap"
+    if (window.confirm(`Delete "${label}"? This cannot be undone.`)) {
+      void sync.deleteMap(sync.currentId)
+    }
+  }
+
   function handleNodeDoubleClick(node: Node) {
     selectNode(node.id)
     editing.startEditing(node)
@@ -160,25 +183,28 @@ export function MindmapPage() {
 
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
-      <MindmapHeader />
+      <MindmapHeader
+        title={sync.title}
+        maps={sync.summaries}
+        currentMapId={sync.currentId}
+        saveStatus={sync.saveStatus}
+        saveError={sync.saveError}
+        loading={sync.loading}
+        onTitleChange={sync.setTitle}
+        onOpenMap={(id) => void sync.openMap(id)}
+        onNewMap={() => void sync.newMap()}
+        onDeleteMap={handleDeleteMap}
+        onRetrySave={sync.retrySave}
+      />
 
       <div className="relative flex-1 overflow-hidden">
-        {graph.nodes.length === 0 && (
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <div className="pointer-events-auto border border-hairline bg-surface px-6 py-5 text-center">
-              <p className="font-medium">Empty canvas</p>
-              <p className="mt-1 max-w-xs text-sm text-[#3f3e3e]">
-                Start with one node, then drag from its edge handles to grow the map.
-              </p>
-              <button
-                onClick={handleCreateFirstNode}
-                className="mt-4 border border-ink bg-accent px-3 py-2 text-sm font-medium text-accentink hover:brightness-95"
-              >
-                Create first node
-              </button>
-            </div>
-          </div>
-        )}
+        <CanvasStatusOverlay
+          loading={sync.loading}
+          error={sync.loadError}
+          isEmpty={graph.nodes.length === 0}
+          onRetry={() => void sync.reload()}
+          onCreateFirstNode={handleCreateFirstNode}
+        />
 
         <MindmapCanvas
           nodes={graph.nodes}

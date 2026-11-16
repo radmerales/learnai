@@ -66,6 +66,7 @@ export function mindmapReducer(state: MindmapState, action: MindmapAction): Mind
       }
 
     case "replace":
+      // Loading a saved map replaces the entire graph in one transition.
       return { nodes: action.nodes, links: action.links }
 
     case "move-nodes": {

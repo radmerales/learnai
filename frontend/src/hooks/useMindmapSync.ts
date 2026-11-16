@@ -5,26 +5,18 @@ import {
   deleteMindmap,
   getMindmap,
   listMindmaps,
-  saveMindmap,
 } from "../api/mindmaps"
-import type { MindmapDocument, MindmapResource, MindmapSummary } from "../api/types"
+import type { MindmapResource, MindmapSummary } from "../api/types"
 import type { Link, Node } from "../graph"
+import { errorMessage } from "../errors"
+import { readRememberedId, rememberId, summarize } from "../mindmapLibrary"
 import {
   UNTITLED_MINDMAP,
   emptyMindmap,
   fromMindmapDocument,
   toMindmapDocument,
-  type SaveStatus,
 } from "../persistence"
-
-const LAST_MAP_KEY = "learnai.lastMindmapId"
-const AUTOSAVE_DELAY_MS = 800
-
-type Snapshot = {
-  id: string | null
-  json: string
-  document: MindmapDocument
-}
+import { useMindmapAutosave } from "./useMindmapAutosave"
 
 type Options = {
   nodes: Node[]
@@ -32,66 +24,33 @@ type Options = {
   onLoad: (nodes: Node[], links: Link[]) => void
 }
 
-function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : "Something went wrong"
-}
-
-function summarize(resource: MindmapResource): MindmapSummary {
-  return {
-    id: resource.id,
-    title: resource.title,
-    createdAt: resource.createdAt,
-    updatedAt: resource.updatedAt,
-  }
-}
-
-function readRememberedId(): string | null {
-  try {
-    return window.localStorage.getItem(LAST_MAP_KEY)
-  } catch {
-    return null
-  }
-}
-
-function rememberId(id: string | null) {
-  try {
-    if (id) {
-      window.localStorage.setItem(LAST_MAP_KEY, id)
-    } else {
-      window.localStorage.removeItem(LAST_MAP_KEY)
-    }
-  } catch {
-    // Private browsing or storage policies can disable localStorage.
-  }
-}
-
+/**
+ * Connects graph state to the HTTP API.
+ *
+ * React state (useState) drives rendering. Refs (useRef) hold values that
+ * async callbacks need to read later, such as "which map is open right now" —
+ * changing a ref does not tell React to re-render, which is exactly what we
+ * want for bookkeeping values.
+ *
+ * The flow is:
+ *   1. On mount, ask the API for the map list.
+ *   2. Load one map (or create an empty one) and copy it into graph state.
+ *   3. Every edit changes `document`; useMindmapAutosave sends it after a pause.
+ *   4. Map switches flush the current save before loading the next map.
+ */
 export function useMindmapSync({ nodes, links, onLoad }: Options) {
   const [summaries, setSummaries] = useState<MindmapSummary[]>([])
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [title, setTitleState] = useState(UNTITLED_MINDMAP)
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
-  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle")
-  const [saveError, setSaveError] = useState<string | null>(null)
 
   const onLoadRef = useRef(onLoad)
   const currentIdRef = useRef<string | null>(null)
   const summariesRef = useRef<MindmapSummary[]>([])
-  const lastSavedRef = useRef<{ id: string; json: string } | null>(null)
-  const saveChainRef = useRef<Promise<void>>(Promise.resolve())
-  const autosaveTimerRef = useRef<number | null>(null)
 
-  const document = useMemo(
-    () => toMindmapDocument(title, nodes, links),
-    [title, nodes, links],
-  )
-  const documentJson = useMemo(() => JSON.stringify(document), [document])
-  const latestRef = useRef<Snapshot>({
-    id: currentId,
-    json: documentJson,
-    document,
-  })
-
+  // Keep refs in sync after each render. Effects run after React commits the
+  // UI, so event handlers and timers can read the newest values.
   useEffect(() => {
     onLoadRef.current = onLoad
   }, [onLoad])
@@ -100,81 +59,65 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
     summariesRef.current = summaries
   }, [summaries])
 
-  useEffect(() => {
-    latestRef.current = { id: currentId, json: documentJson, document }
-  }, [currentId, document, documentJson])
+  // Convert the graph into the JSON document shape the API understands.
+  // useMemo avoids rebuilding the object when unrelated state changes.
+  const document = useMemo(
+    () => toMindmapDocument(title, nodes, links),
+    [title, nodes, links],
+  )
+  const documentJson = useMemo(() => JSON.stringify(document), [document])
 
-  const applyResource = useCallback((resource: MindmapResource) => {
-    const loaded = fromMindmapDocument(resource)
-    onLoadRef.current(loaded.nodes, loaded.links)
-
-    const normalized = toMindmapDocument(resource.title, loaded.nodes, loaded.links)
-    currentIdRef.current = resource.id
-    setCurrentId(resource.id)
-    setTitleState(resource.title)
-    lastSavedRef.current = { id: resource.id, json: JSON.stringify(normalized) }
-    setSaveStatus("saved")
-    setSaveError(null)
-    rememberId(resource.id)
-  }, [])
-
-  const saveSnapshot = useCallback((snapshot: Snapshot): Promise<boolean> => {
-    const id = snapshot.id
-    if (!id) return Promise.resolve(true)
-
-    const run = async (): Promise<boolean> => {
-      const saved = lastSavedRef.current
-      if (saved && saved.id === id && saved.json === snapshot.json) return true
-
-      if (currentIdRef.current === id) {
-        setSaveStatus("saving")
-        setSaveError(null)
-      }
-
-      try {
-        const resource = await saveMindmap(id, snapshot.document)
-        lastSavedRef.current = { id, json: snapshot.json }
-        setSummaries((previous) =>
-          previous.map((item) => (item.id === resource.id ? summarize(resource) : item)),
-        )
-
-        if (currentIdRef.current === id) {
-          const latest = latestRef.current
-          setSaveStatus(
-            latest.id === id && latest.json !== snapshot.json ? "unsaved" : "saved",
-          )
-        }
-        return true
-      } catch (error) {
-        if (currentIdRef.current === id) {
-          setSaveStatus("error")
-          setSaveError(messageOf(error))
-        }
-        return false
-      }
-    }
-
-    const result = saveChainRef.current.then(run, run)
-    saveChainRef.current = result.then(
-      () => undefined,
-      () => undefined,
+  const handleSaved = useCallback((resource: MindmapResource) => {
+    setSummaries((previous) =>
+      previous.map((item) => (item.id === resource.id ? summarize(resource) : item)),
     )
-    return result
   }, [])
 
-  const flushLatest = useCallback((): Promise<boolean> => {
-    const snapshot = latestRef.current
-    if (!snapshot.id) return Promise.resolve(true)
-    return saveSnapshot(snapshot)
-  }, [saveSnapshot])
+  const autosave = useMindmapAutosave({
+    currentId,
+    document,
+    documentJson,
+    loading,
+    onSaved: handleSaved,
+  })
+  const { markSaved, flush, cancelPending, retry } = autosave
 
+  /**
+   * React state updates are asynchronous. `applyResource` therefore updates
+   * both the React state (for rendering) and the currentIdRef (for immediate
+   * use by save/switch logic).
+   */
+  const applyResource = useCallback(
+    (resource: MindmapResource) => {
+      const loaded = fromMindmapDocument(resource)
+      onLoadRef.current(loaded.nodes, loaded.links)
+
+      const normalized = toMindmapDocument(resource.title, loaded.nodes, loaded.links)
+      currentIdRef.current = resource.id
+      setCurrentId(resource.id)
+      setTitleState(resource.title)
+      markSaved(resource.id, JSON.stringify(normalized))
+      rememberId(resource.id)
+    },
+    [markSaved],
+  )
+
+  /**
+   * First load: use the map remembered in localStorage, otherwise the most
+   * recently updated map, otherwise create a brand-new empty map. If the list
+   * request fails, do not create anything — that would duplicate maps whenever
+   * the backend is briefly unavailable.
+   *
+   * `await` pauses only this function, not the whole browser. React keeps the
+   * UI responsive while the request is in flight.
+   */
   const loadLibrary = useCallback(async () => {
     setLoading(true)
     setLoadError(null)
 
     try {
       if (currentIdRef.current) {
-        const flushed = await flushLatest()
+        const flushed = await flush()
         if (!flushed) {
           setLoadError("Could not save the current map before reloading.")
           return
@@ -195,56 +138,21 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
         setSummaries([summarize(created)])
       }
     } catch (error) {
-      setLoadError(messageOf(error))
+      setLoadError(errorMessage(error))
     } finally {
       setLoading(false)
     }
-  }, [applyResource, flushLatest])
+  }, [applyResource, flush])
 
+  // The empty dependency array would normally mean "run once after mount".
+  // StrictMode intentionally runs effects twice in development, so the ref
+  // guard prevents two simultaneous "load or create" requests.
   const bootedRef = useRef(false)
   useEffect(() => {
     if (bootedRef.current) return
     bootedRef.current = true
     void loadLibrary()
   }, [loadLibrary])
-
-  useEffect(() => {
-    if (loading || !currentId) return
-
-    const saved = lastSavedRef.current
-    if (saved && saved.id === currentId && saved.json === documentJson) return
-
-    setSaveStatus("unsaved")
-    const timer = window.setTimeout(() => {
-      const snapshot = latestRef.current
-      if (snapshot.id === currentId) void saveSnapshot(snapshot)
-    }, AUTOSAVE_DELAY_MS)
-    autosaveTimerRef.current = timer
-
-    return () => {
-      window.clearTimeout(timer)
-      if (autosaveTimerRef.current === timer) autosaveTimerRef.current = null
-    }
-  }, [currentId, documentJson, loading, saveSnapshot])
-
-  useEffect(() => {
-    function handlePageHide() {
-      const snapshot = latestRef.current
-      if (!snapshot.id) return
-      const saved = lastSavedRef.current
-      if (saved && saved.id === snapshot.id && saved.json === snapshot.json) return
-      saveMindmap(snapshot.id, snapshot.document, { keepalive: true }).catch(() => undefined)
-    }
-
-    window.addEventListener("pagehide", handlePageHide)
-    return () => window.removeEventListener("pagehide", handlePageHide)
-  }, [])
-
-  const cancelPendingSave = useCallback(() => {
-    if (autosaveTimerRef.current === null) return
-    window.clearTimeout(autosaveTimerRef.current)
-    autosaveTimerRef.current = null
-  }, [])
 
   const openMap = useCallback(
     async (id: string) => {
@@ -253,19 +161,21 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
       setLoadError(null)
 
       try {
-        const flushed = await flushLatest()
+        // Switching maps without flushing could cancel the pending debounce
+        // timer and lose the user's last edit.
+        const flushed = await flush()
         if (!flushed) {
           setLoadError("Could not save the current map before switching.")
           return
         }
         applyResource(await getMindmap(id))
       } catch (error) {
-        setLoadError(messageOf(error))
+        setLoadError(errorMessage(error))
       } finally {
         setLoading(false)
       }
     },
-    [applyResource, flushLatest],
+    [applyResource, flush],
   )
 
   const newMap = useCallback(async () => {
@@ -273,7 +183,7 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
     setLoadError(null)
 
     try {
-      const flushed = await flushLatest()
+      const flushed = await flush()
       if (!flushed) {
         setLoadError("Could not save the current map before creating a new one.")
         return
@@ -286,16 +196,17 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
         ...previous.filter((item) => item.id !== created.id),
       ])
     } catch (error) {
-      setLoadError(messageOf(error))
+      setLoadError(errorMessage(error))
     } finally {
       setLoading(false)
     }
-  }, [applyResource, flushLatest])
+  }, [applyResource, flush])
 
   const deleteMap = useCallback(
     async (id: string) => {
       const deletingCurrent = currentIdRef.current === id
-      if (deletingCurrent) cancelPendingSave()
+      // Stop a pending debounce from saving a map we are about to delete.
+      if (deletingCurrent) cancelPending()
 
       setLoading(true)
       setLoadError(null)
@@ -309,7 +220,6 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
 
         currentIdRef.current = null
         setCurrentId(null)
-        lastSavedRef.current = null
         rememberId(null)
 
         if (remaining.length > 0) {
@@ -320,18 +230,19 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
           setSummaries([summarize(created)])
         }
       } catch (error) {
-        setLoadError(messageOf(error))
+        setLoadError(errorMessage(error))
       } finally {
         setLoading(false)
       }
     },
-    [applyResource, cancelPendingSave],
+    [applyResource, cancelPending],
   )
 
-  const retrySave = useCallback(() => {
-    void saveSnapshot(latestRef.current)
-  }, [saveSnapshot])
-
+  /**
+   * The title is part of the saved document too. Updating the summary list
+   * immediately makes the map picker show the new name before the debounce
+   * fires the next save.
+   */
   const setTitle = useCallback((next: string) => {
     setTitleState(next)
     const id = currentIdRef.current
@@ -348,12 +259,12 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
     currentId,
     loading,
     loadError,
-    saveStatus,
-    saveError,
+    saveStatus: autosave.saveStatus,
+    saveError: autosave.saveError,
     openMap,
     newMap,
     deleteMap,
-    retrySave,
+    retrySave: retry,
     reload: loadLibrary,
   }
 }
