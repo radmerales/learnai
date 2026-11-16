@@ -1,0 +1,19 @@
+services:
+  app:
+    build:
+      context: ..
+      dockerfile: .devcontainer/Dockerfile
+    volumes:
+      - ..:/workspace:cached
+      # Reuse the host's opencode CLI and credentials inside the container.
+      - ${HOME}/.opencode/bin/opencode:/usr/local/bin/opencode:ro
+      - ${HOME}/.config/opencode/credentials.json:/tmp/opencode-credentials.json:ro
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
+    command: sleep infinity
+    environment:
+      UPCAT_DATABASE_URL: sqlite:////workspace/upcat.db
+      UPCAT_SECRET_KEY: dev-only-secret-change-me-please-use-a-long-random-value
+    # Ports are forwarded by devcontainer.json (forwardPorts); publishing them
+    # here too conflicts with VS Code's forwarders on the host.
