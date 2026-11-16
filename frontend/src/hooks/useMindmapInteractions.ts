@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type PointerEvent } from "react"
 
-import { nearestSide, sideTowardPoint, type RenderedEdge, type Side } from "../graph"
+import { oppositeSide, sideTowardPoint, type RenderedEdge, type Side } from "../graph"
 import {
   clampNewNodePoint,
   edgeExistsBetween,
@@ -193,7 +193,7 @@ export function useMindmapInteractions({
           from: source.id,
           to: node.id,
           fromSide: connect.sourceSide,
-          toSide: nearestSide(node, source),
+          toSide: oppositeSide(connect.sourceSide),
         })
         setSelectedId(node.id)
       }

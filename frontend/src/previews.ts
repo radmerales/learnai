@@ -1,4 +1,13 @@
-import { NODE_W, curvePath, nearestSide, sideFromVector, sidePoint, type Node, type Point } from "./graph"
+import {
+  NODE_W,
+  curvePath,
+  nearestSide,
+  oppositeSide,
+  sideFromVector,
+  sidePoint,
+  type Node,
+  type Point,
+} from "./graph"
 import type { ConnectDrag, EdgeDrag, Preview } from "./interaction"
 
 export function buildGhostNode(connect: ConnectDrag | null, point: Point | null, hoverNode: Node | null): Node | null {
@@ -23,7 +32,10 @@ export function buildConnectPreview(
 
   const start = sidePoint(source, connect.sourceSide)
   const target = connect.targetId ? byId.get(connect.targetId) ?? null : ghostNode
-  const targetSide = target ? connect.targetSide ?? nearestSide(target, source) : null
+  // A ghost node always receives the edge on the side opposite the dragged
+  // handle, so its preview stays stable instead of flipping sides as the
+  // pointer moves around the source node.
+  const targetSide = target ? (connect.targetId ? connect.targetSide ?? nearestSide(target, source) : oppositeSide(connect.sourceSide)) : null
   const end = target && targetSide ? sidePoint(target, targetSide) : { x: connect.x, y: connect.y }
   const endSide = targetSide ?? sideFromVector(end.x - start.x, end.y - start.y)
 

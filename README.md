@@ -10,7 +10,8 @@ dragging a connection from a node’s side handle.
 - **First node** — an empty canvas shows a single “Create first node” action.
 - **Grow through edges** — subsequent nodes are created by dragging from a
   node’s side handle onto empty canvas. A dashed “New node” ghost previews the
-  result before release.
+  result before release, with its receiving anchor fixed to the side opposite
+  the dragged handle so the preview stays stable.
 - **Connect existing nodes** — drag a handle onto another node to create an
   explicit edge between them.
 - **Edit edges** — hover an edge to reveal endpoint handles, then drag either

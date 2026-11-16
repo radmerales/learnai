@@ -124,6 +124,19 @@ export function sideFromVector(dx: number, dy: number): Side {
   return dy >= 0 ? "bottom" : "top"
 }
 
+export function oppositeSide(side: Side): Side {
+  switch (side) {
+    case "top":
+      return "bottom"
+    case "right":
+      return "left"
+    case "bottom":
+      return "top"
+    case "left":
+      return "right"
+  }
+}
+
 function round(n: number) {
   return Math.round(n * 100) / 100
 }
