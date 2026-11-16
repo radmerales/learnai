@@ -13,7 +13,6 @@ services:
       - 8.8.8.8
     command: sleep infinity
     environment:
-      UPCAT_DATABASE_URL: sqlite:////workspace/upcat.db
-      UPCAT_SECRET_KEY: dev-only-secret-change-me-please-use-a-long-random-value
+      LEARN_AI_DATABASE_URL: sqlite:////workspace/learnai.db
     # Ports are forwarded by devcontainer.json (forwardPorts); publishing them
     # here too conflicts with VS Code's forwarders on the host.

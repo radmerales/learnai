@@ -1,4 +1,4 @@
-# Mindmap MVP
+# learn.ai
 
 A simple one-page node network. There is no root/child distinction — the map is
 just nodes and explicit edges. Start with a single node, then grow the map by
