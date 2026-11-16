@@ -19,6 +19,7 @@ export type MindmapAction =
   | { type: "set-blocks"; id: string; blocks: string[] }
   | { type: "set-questions"; id: string; questions: QuizQuestion[] }
   | { type: "set-status"; id: string; status: NoteStatus }
+  | { type: "replace"; nodes: Node[]; links: Link[] }
   | { type: "move-nodes"; moves: { id: string; x: number; y: number }[] }
   | { type: "add-link"; link: Link }
   | { type: "update-link"; id: string; patch: Partial<Pick<Link, "from" | "to" | "fromSide" | "toSide">> }
@@ -63,6 +64,9 @@ export function mindmapReducer(state: MindmapState, action: MindmapAction): Mind
         ...state,
         nodes: state.nodes.map((n) => (n.id === action.id ? { ...n, status: action.status } : n)),
       }
+
+    case "replace":
+      return { nodes: action.nodes, links: action.links }
 
     case "move-nodes": {
       const moves = new Map(action.moves.map((move) => [move.id, move]))

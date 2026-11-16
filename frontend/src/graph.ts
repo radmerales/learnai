@@ -69,6 +69,16 @@ export function uid() {
   return Math.random().toString(36).slice(2, 9)
 }
 
+/** Continue node numbering after the highest "Node N" label in a loaded map. */
+export function nextNodeNumber(nodes: Node[]): number {
+  let highest = 0
+  for (const node of nodes) {
+    const match = /^Node (\d+)$/.exec(node.label)
+    if (match) highest = Math.max(highest, Number(match[1]))
+  }
+  return highest + 1
+}
+
 export function sidePoint(node: Node, side: Side): Point {
   switch (side) {
     case "top":
