@@ -15,7 +15,7 @@ export type MindmapAction =
   | { type: "add-node"; node: Node }
   | { type: "remove-node"; id: string }
   | { type: "rename"; id: string; label: string; width: number }
-  | { type: "set-content"; id: string; content: string }
+  | { type: "set-blocks"; id: string; blocks: string[] }
   | { type: "set-status"; id: string; status: NoteStatus }
   | { type: "move-nodes"; moves: { id: string; x: number; y: number }[] }
   | { type: "add-link"; link: Link }
@@ -42,10 +42,10 @@ export function mindmapReducer(state: MindmapState, action: MindmapAction): Mind
         ),
       }
 
-    case "set-content":
+    case "set-blocks":
       return {
         ...state,
-        nodes: state.nodes.map((n) => (n.id === action.id ? { ...n, content: action.content } : n)),
+        nodes: state.nodes.map((n) => (n.id === action.id ? { ...n, blocks: action.blocks } : n)),
       }
 
     case "set-status":

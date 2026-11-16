@@ -2,7 +2,7 @@ import { useState } from "react"
 
 import type { Node } from "../graph"
 import { NOTE_STATUSES, NOTE_STATUS_ORDER, type NoteStatus } from "../status"
-import { MarkdownCell } from "./MarkdownCell"
+import { LearnTab } from "./LearnTab"
 import { NodeQuiz } from "./NodeQuiz"
 
 type PanelTab = "learn" | "quiz"
@@ -28,11 +28,11 @@ type Props = {
   node: Node
   onClose: () => void
   onTitleChange: (title: string) => void
-  onContentChange: (content: string) => void
+  onBlocksChange: (blocks: string[]) => void
   onStatusChange: (status: NoteStatus) => void
 }
 
-export function NodePanel({ node, onClose, onTitleChange, onContentChange, onStatusChange }: Props) {
+export function NodePanel({ node, onClose, onTitleChange, onBlocksChange, onStatusChange }: Props) {
   const [tab, setTab] = useState<PanelTab>("learn")
 
   return (
@@ -118,7 +118,7 @@ export function NodePanel({ node, onClose, onTitleChange, onContentChange, onSta
 
       {tab === "learn" ? (
         <div id="node-learn-panel" role="tabpanel" aria-label="Learn notes" className="min-h-0 flex-1">
-          <MarkdownCell key={node.id} content={node.content} onChange={onContentChange} />
+          <LearnTab key={node.id} blocks={node.blocks} onChange={onBlocksChange} />
         </div>
       ) : (
         <div id="node-quiz-panel" role="tabpanel" aria-label="Node quiz" className="min-h-0 flex-1">

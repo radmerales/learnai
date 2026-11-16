@@ -49,11 +49,13 @@ dragging a connection from a node’s side handle.
   without resizing it; creating a new node focuses it and opens the same panel.
   On smaller screens the panel takes the full width. It includes a close button,
   a live-synced title, a Learn tab, and a Quiz tab.
-- **Learn tab** — a Jupyter-style markdown cell. Rendered markdown fills the
-  tab in view mode; Edit splits the markdown source and a live preview side by
-  side, and Done returns to the full-width rendered view. Supports headings,
-  lists, task lists, quotes, fenced code, links, inline code, bold, italic,
-  highlights, and strikethrough.
+- **Learn tab** — a block-by-block Jupyter-style markdown editor. Each block
+  shows an outline only on hover; double-click or press Enter to edit it. The
+  editing block splits source and live preview side by side, and Done returns
+  to the rendered block. A final invisible row reveals a plus/add-block action
+  on hover; when the note is blank, that row is always visible with “Click here
+  to add new block.” Supports headings, lists, task lists, quotes, fenced code,
+  links, inline code, bold, italic, highlights, and strikethrough.
 - **Study statuses** — each note is marked **To Do** (grey), **Doing** (blue),
   or **Done** (green). The solid status color outlines the node, a pastel tint
   fills it, and the text uses the matching deep color. A compact segmented
@@ -132,7 +134,7 @@ quizzes) when real quiz authoring is added.
   lines; the rule is documented in `AGENTS.md` as a project-specific system
   instruction.
 - **Nodes and edges only:** Nodes are stored as
-  `{ id, label, content, status, x, y, width }`; all connections are explicit links stored as
+  `{ id, label, blocks, status, x, y, width }`; all connections are explicit links stored as
   `{ id, from, to, fromSide, toSide }`. There is no `parentId`, no derived tree
   edge, and no root/child distinction. Deleting a node removes its incident
   edges; other nodes remain untouched.
@@ -185,10 +187,13 @@ quizzes) when real quiz authoring is added.
   screens), so the canvas keeps its dimensions. The panel is driven by the
   current selection, so changing nodes updates it in place. The panel uses the
   paper/ink theme, sharp corners, a square close button, a live title field, and
-  Learn/Quiz tabs. Node content is stored on the node itself.
-- **Markdown cell:** The Learn tab toggles between a full-width rendered view and
-  a split edit view with source on the left and live preview on the right. The
-  renderer is line/block based and avoids injecting raw HTML.
+  Learn/Quiz tabs. Markdown blocks are stored on the node itself.
+- **Markdown blocks:** The Learn tab renders each block independently. Blocks
+  are transparent at rest and reveal a hairline outline on hover. Editing a
+  block switches only that block to a source/live-preview split. The final add
+  row is invisible until hover, except in the blank-note state where it is the
+  only visible call to action. The renderer is line/block based and avoids
+  injecting raw HTML.
 - **Quiz template:** Quizzes are a simple typed object (`title` plus questions
   with stable ids, prompts, options, and a correct index). The sample generator
   gives every node a three-item quiz for now, and the quiz view uses the accent

@@ -210,7 +210,7 @@ export function MindmapPage() {
             node={panelNode}
             onClose={closePanel}
             onTitleChange={(title) => graph.renameNode(panelNode.id, title)}
-            onContentChange={(content) => graph.setNodeContent(panelNode.id, content)}
+            onBlocksChange={(blocks) => graph.setNodeBlocks(panelNode.id, blocks)}
             onStatusChange={(status) => graph.setNodeStatus(panelNode.id, status)}
           />
         )}
