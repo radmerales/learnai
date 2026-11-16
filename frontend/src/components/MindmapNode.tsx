@@ -1,0 +1,122 @@
+import type { PointerEvent } from "react"
+
+import { HANDLE_R, NODE_H, NODE_W, SIDES, localHandlePoint, type Node, type Side } from "../graph"
+
+type Props = {
+  node: Node
+  selected: boolean
+  dropTarget: boolean
+  anchorSide: Side | null
+  showAnchors: boolean
+  showHandles: boolean
+  editing: boolean
+  onPointerDown: (e: PointerEvent<SVGGElement>, id: string) => void
+  onPointerEnter: (id: string) => void
+  onPointerLeave: (id: string) => void
+  onDoubleClick: (node: Node) => void
+  onConnectStart: (e: PointerEvent<SVGCircleElement>, id: string, side: Side) => void
+}
+
+export function MindmapNode({
+  node,
+  selected,
+  dropTarget,
+  anchorSide,
+  showAnchors,
+  showHandles,
+  editing,
+  onPointerDown,
+  onPointerEnter,
+  onPointerLeave,
+  onDoubleClick,
+  onConnectStart,
+}: Props) {
+  const filled = selected || dropTarget
+
+  return (
+    <g
+      transform={`translate(${node.x - NODE_W / 2}, ${node.y - NODE_H / 2})`}
+      onPointerDown={(e) => onPointerDown(e, node.id)}
+      onPointerEnter={() => onPointerEnter(node.id)}
+      onPointerLeave={() => onPointerLeave(node.id)}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        onDoubleClick(node)
+      }}
+      className="cursor-grab active:cursor-grabbing"
+    >
+      <rect
+        width={NODE_W}
+        height={NODE_H}
+        fill={filled ? "#f5c518" : "#e1e0dd"}
+        stroke={filled ? "#000000" : "#cbcac7"}
+        strokeWidth={filled ? 2 : 1}
+        strokeDasharray={dropTarget && !selected ? "4 2" : undefined}
+      />
+
+      {!editing && (
+        <text
+          x={NODE_W / 2}
+          y={NODE_H / 2 + 5}
+          textAnchor="middle"
+          fontSize="14"
+          fontFamily="IBM Plex Sans, sans-serif"
+          fill={filled ? "#040404" : "#000000"}
+        >
+          {node.label.length > 16 ? node.label.slice(0, 15) + "…" : node.label}
+        </text>
+      )}
+
+      {showAnchors && (
+        <g pointerEvents="none">
+          {SIDES.map((side) => {
+            const p = localHandlePoint(side)
+            const active = side === anchorSide
+            return (
+              <circle
+                key={`anchor-${side}`}
+                cx={p.x}
+                cy={p.y}
+                r={active ? 7 : 5.5}
+                fill={active ? "#000000" : "#e1e0dd"}
+                stroke={active ? "#f5c518" : "#3f3e3e"}
+                strokeWidth={active ? 2 : 1.5}
+              />
+            )
+          })}
+        </g>
+      )}
+
+      {showHandles && (
+        <g>
+          {SIDES.map((side) => {
+            const p = localHandlePoint(side)
+            return (
+              <g key={side}>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={12}
+                  fill="transparent"
+                  className="cursor-crosshair"
+                  onPointerDown={(e) => onConnectStart(e, node.id, side)}
+                >
+                  <title>Drag to connect from the {side} edge</title>
+                </circle>
+                <circle
+                  cx={p.x}
+                  cy={p.y}
+                  r={HANDLE_R}
+                  fill="#f5c518"
+                  stroke="#000000"
+                  strokeWidth={1.5}
+                  pointerEvents="none"
+                />
+              </g>
+            )
+          })}
+        </g>
+      )}
+    </g>
+  )
+}
