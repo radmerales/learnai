@@ -39,6 +39,11 @@ export function LearnTab({ blocks, onChange }: Props) {
     onChange(blocks.map((block, blockIndex) => (blockIndex === index ? content : block)))
   }
 
+  function deleteBlock(index: number) {
+    onChange(blocks.filter((_, blockIndex) => blockIndex !== index))
+    setEditingIndex(null)
+  }
+
   if (isBlank) {
     return (
       <div className="h-full overflow-y-auto px-3 py-3">
@@ -62,9 +67,11 @@ export function LearnTab({ blocks, onChange }: Props) {
             key={index}
             content={block}
             editing={editingIndex === index}
+            blockNumber={index + 1}
             onChange={(content) => updateBlock(index, content)}
             onEdit={() => setEditingIndex(index)}
             onDone={() => setEditingIndex(null)}
+            onDelete={() => deleteBlock(index)}
           />
         ))}
       </div>

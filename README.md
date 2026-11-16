@@ -52,10 +52,12 @@ dragging a connection from a node’s side handle.
 - **Learn tab** — a block-by-block Jupyter-style markdown editor. Each block
   shows an outline only on hover; double-click or press Enter to edit it. The
   editing block splits source and live preview side by side, and Done returns
-  to the rendered block. A final invisible row reveals a plus/add-block action
-  on hover; when the note is blank, that row is always visible with “Click here
-  to add new block.” Supports headings, lists, task lists, quotes, fenced code,
-  links, inline code, bold, italic, highlights, and strikethrough.
+  to the rendered block. Preview blocks expose a hover-only red trash button at
+  the right; editing blocks show the same action in their header. A final
+  invisible row reveals a plus/add-block action on hover; when the note is
+  blank, that row is always visible with “Click here to add new block.”
+  Supports headings, lists, task lists, quotes, fenced code, links, inline
+  code, bold, italic, highlights, and strikethrough.
 - **Study statuses** — each note is marked **To Do** (grey), **Doing** (blue),
   or **Done** (green). The solid status color outlines the node, a pastel tint
   fills it, and the text uses the matching deep color. A compact segmented
@@ -189,11 +191,12 @@ quizzes) when real quiz authoring is added.
   paper/ink theme, sharp corners, a square close button, a live title field, and
   Learn/Quiz tabs. Markdown blocks are stored on the node itself.
 - **Markdown blocks:** The Learn tab renders each block independently. Blocks
-  are transparent at rest and reveal a hairline outline on hover. Editing a
-  block switches only that block to a source/live-preview split. The final add
-  row is invisible until hover, except in the blank-note state where it is the
-  only visible call to action. The renderer is line/block based and avoids
-  injecting raw HTML.
+  are transparent at rest and reveal a hairline outline on hover. A red trash
+  action sits at the right edge on hover in preview mode, while edit mode keeps
+  it in the block header beside Done. Editing a block switches only that block
+  to a source/live-preview split. The final add row is invisible until hover,
+  except in the blank-note state where it is the only visible call to action.
+  The renderer is line/block based and avoids injecting raw HTML.
 - **Quiz template:** Quizzes are a simple typed object (`title` plus questions
   with stable ids, prompts, options, and a correct index). The sample generator
   gives every node a three-item quiz for now, and the quiz view uses the accent
