@@ -18,6 +18,7 @@ export function useMindmapGraph() {
     const node: Node = {
       id: uid(),
       label,
+      content: "",
       x: point.x,
       y: point.y,
       width: measureNodeWidth(label),
@@ -32,6 +33,10 @@ export function useMindmapGraph() {
 
   const renameNode = useCallback((id: string, label: string) => {
     dispatch({ type: "rename", id, label, width: measureNodeWidth(label) })
+  }, [])
+
+  const setNodeContent = useCallback((id: string, content: string) => {
+    dispatch({ type: "set-content", id, content })
   }, [])
 
   const moveNode = useCallback((id: string, x: number, y: number) => {
@@ -60,6 +65,7 @@ export function useMindmapGraph() {
     addNode,
     removeNode,
     renameNode,
+    setNodeContent,
     moveNode,
     addLink,
     updateLink,

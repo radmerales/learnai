@@ -87,42 +87,41 @@ export function MindmapNode({
                 r={active ? 7 : 5.5}
                 fill={active ? "#000000" : "#e1e0dd"}
                 stroke={active ? "#f5c518" : "#3f3e3e"}
-                strokeWidth={active ? 2 : 1.5}
+                strokeWidth={1}
               />
             )
           })}
         </g>
       )}
 
-      {showHandles && (
-        <g>
-          {SIDES.map((side) => {
-            const p = localHandlePoint(node.width, side)
-            return (
-              <g key={side}>
-                <path
-                  d={localHandleHitPath(node.width, side)}
-                  fill="transparent"
-                  pointerEvents="all"
-                  className="cursor-crosshair"
-                  onPointerDown={(e) => onConnectStart(e, node.id, side)}
-                >
-                  <title>Drag to connect from the {side} edge</title>
-                </path>
-                <circle
-                  cx={p.x}
-                  cy={p.y}
-                  r={HANDLE_R}
-                  fill="#f5c518"
-                  stroke="#000000"
-                  strokeWidth={1.5}
-                  pointerEvents="none"
-                />
-              </g>
-            )
-          })}
-        </g>
-      )}
+      {SIDES.map((side) => {
+        const p = localHandlePoint(node.width, side)
+        return (
+          <g key={`handle-${side}`}>
+            <path
+              d={localHandleHitPath(node.width, side)}
+              fill="transparent"
+              pointerEvents="all"
+              className="cursor-crosshair"
+              onPointerEnter={() => onPointerEnter(node.id)}
+              onPointerDown={(e) => onConnectStart(e, node.id, side)}
+            >
+              <title>Drag to connect from the {side} edge</title>
+            </path>
+            {showHandles && (
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={HANDLE_R}
+                fill="#f5c518"
+                stroke="#000000"
+                strokeWidth={1}
+                pointerEvents="none"
+              />
+            )}
+          </g>
+        )
+      })}
     </g>
   )
 }

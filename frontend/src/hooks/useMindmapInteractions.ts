@@ -20,6 +20,16 @@ type Options = Pick<
 > & {
   selectNode: (id: string | null) => void
   clearEdgeSelection: () => void
+  onNodeFocus: (id: string) => void
+}
+
+type DragState = {
+  id: string
+  ox: number
+  oy: number
+  startX: number
+  startY: number
+  moved: boolean
 }
 
 export function useMindmapInteractions({
@@ -33,8 +43,9 @@ export function useMindmapInteractions({
   removeLink,
   selectNode,
   clearEdgeSelection,
+  onNodeFocus,
 }: Options) {
-  const [drag, setDrag] = useState<{ id: string; ox: number; oy: number } | null>(null)
+  const [drag, setDrag] = useState<DragState | null>(null)
   const [connect, setConnect] = useState<ConnectDrag | null>(null)
   const [edgeDrag, setEdgeDrag] = useState<EdgeDrag | null>(null)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
@@ -103,7 +114,7 @@ export function useMindmapInteractions({
     setHoveredEdgeId(null)
     const p = toSvgPoint(e.clientX, e.clientY)
     selectNode(id)
-    setDrag({ id, ox: p.x - node.x, oy: p.y - node.y })
+    setDrag({ id, ox: p.x - node.x, oy: p.y - node.y, startX: p.x, startY: p.y, moved: false })
     ;(e.currentTarget as SVGGElement).setPointerCapture?.(e.pointerId)
   }
 
@@ -150,7 +161,9 @@ export function useMindmapInteractions({
     const p = toSvgPoint(e.clientX, e.clientY)
 
     if (drag) {
+      const moved = drag.moved || Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3
       moveNode(drag.id, p.x - drag.ox, p.y - drag.oy)
+      if (moved !== drag.moved) setDrag((prev) => (prev ? { ...prev, moved } : prev))
       return
     }
 
@@ -224,6 +237,11 @@ export function useMindmapInteractions({
 
       setEdgeDrag(null)
       return
+    }
+
+    if (drag && !drag.moved) {
+      const moved = Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3
+      if (!moved) onNodeFocus(drag.id)
     }
 
     setDrag(null)

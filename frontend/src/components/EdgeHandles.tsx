@@ -27,7 +27,7 @@ function Handle({
         r={HANDLE_R}
         fill="#f5c518"
         stroke="#000000"
-        strokeWidth={1.5}
+        strokeWidth={1}
         pointerEvents="none"
       />
     </g>

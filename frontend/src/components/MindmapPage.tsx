@@ -9,6 +9,7 @@ import { MindmapCanvas } from "./MindmapCanvas"
 import { MindmapFooter } from "./MindmapFooter"
 import { MindmapHeader } from "./MindmapHeader"
 import { NodeContextMenu } from "./NodeContextMenu"
+import { NodePanel } from "./NodePanel"
 
 type ContextMenuState = {
   nodeId: string
@@ -21,6 +22,7 @@ export function MindmapPage() {
   const graph = useMindmapGraph()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedEdgeId, setSelectedEdgeId] = useState<string | null>(null)
+  const [panelNodeId, setPanelNodeId] = useState<string | null>(null)
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
   const editing = useLabelEditing({ byId: graph.byId, renameNode: graph.renameNode })
   const { cancelEditing } = editing
@@ -28,15 +30,25 @@ export function MindmapPage() {
   const selectNode = useCallback((id: string | null) => {
     setSelectedId(id)
     setSelectedEdgeId(null)
+    if (!id) setPanelNodeId(null)
   }, [])
 
   const selectEdge = useCallback(
     (id: string) => {
       setSelectedId(null)
       setSelectedEdgeId(id)
+      setPanelNodeId(null)
       cancelEditing()
     },
     [cancelEditing],
+  )
+
+  const handleNodeFocus = useCallback(
+    (id: string) => {
+      selectNode(id)
+      setPanelNodeId(id)
+    },
+    [selectNode],
   )
 
   const clearEdgeSelection = useCallback(() => {
@@ -54,10 +66,12 @@ export function MindmapPage() {
     removeLink: graph.removeLink,
     selectNode,
     clearEdgeSelection,
+    onNodeFocus: handleNodeFocus,
   })
 
   const { svgRef, ...canvasInteractions } = interactions
   const selected = selectedId ? graph.byId.get(selectedId) ?? null : null
+  const panelNode = panelNodeId ? graph.byId.get(panelNodeId) ?? null : null
 
   const edges = useMemo(
     () => buildRenderedEdges(graph.links, graph.byId),
@@ -71,6 +85,7 @@ export function MindmapPage() {
       removeNode(id)
       setSelectedId((current) => (current === id ? null : current))
       setSelectedEdgeId(null)
+      setPanelNodeId((current) => (current === id ? null : current))
       cancelEditing()
       setContextMenu(null)
     },
@@ -129,6 +144,7 @@ export function MindmapPage() {
 
   function handleNodeContextMenu(node: Node, e: MouseEvent<SVGGElement>) {
     selectNode(node.id)
+    setPanelNodeId(null)
     setContextMenu({ nodeId: node.id, label: node.label, x: e.clientX, y: e.clientY })
   }
 
@@ -180,6 +196,15 @@ export function MindmapPage() {
             onChange={editing.setDraftLabel}
             onCommit={editing.commitEditing}
             onCancel={editing.cancelEditing}
+          />
+        )}
+
+        {panelNode && (
+          <NodePanel
+            node={panelNode}
+            onClose={() => setPanelNodeId(null)}
+            onTitleChange={(title) => graph.renameNode(panelNode.id, title)}
+            onContentChange={(content) => graph.setNodeContent(panelNode.id, content)}
           />
         )}
       </div>

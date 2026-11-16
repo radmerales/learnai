@@ -36,6 +36,10 @@ dragging a connection from a node’s side handle.
 - **Inline labels** — double-click a node to edit its label in place; Enter
   commits, Escape cancels, and blur commits. Node width grows to fit the full
   label while keeping the original 140px width as the minimum.
+- **Node note panel** — focusing a node opens a right-hand panel that overlays
+  the canvas without resizing it. On smaller screens the panel takes the full
+  width. It includes a close button, a live-synced title, and editable node
+  contents.
 - **Local-only state** — the map lives in memory for the current session (no
   persistence in this MVP).
 
@@ -82,8 +86,8 @@ must stay under 300 lines.
   and rendering in presentational components. Every source file stays under 300
   lines; the rule is documented in `AGENTS.md` as a project-specific system
   instruction.
-- **Nodes and edges only:** Nodes are stored as `{ id, label, x, y, width }`; all
-  connections are explicit links stored as
+- **Nodes and edges only:** Nodes are stored as
+  `{ id, label, content, x, y, width }`; all connections are explicit links stored as
   `{ id, from, to, fromSide, toSide }`. There is no `parentId`, no derived tree
   edge, and no root/child distinction. Deleting a node removes its incident
   edges; other nodes remain untouched.
@@ -131,6 +135,11 @@ must stay under 300 lines.
   font used by the SVG text. A node grows from its 140px minimum width to fit
   the full label, and edges use the measured width when attaching to side
   midpoints.
+- **Overlay note panel:** Clicking a node without dragging opens a note panel
+  absolutely positioned over the right half of the canvas (full width on small
+  screens), so the canvas keeps its dimensions. The panel uses the paper/ink
+  theme, sharp corners, a square close button, a live title field, and an
+  editable contents area. Node content is stored on the node itself.
 - **Clear selection state:** The selected node uses the accent color so the
   target for delete or rename is always obvious. Edges are neutral so structure
   reads without competing with nodes.
@@ -138,16 +147,16 @@ must stay under 300 lines.
   outside the side midpoints. Each handle uses an outward-only half-disc hit
   area, so the node body stays fully draggable and does not accidentally start
   an edge. Dragging from a handle shows a dashed curved preview and a live
-  endpoint marker; moving within the same 36px threshold of a target anchor
+  endpoint marker; moving within the same 18px threshold of a target anchor
   highlights that node and snaps the preview to the specific side midpoint
   before the link is dropped. Hovering blank canvas shows a dashed “New node”
   ghost at the future node position.
 - **Rewire affordance:** Finished edges stay clean with no endpoint circles.
   Hovering an edge reveals endpoint handles, and the edge being dragged is
   replaced by a dashed preview so the new connection is clear. Endpoint hit
-  targets use a generous 36px radius, matching the target-anchor halo used when
-  starting a new edge, making the small handles easy to grab. Dropping outside
-  any node removes the edge.
+  targets use an 18px radius, matching the target-anchor halo used when starting
+  a new edge. Handle and anchor outlines stay at 1px. Dropping outside any node
+  removes the edge.
 - **Edge treatment:** Edges use a single dashed dark-grey stroke with a
   transparent outline — no halo, fill, or double stroke. The same dashed line
   style is used for finished edges and drag previews, with anchor dots only

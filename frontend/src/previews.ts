@@ -15,6 +15,7 @@ export function buildGhostNode(connect: ConnectDrag | null, point: Point | null,
   return {
     id: "__ghost__",
     label: "New node",
+    content: "",
     x: point.x,
     y: point.y,
     width: NODE_W,
