@@ -1,5 +1,11 @@
-target
+.git
+.github
+node_modules
+frontend/node_modules
+frontend/dist
+frontend/coverage
 dist
+coverage
 *.db
 *.sqlite3
 .env

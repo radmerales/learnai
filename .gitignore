@@ -1,10 +1,14 @@
-# Build output
+# Dependencies and build output
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
 dist/
+coverage/
 
 # Environment / secrets
 .env
 .env.*
-!.env.example
 
 # Local data
 *.db
@@ -14,7 +18,3 @@ dist/
 .DS_Store
 .idea/
 .vscode/
-
-# Rust
-/target/
-*.wasm

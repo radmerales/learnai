@@ -12,7 +12,5 @@ services:
       - 1.1.1.1
       - 8.8.8.8
     command: sleep infinity
-    environment:
-      LEARN_AI_DATABASE_URL: sqlite:////workspace/learnai.db
     # Ports are forwarded by devcontainer.json (forwardPorts); publishing them
     # here too conflicts with VS Code's forwarders on the host.

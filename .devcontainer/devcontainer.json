@@ -8,9 +8,9 @@
     "bash .devcontainer/post-create.sh",
     "opencode auth import /tmp/opencode-credentials.json || true"
   ],
-  "forwardPorts": [8080],
+  "forwardPorts": [5173],
   "portsAttributes": {
-    "8080": {
+    "5173": {
       "label": "learn.ai",
       "onAutoForward": "openPreview"
     }
@@ -18,15 +18,13 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "rust-lang.rust-analyzer",
-        "tamasfe.even-better-toml"
+        "bradlc.vscode-tailwindcss",
+        "vitest.explorer"
       ],
       "settings": {
         "editor.formatOnSave": true,
         "files.eol": "\n",
-        "[rust]": {
-          "editor.defaultFormatter": "rust-lang.rust-analyzer"
-        }
+        "typescript.tsdk": "frontend/node_modules/typescript/lib"
       }
     }
   }
