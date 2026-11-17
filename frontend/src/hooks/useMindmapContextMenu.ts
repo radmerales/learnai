@@ -2,7 +2,7 @@ import { useCallback, useState, type MouseEvent } from "react"
 
 import type { Node, RenderedEdge } from "../graph"
 
-export type ContextMenuState = {
+type ContextMenuState = {
   kind: "node" | "edge"
   id: string
   label: string
