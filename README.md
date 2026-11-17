@@ -228,6 +228,7 @@ cd backend
 | --- | --- | --- | --- |
 | `GET` | `/health` | Health check alias | `200` |
 | `GET` | `/api/health` | Health check | `200` |
+| `GET` | `/v1/models` | OpenAI-style model probe (empty list) | `200` |
 | `GET` | `/api/mindmaps` | List map summaries | `200` |
 | `POST` | `/api/mindmaps` | Create a map | `201` |
 | `GET` | `/api/mindmaps/{id}` | Load one full map | `200` |
@@ -250,7 +251,7 @@ backend/
     documents.py       Row <-> API model conversion and timestamps
     routers/
       mindmaps.py      CRUD endpoints
-      health.py        /health and /api/health
+      health.py        /health, /api/health, /v1/models probe
     schema_export.py   Generates docs/mindmap.schema.json
   tests/               pytest API and validation tests
   examples/            Example JSON document
