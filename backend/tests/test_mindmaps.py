@@ -69,6 +69,11 @@ def test_health(client):
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
 
+    # Some infrastructure probes use the unprefixed path.
+    alias = client.get("/health")
+    assert alias.status_code == 200
+    assert alias.json() == {"status": "ok"}
+
 
 def test_create_list_get_update_delete(client):
     created = client.post("/api/mindmaps", json=sample_document())

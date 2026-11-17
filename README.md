@@ -226,6 +226,7 @@ cd backend
 
 | Method | Path | Purpose | Success |
 | --- | --- | --- | --- |
+| `GET` | `/health` | Health check alias | `200` |
 | `GET` | `/api/health` | Health check | `200` |
 | `GET` | `/api/mindmaps` | List map summaries | `200` |
 | `POST` | `/api/mindmaps` | Create a map | `201` |
@@ -249,7 +250,7 @@ backend/
     documents.py       Row <-> API model conversion and timestamps
     routers/
       mindmaps.py      CRUD endpoints
-      health.py        /api/health
+      health.py        /health and /api/health
     schema_export.py   Generates docs/mindmap.schema.json
   tests/               pytest API and validation tests
   examples/            Example JSON document
@@ -337,7 +338,7 @@ part of the document.
 ## Troubleshooting
 
 - **"Could not load map"** — make sure the backend is running on port 8000 and
-  that `/api/health` returns `{"status":"ok"}`.
+  that `/health` or `/api/health` returns `{"status":"ok"}`.
 - **"Save failed"** — the frontend keeps your local changes and offers Retry.
   Check the backend terminal for validation or database errors.
 - **Start over** — stop the servers and delete `learnai.db`. The next request
