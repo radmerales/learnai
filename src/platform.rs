@@ -26,6 +26,31 @@ pub fn remember_id(id: Option<String>) {
 #[cfg(not(feature = "web"))]
 pub fn remember_id(_id: Option<String>) {}
 
+/// Browser viewport size, used to keep fixed-position menus on screen.
+#[cfg(feature = "web")]
+pub fn viewport_size() -> (f64, f64) {
+    web_sys::window()
+        .map(|window| {
+            let width = window
+                .inner_width()
+                .ok()
+                .and_then(|value| value.as_f64())
+                .unwrap_or(1024.0);
+            let height = window
+                .inner_height()
+                .ok()
+                .and_then(|value| value.as_f64())
+                .unwrap_or(768.0);
+            (width, height)
+        })
+        .unwrap_or((1024.0, 768.0))
+}
+
+#[cfg(not(feature = "web"))]
+pub fn viewport_size() -> (f64, f64) {
+    (1024.0, 768.0)
+}
+
 #[cfg(feature = "web")]
 pub fn confirm(message: &str) -> bool {
     web_sys::window()

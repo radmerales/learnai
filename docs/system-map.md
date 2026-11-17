@@ -67,6 +67,7 @@ origin.
 | `src/app.rs` | `App` | State owner, load/save orchestration, layout | all components, server functions |
 | `src/platform.rs` | `remembered_id`, `remember_id` | localStorage on web; no-op on server | gloo-storage |
 | | `confirm` | Delete confirmation on web; true on server | web-sys |
+| | `viewport_size` | Browser dimensions for clamping context menus | web-sys |
 | | `sleep_ms` | 800 ms debounce timer; feature-specific implementation | gloo-timers / tokio |
 
 ### Domain
@@ -77,12 +78,13 @@ origin.
 | | `QuizQuestion`, `LearnContent`, `QuizContent` | Learn/Quiz nested content |
 | | `MindmapNode`, `MindmapLink`, `MindmapDocument` | persisted document model |
 | | `MindmapResource`, `MindmapSummary` | server response shapes |
-| `domain/geometry.rs` | `Point`, `RenderedEdge` | canvas geometry values |
+| `domain/geometry.rs` | `Point`, `RenderedEdge`, `EdgeEnd` | canvas geometry values |
 | | `side_point`, `local_handle_point` | anchor coordinates |
-| | `hit_test_node`, `side_toward_point` | pointer/target hit testing |
+| | `hit_test_node`, `side_toward_point`, `side_from_vector` | pointer/target hit testing |
+| | `edge_exists_between`, `edge_target` | rewire/connect duplicate and endpoint rules |
 | | `opposite_side` | connect-to-empty target side |
 | | `curve_path`, `render_edge`, `render_edges` | cubic SVG paths |
-| | `distance` | drag threshold |
+| | `distance`, `nodes_in_rect` | drag threshold and marquee hits |
 | `domain/quiz.rs` | `new_id`, `new_question`, `new_node` | stable IDs and defaults |
 | | `measure_node_width` | approximate label width |
 | | `next_node_number` | continue Node N numbering (tested; future use) |
@@ -91,7 +93,7 @@ origin.
 | | `validate_document` | document limits + graph rules |
 | | `validate_nodes`, `validate_quiz`, `validate_links` | focused validators |
 | `domain/schema.rs` | `build_schema`, `render_schema` | schemars JSON Schema |
-| `domain/tests.rs` | six tests | validation, geometry, quiz, schema |
+| `domain/tests.rs` | seven tests | validation, geometry, edge targets, quiz, schema |
 
 ### Server
 
@@ -116,7 +118,7 @@ origin.
 | | `remove_node` | remove node + incident links |
 | | `rename_node`, `set_blocks`, `set_questions`, `set_status` | node edits |
 | | `move_nodes` | group drag updates |
-| | `add_link`, `remove_link` | link edits |
+| | `add_link`, `rewire_link`, `remove_link` | link edits and endpoint rewiring |
 | `state/selection.rs` | `Selection` | node/edge/panel selection |
 | | `clear`, `select_node`, `focus_node`, `select_edge`, `select_marquee`, `close_panel` | selection transitions |
 | | `single_node` | panel eligibility |
@@ -127,10 +129,13 @@ origin.
 | File | Component | Responsibility | Calls |
 | --- | --- | --- | --- |
 | `components/header.rs` | `Header` | title, picker, save status, new/delete | app callbacks |
-| `components/canvas.rs` | `Canvas` | SVG grid, nodes, handles, drag/connect/marquee | geometry, state callbacks |
-| `components/canvas_edges.rs` | `CanvasEdges` | edge strokes + transparent hit paths | geometry |
-| `components/canvas_overlays.rs` | `CanvasOverlays` | connection preview + marquee box | geometry |
+| `components/workspace_canvas.rs` | `WorkspaceCanvas` | canvas/state wiring, context-menu host | Canvas, ContextMenu, state |
+| `components/canvas.rs` | `Canvas` | SVG grid, drag/connect/rewire/marquee coordinator | CanvasNode, CanvasEdges, CanvasOverlays |
+| `components/canvas_node.rs` | `CanvasNode` | node shape, side handles, drag/context events | geometry |
+| `components/canvas_edges.rs` | `CanvasEdges` | edge strokes, hit paths, rewire handles | geometry |
+| `components/canvas_overlays.rs` | `CanvasOverlays` | connect/edge previews + marquee box | geometry |
 | `components/canvas_types.rs` | interaction types | outcomes/state/pointer conversion | geometry |
+| `components/context_menu.rs` | `ContextMenu` | fixed-position node/edge delete menu | platform viewport size |
 | `components/panel.rs` | `NodePanel` | title/status/tabs and panel actions | LearnPanel, QuizPanel |
 | `components/learn.rs` | `LearnPanel` | block add/edit/delete/preview | markdown renderer |
 | `components/markdown.rs` | `render_markdown`, `extract_math`, `render_math` | safe markdown + KaTeX HTML | pulldown-cmark, ammonia, katex-rs |
@@ -166,15 +171,20 @@ origin.
 ```mermaid
 flowchart TD
     App --> Header
-    App --> Canvas
+    App --> WorkspaceCanvas
     App --> PanelHost
     App --> Footer["footer markup in app.rs"]
+    WorkspaceCanvas --> Canvas
+    WorkspaceCanvas --> ContextMenu
+    WorkspaceCanvas --> State["GraphState / Selection"]
+    Canvas --> CanvasNode
+    Canvas --> CanvasEdges
+    Canvas --> CanvasOverlays
+    Canvas --> Geometry["domain/geometry.rs"]
     PanelHost --> NodePanel
     NodePanel --> LearnPanel
     NodePanel --> QuizPanel
     LearnPanel --> Markdown["markdown.rs"]
-    Canvas --> Geometry["domain/geometry.rs"]
-    Canvas --> State["GraphState / Selection"]
     App --> State
     App --> Functions["server/functions.rs"]
     Functions --> Repository

@@ -62,6 +62,9 @@ Copy `.env.example` to `.env` if you prefer file-based settings.
 - Debounced autosave with save state and retry
 - SVG canvas with grid, nodes, dashed curved edges, and status colors
 - Node dragging, drag-to-connect, drag-to-empty-canvas node creation
+- Hover handles for rewiring an edge endpoint; dropping on empty canvas deletes
+  the edge
+- Right-click menus on nodes and edges for quick deletion
 - Marquee selection and Delete-selected action
 - Node panel with live title, study status, Learn tab, and Quiz tab
 - Markdown blocks with headings, lists, task lists, quotes, code, links, and
@@ -70,8 +73,8 @@ Copy `.env.example` to `.env` if you prefer file-based settings.
   feedback, and reset
 - Existing SQLite data migration, including normalization of old timestamp rows
 
-Known follow-ups from the previous UI: edge rewiring and right-click context
-menus are not yet ported.
+The previous UI's inline node-name editor and selection-bounds outline are not
+ported; double-clicking a node opens the panel where its name is editable.
 
 ## Data format
 
@@ -161,10 +164,13 @@ src/
     selection.rs          node/edge/panel selection
   components/
     header.rs             title, map picker, save state
+    workspace_canvas.rs   canvas/state wiring and context-menu host
     canvas.rs             SVG interaction surface
-    canvas_edges.rs       edge rendering and hit paths
-    canvas_overlays.rs    connect preview and marquee box
+    canvas_node.rs        node shape, side handles, drag/context events
+    canvas_edges.rs       edge rendering, hit paths, rewire handles
+    canvas_overlays.rs    connect/edge previews and marquee box
     canvas_types.rs       interaction state/outcomes
+    context_menu.rs       fixed-position node/edge delete menu
     panel.rs              node detail shell
     learn.rs              markdown block editor
     quiz.rs               MCQ editor/practice
@@ -197,10 +203,10 @@ cargo clippy --no-default-features --features server
 cargo fmt --check
 ```
 
-The Rust tests cover document validation, graph geometry, quiz option rules,
-and schema generation. The fullstack build was also manually verified with a
-headless Chromium run: page load, hydration, first-node creation, and database
-autosave all work.
+The Rust tests cover document validation, graph geometry, edge rewiring, quiz
+option rules, and schema generation. The fullstack build was also manually
+verified with a headless Chromium run: page load, hydration, first-node
+creation, and database autosave all work.
 
 ## Database migration
 

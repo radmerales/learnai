@@ -1,6 +1,8 @@
 use dioxus::prelude::*;
 
 use crate::domain::document::{MindmapDocument, MindmapResource, MindmapSummary};
+
+#[cfg(feature = "server")]
 use crate::domain::validation::{normalize_title, validate_document};
 
 use super::error::ApiError;

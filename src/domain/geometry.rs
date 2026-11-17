@@ -27,6 +27,13 @@ pub struct RenderedEdge {
     pub path: String,
 }
 
+/// Which end of an existing edge the user is dragging.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum EdgeEnd {
+    From,
+    To,
+}
+
 pub fn side_point(node: &MindmapNode, side: &Side) -> Point {
     match side {
         Side::Top => Point::new(node.x, node.y - NODE_H / 2.0 - ANCHOR_OFFSET),
@@ -64,6 +71,16 @@ pub fn side_toward_point(node: &MindmapNode, point: Point) -> Side {
     }
 }
 
+pub fn side_from_vector(dx: f64, dy: f64) -> Side {
+    if dx.abs() >= dy.abs() {
+        if dx >= 0.0 { Side::Right } else { Side::Left }
+    } else if dy >= 0.0 {
+        Side::Bottom
+    } else {
+        Side::Top
+    }
+}
+
 pub fn opposite_side(side: &Side) -> Side {
     match side {
         Side::Top => Side::Bottom,
@@ -71,6 +88,53 @@ pub fn opposite_side(side: &Side) -> Side {
         Side::Bottom => Side::Top,
         Side::Left => Side::Right,
     }
+}
+
+/// True when an undirected edge already joins the two nodes. Rewiring and
+/// connecting both use this to keep the graph free of duplicate links.
+pub fn edge_exists_between(
+    links: &[MindmapLink],
+    a: &str,
+    b: &str,
+    ignore_id: Option<&str>,
+) -> bool {
+    links.iter().any(|link| {
+        ignore_id != Some(link.id.as_str())
+            && ((link.from_node == a && link.to == b) || (link.from_node == b && link.to == a))
+    })
+}
+
+/// Resolve the node under the pointer as the new endpoint of an existing edge.
+///
+/// `fixed_node_id` is the endpoint that is *not* moving. Releasing over that
+/// node, the other endpoint, or a node that already has an edge to the other
+/// endpoint is not a valid move.
+pub fn edge_target(
+    nodes: &[MindmapNode],
+    links: &[MindmapLink],
+    edge_id: &str,
+    fixed_node_id: &str,
+    point: Point,
+) -> Option<(String, Side)> {
+    let link = links.iter().find(|link| link.id == edge_id)?;
+    let index = hit_test_node(nodes, point)?;
+    let hit = &nodes[index];
+    if hit.id == fixed_node_id {
+        return None;
+    }
+
+    let other_end = if link.from_node == fixed_node_id {
+        &link.to
+    } else if link.to == fixed_node_id {
+        &link.from_node
+    } else {
+        return None;
+    };
+    if hit.id == *other_end || edge_exists_between(links, other_end, &hit.id, Some(edge_id)) {
+        return None;
+    }
+
+    Some((hit.id.clone(), side_toward_point(hit, point)))
 }
 
 pub fn curve_path(from: Point, from_side: &Side, to: Point, to_side: &Side) -> String {
@@ -132,4 +196,23 @@ pub fn render_edges(nodes: &[MindmapNode], links: &[MindmapLink]) -> Vec<Rendere
 
 pub fn distance(a: Point, b: Point) -> f64 {
     ((a.x - b.x).powi(2) + (a.y - b.y).powi(2)).sqrt()
+}
+
+/// IDs of nodes touched by the marquee rectangle between two drag points.
+pub fn nodes_in_rect(nodes: &[MindmapNode], start: Point, current: Point) -> Vec<String> {
+    let min_x = start.x.min(current.x);
+    let max_x = start.x.max(current.x);
+    let min_y = start.y.min(current.y);
+    let max_y = start.y.max(current.y);
+
+    nodes
+        .iter()
+        .filter(|node| {
+            node.x + node.width / 2.0 >= min_x
+                && node.x - node.width / 2.0 <= max_x
+                && node.y + NODE_H / 2.0 >= min_y
+                && node.y - NODE_H / 2.0 <= max_y
+        })
+        .map(|node| node.id.clone())
+        .collect()
 }

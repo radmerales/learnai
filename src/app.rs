@@ -4,12 +4,10 @@ use crate::app_actions::{
     PanelHost, apply_resource, delete_map_handler, document_json, load_initial, new_map_handler,
     open_map_handler, retry_save_handler, summary_from, title_change_handler,
 };
-use crate::components::canvas::Canvas;
-use crate::components::canvas_types::{ConnectOutcome, MarqueeOutcome};
 use crate::components::header::Header;
+use crate::components::workspace_canvas::WorkspaceCanvas;
 use crate::components::workspace_footer::WorkspaceFooter;
 use crate::domain::document::MindmapSummary;
-use crate::domain::geometry::{Point, opposite_side};
 use crate::platform;
 use crate::server::save_mindmap;
 use crate::state::{GraphState, Selection};
@@ -154,36 +152,6 @@ pub fn App() -> Element {
         save_error,
     );
 
-    let on_select_node = move |(id, additive): (String, bool)| {
-        selection.write().select_node(id, additive);
-    };
-    let on_focus_node = move |id: String| selection.write().focus_node(id);
-    let on_select_edge = move |(id, additive): (String, bool)| {
-        selection.write().select_edge(id, additive);
-    };
-    let on_move_nodes = move |moves: Vec<(String, f64, f64)>| graph.write().move_nodes(&moves);
-    let on_connect = move |outcome: ConnectOutcome| {
-        let mut state = graph.write();
-        if let Some((target_id, target_side)) = outcome.target {
-            state.add_link(&outcome.from_id, &target_id, outcome.from_side, target_side);
-        } else {
-            let node = state.add_node_at(outcome.point.x, outcome.point.y);
-            let to_side = opposite_side(&outcome.from_side);
-            state.add_link(&outcome.from_id, &node.id, outcome.from_side, to_side);
-            drop(state);
-            selection.write().focus_node(node.id);
-        }
-    };
-    let on_create_node = move |point: Point| {
-        let node = graph.write().add_node_at(point.x, point.y);
-        selection.write().focus_node(node.id);
-    };
-    let on_marquee = move |outcome: MarqueeOutcome| {
-        selection
-            .write()
-            .select_marquee(outcome.node_ids, Vec::new(), outcome.additive);
-    };
-    let on_clear_selection = move |_| selection.write().clear();
     let delete_selection = move |_| {
         let (nodes, edges) = {
             let current = selection.read();
@@ -225,19 +193,13 @@ pub fn App() -> Element {
             }
 
             div { class: "relative flex-1 overflow-hidden",
-                Canvas {
+                WorkspaceCanvas {
                     nodes: graph().nodes,
                     links: graph().links,
                     selected_node_ids: selection.read().node_ids.clone(),
                     selected_edge_ids: selection.read().edge_ids.clone(),
-                    on_select_node,
-                    on_focus_node,
-                    on_select_edge,
-                    on_move_nodes,
-                    on_connect,
-                    on_marquee,
-                    on_create_node,
-                    on_clear_selection,
+                    graph,
+                    selection,
                 }
 
                 if let Some(node) = panel_node.clone() {

@@ -111,4 +111,16 @@
   .markdown input[type="checkbox"] {
     margin-right: 0.4rem;
   }
+
+  /* Edge endpoint handles stay out of the way until the edge is hovered. */
+  .edge-handle {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .edge-group:hover .edge-handle {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }

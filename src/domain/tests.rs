@@ -2,7 +2,10 @@ use crate::domain::document::{
     LearnContent, MindmapDocument, MindmapLink, MindmapNode, NoteStatus, QuizContent, QuizQuestion,
     Side,
 };
-use crate::domain::geometry::{Point, hit_test_node, opposite_side, render_edges, side_point};
+use crate::domain::geometry::{
+    Point, edge_target, hit_test_node, nodes_in_rect, opposite_side, render_edges,
+    side_from_vector, side_point,
+};
 use crate::domain::quiz::{delete_option, new_node, next_node_number, update_option};
 use crate::domain::schema::render_schema;
 use crate::domain::validation::{normalize_title, validate_document};
@@ -96,6 +99,45 @@ fn computes_geometry_and_edges() {
     let rendered = render_edges(&[left, right], &[link("l1", "a", "b")]);
     assert_eq!(rendered.len(), 1);
     assert!(rendered[0].path.starts_with("M "));
+    assert_eq!(side_from_vector(10.0, -2.0), Side::Right);
+    assert_eq!(side_from_vector(1.0, 9.0), Side::Bottom);
+    assert_eq!(
+        nodes_in_rect(
+            &[node("a", 100.0, 100.0), node("b", 300.0, 100.0)],
+            Point::new(0.0, 0.0),
+            Point::new(200.0, 200.0),
+        ),
+        vec!["a".to_string()]
+    );
+}
+
+#[test]
+fn resolves_valid_edge_rewire_targets() {
+    let a = node("a", 100.0, 100.0);
+    let b = node("b", 300.0, 100.0);
+    let c = node("c", 500.0, 100.0);
+    let nodes = vec![a, b, c];
+    let links = vec![link("l1", "a", "b")];
+
+    // Moving the "from" end leaves "b" fixed; the pointer is over "c".
+    assert_eq!(
+        edge_target(&nodes, &links, "l1", "b", Point::new(500.0, 100.0)),
+        Some(("c".to_string(), Side::Right))
+    );
+    // The fixed end and the other end are not valid targets.
+    assert_eq!(
+        edge_target(&nodes, &links, "l1", "b", Point::new(300.0, 100.0)),
+        None
+    );
+    assert_eq!(
+        edge_target(&nodes, &links, "l1", "b", Point::new(100.0, 100.0)),
+        None
+    );
+    // Empty canvas has no target.
+    assert_eq!(
+        edge_target(&nodes, &links, "l1", "b", Point::new(900.0, 900.0)),
+        None
+    );
 }
 
 #[test]

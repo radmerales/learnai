@@ -31,7 +31,7 @@
 - `src/server/error.rs` — API error/status mapping
 - `src/state/graph.rs` — node/link mutations
 - `src/state/selection.rs` — node/edge/panel selection
-- `src/components/` — Header, Canvas, NodePanel, Learn, Quiz, markdown
+- `src/components/` — Header, WorkspaceCanvas, Canvas, NodePanel, Learn, Quiz, context menu, markdown
 - `assets/` — HTML shell, Tailwind source, favicon
 - `migrations/` — SQLite schema and timestamp normalization
 - `scripts/` — build, dev, and check commands

@@ -2,6 +2,7 @@ use crate::domain::document::{
     LearnContent, MindmapDocument, MindmapLink, MindmapNode, MindmapResource, NoteStatus,
     QuizContent, QuizQuestion, Side,
 };
+use crate::domain::geometry::{EdgeEnd, edge_exists_between};
 use crate::domain::quiz::{measure_node_width, new_node};
 
 #[derive(Clone, Debug, Default)]
@@ -86,12 +87,7 @@ impl GraphState {
     }
 
     pub fn add_link(&mut self, from: &str, to: &str, from_side: Side, to_side: Side) {
-        if from == to
-            || self.links.iter().any(|link| {
-                (link.from_node == from && link.to == to)
-                    || (link.from_node == to && link.to == from)
-            })
-        {
+        if from == to || edge_exists_between(&self.links, from, to, None) {
             return;
         }
         self.links.push(MindmapLink {
@@ -103,7 +99,73 @@ impl GraphState {
         });
     }
 
+    /// Move one end of an existing edge to another node. The caller has
+    /// already validated that the pointer is over a node; this method keeps
+    /// the final self-link and duplicate-link guards.
+    pub fn rewire_link(&mut self, id: &str, moving: EdgeEnd, node_id: &str, side: Side) -> bool {
+        let Some(index) = self.links.iter().position(|link| link.id == id) else {
+            return false;
+        };
+        let other_end = match moving {
+            EdgeEnd::From => self.links[index].to.clone(),
+            EdgeEnd::To => self.links[index].from_node.clone(),
+        };
+        if node_id == other_end || edge_exists_between(&self.links, &other_end, node_id, Some(id)) {
+            return false;
+        }
+
+        let link = &mut self.links[index];
+        match moving {
+            EdgeEnd::From => {
+                link.from_node = node_id.to_string();
+                link.from_side = side;
+            }
+            EdgeEnd::To => {
+                link.to = node_id.to_string();
+                link.to_side = side;
+            }
+        }
+        true
+    }
+
     pub fn remove_link(&mut self, id: &str) {
         self.links.retain(|link| link.id != id);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn link(id: &str, from: &str, to: &str) -> MindmapLink {
+        MindmapLink {
+            id: id.to_string(),
+            from_node: from.to_string(),
+            to: to.to_string(),
+            from_side: Side::Right,
+            to_side: Side::Left,
+        }
+    }
+
+    #[test]
+    fn rewires_edges_and_rejects_conflicts() {
+        let mut graph = GraphState {
+            nodes: Vec::new(),
+            links: vec![
+                link("l1", "a", "b"),
+                link("l2", "b", "c"),
+                link("l3", "a", "c"),
+            ],
+        };
+
+        assert!(!graph.rewire_link("l1", EdgeEnd::From, "b", Side::Right));
+        assert!(!graph.rewire_link("l1", EdgeEnd::From, "c", Side::Right));
+        assert!(!graph.rewire_link("missing", EdgeEnd::From, "d", Side::Right));
+        assert!(graph.rewire_link("l1", EdgeEnd::From, "d", Side::Right));
+        assert_eq!(graph.links[0].from_node, "d");
+        assert_eq!(graph.links[0].from_side, Side::Right);
+        assert!(graph.rewire_link("l1", EdgeEnd::To, "e", Side::Top));
+        assert_eq!(graph.links[0].to, "e");
+        assert_eq!(graph.links[0].to_side, Side::Top);
     }
 }
