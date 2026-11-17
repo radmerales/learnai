@@ -1,194 +1,113 @@
 # learn.ai
 
-learn.ai is a small visual study workspace. You build a mindmap of topics, write
-markdown notes for each topic in the **Learn** tab, and author multiple-choice
-questions in the **Quiz** tab. Maps are saved to a Python backend, so refreshing
-the page does not lose your work.
+learn.ai is a visual study workspace built entirely in Rust. You build a
+mindmap, write markdown notes in the **Learn** tab, and author multiple-choice
+questions in the **Quiz** tab. Maps are saved to a SQLite database through typed
+Dioxus server functions.
 
-The project is intentionally small, but it is a complete full-stack app: a
-React/TypeScript frontend, a FastAPI/Python backend, a SQLite database, unit and
-component tests, and a documented JSON format.
+The project is a full-stack Rust application:
 
-For a complete file-by-file call map, see
-[`docs/system-map.md`](docs/system-map.md).
+- **Dioxus 0.7** for the web UI and server functions
+- **Axum 0.8** as the HTTP server under Dioxus fullstack
+- **SQLx + SQLite** for persistence
+- **Tailwind CSS** for the paper/ink visual language
+- **pulldown-cmark, ammonia, and katex-rs** for Learn content
 
-## Start here: web terms for Python developers
+## Requirements
 
-If you know Python but not web development, these are the ideas the code uses:
+- Rust 1.100 or newer (`rust-toolchain.toml` pins the toolchain)
+- `wasm32-unknown-unknown` target
+- `wasm-bindgen-cli` 0.2.130
+- Tailwind CSS CLI 3.4 (or `npx`, which the build script can use)
 
-| Web term | Python comparison |
-| --- | --- |
-| **Frontend** | Code that runs in the browser. Here: React + TypeScript. |
-| **Backend** | Code that runs on a server. Here: FastAPI + Python. |
-| **HTTP API** | Functions exposed over URLs. `GET /api/mindmaps` is like calling `list_mindmaps()`, but over the network. |
-| **JSON** | A text format for nested dict/list data. Roughly `json.loads` / `json.dumps`, but every language understands it. |
-| **Endpoint** | One URL + HTTP method (`GET`, `POST`, `PUT`, `DELETE`). |
-| **React component** | A function that returns UI. Props are arguments; state is data that can trigger a re-render. |
-| **Hook** | A reusable function starting with `use` that lets components share stateful behavior. |
-| **TypeScript type** | Like a Python `TypedDict` for the editor. It is erased at runtime, so the backend validates too. |
-| **`fetch` / Promise** | The browser's HTTP client. A Promise is similar to an `asyncio` task; `await` waits for it. |
-| **SQLite** | A database stored in one file. No separate database server. |
-| **ORM** | Maps Python classes to tables/rows. Here: SQLAlchemy. |
-| **CORS** | Browser security rules for calling a backend on another origin. The Vite dev proxy avoids this in development. |
+```bash
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli --version 0.2.130
+```
 
-## Features
+The dev container installs these automatically. The Dioxus CLI (`dx`) is
+optional; `scripts/build.sh` builds the client and server without it.
 
-- **Mindmap canvas** — create nodes, drag them, and connect them with curved
-  edges. Drag from a side handle onto empty canvas to create a connected node.
-- **Multi-select** — marquee-select, move groups, and delete selections with
-  `Delete`/`Backspace`.
-- **Study status** — each node is **To Do** (grey), **Doing** (blue), or
-  **Done** (green). The node border and its anchor circles use the same color.
-- **Learn tab** — block-by-block markdown editing with live preview. Supports
-  headings, lists, task lists, quotes, code fences, links, inline formatting,
-  and Obsidian-style LaTeX (`$...$`, `$$...$$`).
-- **Quiz tab** — add multiple-choice questions, edit the question and answer
-  options, mark the correct option, delete questions/options, and check answers.
-- **Saved maps** — multiple maps, an editable title, a map picker, and
-  debounced autosave with a visible save status.
-- **Safe markdown** — the renderer builds React elements instead of injecting
-  raw HTML, and links with unsafe protocols are rendered as plain text.
+## Run
 
-## Stack
-
-| Layer | Technology |
-| --- | --- |
-| Frontend | React 19, Vite, TypeScript, Tailwind CSS, KaTeX |
-| Backend | Python 3.12, FastAPI, Pydantic, SQLAlchemy |
-| Database | SQLite (one file, `learnai.db`) |
-| Frontend tests | Vitest, jsdom, Testing Library |
-| Backend tests | pytest, FastAPI TestClient |
-
-## Quick start
-
-### Option A: dev container
-
-Open the repository in its dev container. The `postCreateCommand` installs both
-Python and Node dependencies. Then run:
+The simplest path is the build + run script:
 
 ```bash
 ./scripts/dev.sh
 ```
 
-### Option B: local environment
+Open <http://localhost:8080>. The first run creates `learnai.db` in the
+workspace (or uses `LEARN_AI_DATABASE_URL`).
+
+Build without running:
 
 ```bash
-python3 -m venv .venv
-.venv/bin/pip install -r backend/requirements-dev.txt
-npm --prefix frontend install
-./scripts/dev.sh
+./scripts/build.sh
 ```
 
-Open <http://localhost:5173>. The API runs on <http://localhost:8080>, and
-FastAPI's interactive API explorer is at <http://localhost:8080/docs>.
+The output is `target/release/learn-ai` plus `target/release/public`.
+`scripts/build.sh` also works with `CARGO_TARGET_DIR` and `PROFILE`.
 
-You can also run the two servers separately:
+The database path and future settings are environment variables:
 
 ```bash
-# terminal 1
-cd backend
-../.venv/bin/uvicorn app.main:app --reload --port 8080
-
-# terminal 2
-npm --prefix frontend run dev
+LEARN_AI_DATABASE_URL=sqlite:////workspace/learnai.db
 ```
 
-The Vite development server proxies `/api` to port 8080 (see
-`frontend/vite.config.ts`), so the browser can call the backend without CORS
-configuration.
+Copy `.env.example` to `.env` if you prefer file-based settings.
 
-## Configuration
+## Current features
 
-Settings are environment variables read by `backend/app/config.py`:
+- Multiple maps with a picker, new/delete actions, and an editable title
+- Debounced autosave with save state and retry
+- SVG canvas with grid, nodes, dashed curved edges, and status colors
+- Node dragging, drag-to-connect, drag-to-empty-canvas node creation
+- Marquee selection and Delete-selected action
+- Node panel with live title, study status, Learn tab, and Quiz tab
+- Markdown blocks with headings, lists, task lists, quotes, code, links, and
+  inline/display math
+- MCQ editor with options, correct-answer radio, add/delete options, practice
+  feedback, and reset
+- Existing SQLite data migration, including normalization of old timestamp rows
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `LEARN_AI_DATABASE_URL` | `<repo>/learnai.db` | SQLAlchemy database URL. |
-| `LEARN_AI_CORS_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated browser origins allowed to call the API directly. |
+Known follow-ups from the previous UI: edge rewiring and right-click context
+menus are not yet ported.
 
-Copy `.env.example` to `.env` to override them locally. The dev container sets
-`LEARN_AI_DATABASE_URL` in `docker-compose.yml`. The database file is ignored by
-git.
+## Data format
 
-## How data flows
-
-```
-React graph state
-      │  toMindmapDocument()
-      ▼
-JSON document ── PUT /api/mindmaps/{id} ──► Pydantic validation
-      ▲                                             │
-      │                                             ▼
-frontend/src/persistence.ts                  SQLite mindmaps table
-      │                                             │
-      └──── fromMindmapDocument() ◄── GET /api/mindmaps/{id}
-```
-
-1. On page load, `useMindmapSync` asks for the map list and loads the remembered
-   map, the most recently updated map, or a new empty map.
-2. The JSON document is converted into the frontend's `Node`/`Link` objects and
-   copied into the graph reducer.
-3. Canvas, Learn, and Quiz edits update that graph state.
-4. `useMindmapAutosave` waits 800 ms after the last edit, then sends the whole
-   document with `PUT`.
-5. FastAPI validates it with Pydantic, stores it in SQLite, and returns the
-   saved resource with server timestamps.
-
-A full document replace keeps the API simple. Last write wins, which is fine for
-the current single-user setup.
-
-## JSON format (schema version 1)
-
-`GET /api/mindmaps/{id}` returns this shape:
+The database stores one row per map. The `document` JSON column contains the
+nodes and links:
 
 ```json
 {
   "schemaVersion": 1,
-  "id": "mm_7f3a9c2e",
   "title": "Biology review",
-  "createdAt": "2026-11-16T10:00:00.000Z",
-  "updatedAt": "2026-11-16T10:42:11.000Z",
   "nodes": [
     {
-      "id": "n_1a2b3c4",
+      "id": "n_1",
       "label": "Cell respiration",
       "status": "doing",
       "x": 420,
       "y": 220,
       "width": 168,
-      "learn": {
-        "blocks": [
-          "## Overview\n\nGlycolysis happens in the cytosol.",
-          "- Inputs: glucose, NAD⁺\n- Outputs: pyruvate, ATP, NADH"
-        ]
-      },
+      "learn": { "blocks": ["Glycolysis happens in the cytosol."] },
       "quiz": {
         "questions": [
           {
-            "id": "q_9d8e7f6",
+            "id": "q_1",
             "prompt": "Where does glycolysis take place?",
-            "options": ["Cytosol", "Mitochondrial matrix", "Nucleus", "Golgi apparatus"],
+            "options": ["Cytosol", "Mitochondria", "Nucleus", "Golgi"],
             "answerIndex": 0
           }
         ]
       }
-    },
-    {
-      "id": "n_5f6g7h8",
-      "label": "Krebs cycle",
-      "status": "todo",
-      "x": 700,
-      "y": 220,
-      "width": 140,
-      "learn": { "blocks": [""] },
-      "quiz": { "questions": [] }
     }
   ],
   "links": [
     {
-      "id": "l_2b3c4d5",
-      "from": "n_1a2b3c4",
-      "to": "n_5f6g7h8",
+      "id": "l_1",
+      "from": "n_1",
+      "to": "n_2",
       "fromSide": "right",
       "toSide": "left"
     }
@@ -196,164 +115,108 @@ the current single-user setup.
 }
 ```
 
-`POST` and `PUT` bodies use the same document without `id`, `createdAt`, and
-`updatedAt`; the server owns those fields.
-
-### Field notes
-
-- `schemaVersion` — currently `1`. The backend rejects unknown versions.
-- `status` — `"todo"`, `"doing"`, or `"done"`.
-- `x`, `y`, `width` — canvas position and measured node width, in pixels.
-- `learn.blocks` — ordered markdown strings. Empty strings preserve blank
-  editor blocks.
-- `quiz.questions` — each question needs at least two options and a zero-based
-  `answerIndex` pointing at a valid option.
-- `fromSide` / `toSide` — `"top"`, `"right"`, `"bottom"`, or `"left"`. Storing
-  the side keeps an edge anchored when its node moves.
-- IDs are opaque strings, unique inside their collection.
-- Links must reference existing nodes, cannot connect a node to itself, and
-  cannot duplicate another connection.
-
-The generated JSON Schema is at [`docs/mindmap.schema.json`](docs/mindmap.schema.json),
-and a complete example is at
-[`backend/examples/mindmap.json`](backend/examples/mindmap.json).
-
-Regenerate the schema after changing the Pydantic models:
+The Rust domain models are the source of truth. Generate the JSON Schema with:
 
 ```bash
-cd backend
-../.venv/bin/python -m app.schema_export
+cargo run --no-default-features --bin export-schema > docs/mindmap.schema.json
 ```
 
-## API
+A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
 
-| Method | Path | Purpose | Success |
-| --- | --- | --- | --- |
-| `GET` | `/health` | Health check alias | `200` |
-| `GET` | `/api/health` | Health check | `200` |
-| `GET` | `/api/mindmaps` | List map summaries | `200` |
-| `POST` | `/api/mindmaps` | Create a map | `201` |
-| `GET` | `/api/mindmaps/{id}` | Load one full map | `200` |
-| `PUT` | `/api/mindmaps/{id}` | Replace a map (autosave) | `200` |
-| `DELETE` | `/api/mindmaps/{id}` | Delete a map | `204` |
+## Server functions
 
-Validation failures return `422` with details from FastAPI/Pydantic. Missing
-maps return `404`.
+The UI calls typed Dioxus server functions. Their HTTP shapes are:
+
+| Method | Path | Named body |
+| --- | --- | --- |
+| `GET` | `/api/mindmaps` | — |
+| `POST` | `/api/mindmaps` | `{ "document": MindmapDocument }` |
+| `GET` | `/api/mindmaps/{id}` | — |
+| `PUT` | `/api/mindmaps/{id}` | `{ "id": "...", "document": MindmapDocument }` |
+| `DELETE` | `/api/mindmaps/{id}` | `{ "id": "..." }` |
+
+`GET /health` and `GET /api/health` return `{"status":"ok"}`.
 
 ## Project layout
 
-```
-backend/
-  app/
-    main.py            FastAPI app, CORS, startup
-    config.py          Environment settings
-    database.py        SQLAlchemy engine and request-scoped session
-    models.py          mindmaps table
-    schemas.py         Pydantic validation models
-    documents.py       Row <-> API model conversion and timestamps
-    routers/
-      mindmaps.py      CRUD endpoints
-      health.py        /health and /api/health
-    schema_export.py   Generates docs/mindmap.schema.json
-  tests/               pytest API and validation tests
-  examples/            Example JSON document
+```text
+src/
+  main.rs                 Dioxus launch/serve entrypoint + health routes
+  app.rs                  workspace state, effects, layout
+  app_actions.rs          load/apply helpers, map handlers, panel host
+  domain/
+    document.rs           serde/schemars data model
+    geometry.rs           SVG anchors, curves, hit testing
+    quiz.rs               MCQ helpers and node creation
+    validation.rs         graph/document rules
+    schema.rs             JSON Schema generation
+    tests.rs              domain tests
+  server/
+    db.rs                 SQLx pool + migrations
+    repository.rs         CRUD/repository layer
+    functions.rs          typed Dioxus server functions
+    error.rs              API error/status mapping
+  state/
+    graph.rs              node/link mutations
+    selection.rs          node/edge/panel selection
+  components/
+    header.rs             title, map picker, save state
+    canvas.rs             SVG interaction surface
+    canvas_edges.rs       edge rendering and hit paths
+    canvas_overlays.rs    connect preview and marquee box
+    canvas_types.rs       interaction state/outcomes
+    panel.rs              node detail shell
+    learn.rs              markdown block editor
+    quiz.rs               MCQ editor/practice
+    markdown.rs           safe markdown + math rendering
+    workspace_footer.rs   selection/footer controls
+  platform.rs             web storage/timers/confirm with server fallbacks
+  bin/export_schema.rs    schema export tool
 
-frontend/
-  src/
-    api/               Typed fetch client and API document types
-    persistence.ts     JSON <-> graph-state conversion
-    mindmapLibrary.ts  localStorage helpers and map summaries
-    canvasPoint.ts     Browser -> SVG coordinate conversion
-    graph.ts           Domain types, node geometry, edge rendering
-    interaction.ts     Hit-testing and connection rules
-    markdown.tsx       Safe inline markdown renderer
-    quiz.ts            Quiz schema and pure question helpers
-    status.ts          Study statuses and colors
-    state/             Pure reducer and graph transitions
-    hooks/
-      useMindmapSync.ts         Load/create/switch maps, orchestrate saves
-      useMindmapAutosave.ts     Debounced PUT queue and save status
-      useMindmapGraph.ts        Graph state and mutations
-      useMindmapInteractions.ts Pointer-event coordinator
-      useNodeDrag.ts            Node and group dragging
-      useConnectDrag.ts         Create edges and connected nodes
-      useEdgeDrag.ts            Rewire or remove edges
-      useMindmapContextMenu.ts  Right-click menu lifecycle
-      ...                       Selection, marquee, labels, hover
-    components/        Presentational React components
-    test/              Shared test fixtures and setup
-
-docs/mindmap.schema.json   Generated JSON Schema
-scripts/dev.sh             Run backend + frontend together
+assets/                   HTML template, Tailwind input, favicon
+migrations/               SQLx schema + timestamp normalization
+scripts/                  build, dev, check
+examples/mindmap.json     hand-written contract example
+docs/                     JSON Schema and system map
 ```
 
-Source files stay under 300 lines. The project-specific rule and architecture
-map are in `AGENTS.md`.
+Every source file stays under 300 lines. See
+[`docs/system-map.md`](docs/system-map.md) for the file/function/call map.
 
-## Tests
-
-Run everything:
+## Tests and checks
 
 ```bash
-npm --prefix frontend run test
-npm --prefix frontend run test:coverage
-cd backend && ../.venv/bin/python -m pytest --cov=app --cov-report=term-missing
+./scripts/check.sh
 ```
 
-The frontend suite uses Vitest + jsdom + Testing Library. It covers:
-
-- JSON serialization/deserialization and schema-version rejection
-- quiz helper rules and reducer transitions
-- hit-testing, connection rules, node geometry, and selection bounds
-- markdown rendering and unsafe-link handling
-- the quiz editor, header save states, and canvas overlays
-- the autosave debounce/queue and initial map-loading hook
-
-The backend suite uses a temporary SQLite database and FastAPI's TestClient. It
-covers CRUD, round-trip persistence of Learn/Quiz content, validation failures,
-the generated JSON Schema, and the example document.
-
-Other useful checks:
+Or individually:
 
 ```bash
-npm --prefix frontend run build
-npm --prefix frontend run lint
-cd backend && ../.venv/bin/ruff check .
+cargo test --no-default-features
+cargo clippy --no-default-features --features server
+cargo fmt --check
 ```
 
-## What is saved (and what is not)
+The Rust tests cover document validation, graph geometry, quiz option rules,
+and schema generation. The fullstack build was also manually verified with a
+headless Chromium run: page load, hydration, first-node creation, and database
+autosave all work.
 
-Saved: map title, nodes, positions, widths, statuses, Learn blocks, Quiz
-questions, links, and anchor sides.
+## Database migration
 
-Not saved: current selection, open panel/tab, edits still inside the 800 ms
-autosave window when the tab closes, and quiz answer selections. Quiz answers
-are intentionally a temporary practice aid; only the questions themselves are
-part of the document.
+The original SQLite rows use a SQLAlchemy timestamp format such as
+`2026-11-17 00:03:03.956255`. `migrations/0002_normalize_timestamps.sql`
+converts them to RFC-3339 (`...T...Z`) at startup. Back up `learnai.db` before
+the first Rust run.
 
-## Design decisions
+## Design notes
 
-- **One JSON document per map.** The UI saves and loads a map as one unit, so a
-  single JSON column is simpler than separate node/block/question tables.
-- **Server-side validation.** TypeScript types disappear at runtime; Pydantic
-  enforces the real contract before anything is stored.
-- **Debounced full-document saves.** Dragging fires many state updates, so the
-  browser waits for quiet and sends one replacement request.
-- **No authentication.** This is a local development app. Do not expose it to
-  the public internet without adding authentication and authorization.
-- **SQLite for the first version.** No external database service is needed.
-  `Base.metadata.create_all()` creates the table; add Alembic before making
-  production table-schema changes.
-
-## Troubleshooting
-
-- **"Could not load map"** — make sure the backend is running on port 8080 and
-  that `/health` or `/api/health` returns `{"status":"ok"}`.
-- **"Save failed"** — the frontend keeps your local changes and offers Retry.
-  Check the backend terminal for validation or database errors.
-- **Start over** — stop the servers and delete `learnai.db`. The next request
-  creates a fresh database.
-- **Schema test fails** — regenerate `docs/mindmap.schema.json` with the
-  command above.
-- **Port already in use** — stop the old process or change the backend port in
-  `scripts/dev.sh` and the Vite proxy target.
+- **Server functions instead of REST handlers.** The payload structs remain
+  plain serde types, so the JSON document format is still portable.
+- **Document storage.** A map is one JSON document in one SQLite row; saves are
+  full-document replacements.
+- **Separate build path.** `scripts/build.sh` performs the steps the Dioxus CLI
+  normally coordinates: Tailwind, WASM, wasm-bindgen, server, and public assets.
+  This keeps the app buildable in constrained environments.
+- **No authentication.** This is a local single-user workspace. Add auth before
+  exposing it publicly.

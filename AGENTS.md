@@ -2,40 +2,42 @@
 
 ## Engineering rules
 
-- **Keep every source file under 300 lines.** If a file approaches the limit, split it by responsibility — presentational components, controller hooks, pure helpers, or state reducers.
-- Follow React and TypeScript best practices: small focused components, typed props, pure state transitions, reusable hooks, and no unused code.
+- **Keep every source file under 300 lines.** Split by responsibility: domain models, pure geometry/validation, server repository/functions, UI state, or presentational components.
+- Follow Rust/Dioxus best practices: typed props, pure state transitions, signals for UI state, `Result`-based errors, and no unused code.
 - Keep state ownership clear:
-  - graph data and mutations live in the reducer / graph hook
-  - pointer interaction state lives in the interaction hook
-  - rendering components stay presentational
+  - graph data and mutations live in `state/graph.rs`
+  - selection lives in `state/selection.rs`
+  - server function calls and autosave orchestration live in `app.rs`
+  - geometry and validation stay in `domain/`
+  - database access stays in `server/repository.rs`
 - Reuse the existing theme tokens and visual language (paper/surface/accent/ink, sharp corners, IBM Plex).
-- Write comments for a working Python developer who is new to TypeScript and web engineering. Explain hooks, HTTP/JSON, browser APIs, and test tooling where the code is not self-explanatory.
-- Add or update basic tests when behavior changes. Run `npm --prefix frontend run test` and `cd backend && ../.venv/bin/python -m pytest` before finishing.
-- Verify changes with `npm --prefix frontend run build` and `npm --prefix frontend run lint` before finishing.
+- Write comments for a working Python developer who is new to Rust, TypeScript, and web engineering. Explain server functions, signals, WASM, SQLx, and browser APIs where the code is not self-explanatory.
+- Add or update basic tests when behavior changes. Run `cargo test --no-default-features` and `cargo clippy --no-default-features --features server` before finishing.
+- Verify UI/build changes with `./scripts/build.sh` (or `cargo check` for both `web` and `server` targets) before finishing.
 
 ## Architecture map
 
-- `frontend/src/graph.ts` — domain types, geometry, and edge view-model builder
-- `frontend/src/interaction.ts` — pure hit-testing, target validation, and canvas clamping
-- `frontend/src/markdown.tsx` — safe inline markdown renderer
-- `frontend/src/components/Latex.tsx` — KaTeX inline/block math renderer
-- `frontend/src/previews.ts` — pure preview geometry builders
-- `frontend/src/quiz.ts` — quiz schema and pure question helpers
-- `frontend/src/status.ts` — study status types and color palette
-- `frontend/src/selectionBounds.ts` — exact multi-selection bounds
-- `frontend/src/persistence.ts` — JSON document <-> graph-state serialization
-- `frontend/src/mindmapLibrary.ts` — local-storage helpers and map summaries
-- `frontend/src/canvasPoint.ts` — browser-to-SVG coordinate conversion
-- `frontend/src/api/` — typed HTTP client and API document types
-- `frontend/src/state/` — pure reducer and state transitions
-- `frontend/src/hooks/` — graph, persistence, context-menu, selection, marquee, hover, label-editing, and focused pointer-interaction controllers (`useNodeDrag`, `useConnectDrag`, `useEdgeDrag`)
-- `frontend/src/components/` — presentational React components
-- `frontend/src/test/` — Vitest setup and shared fixtures
-- `backend/app/` — FastAPI app, SQLAlchemy models, Pydantic schemas, and routes
-- `backend/tests/` — pytest API, validation, and persistence tests
-- `docs/mindmap.schema.json` — generated JSON Schema for the document format
-- `docs/system-map.md` — complete file/function call map and data-flow guide
-- `scripts/dev.sh` — run the backend and frontend together
+- `src/main.rs` — Dioxus client/server entrypoint and health routes
+- `src/app.rs` — workspace composition, loading, autosave, map actions
+- `src/platform.rs` — browser storage/timers/confirm with server fallbacks
+- `src/domain/document.rs` — serde/schemars document model
+- `src/domain/geometry.rs` — anchors, curves, hit testing
+- `src/domain/quiz.rs` — MCQ helpers and node creation
+- `src/domain/validation.rs` — title and graph integrity rules
+- `src/domain/schema.rs` — generated JSON Schema
+- `src/server/db.rs` — SQLx pool + migrations
+- `src/server/repository.rs` — CRUD/data mapping
+- `src/server/functions.rs` — typed Dioxus server functions
+- `src/server/error.rs` — API error/status mapping
+- `src/state/graph.rs` — node/link mutations
+- `src/state/selection.rs` — node/edge/panel selection
+- `src/components/` — Header, Canvas, NodePanel, Learn, Quiz, markdown
+- `assets/` — HTML shell, Tailwind source, favicon
+- `migrations/` — SQLite schema and timestamp normalization
+- `scripts/` — build, dev, and check commands
+- `docs/system-map.md` — complete file/function/call map
+- `docs/mindmap.schema.json` — generated schema
+- `examples/mindmap.json` — hand-written document example
 
 ## Commits
 
