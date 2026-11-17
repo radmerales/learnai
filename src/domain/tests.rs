@@ -6,7 +6,9 @@ use crate::domain::geometry::{
     Point, connect_target, edge_target, find_connect_candidate, hit_test_node, nodes_in_rect,
     opposite_side, render_edges, side_from_vector, side_point,
 };
-use crate::domain::quiz::{delete_option, new_node, next_node_number, update_option};
+use crate::domain::quiz::{
+    delete_option, finalize_question, new_node, next_node_number, update_option,
+};
 use crate::domain::schema::render_schema;
 use crate::domain::validation::{normalize_title, validate_document};
 
@@ -195,6 +197,28 @@ fn adjusts_quiz_options() {
     let deleted = delete_option(&question, 0);
     assert_eq!(deleted.options, vec!["B", "C"]);
     assert_eq!(deleted.answer_index, 0);
+
+    let finalized = finalize_question(&QuizQuestion {
+        id: "q2".to_string(),
+        prompt: "Where?".to_string(),
+        options: vec![
+            "Cytosol".to_string(),
+            " ".to_string(),
+            "Mitochondria".to_string(),
+            String::new(),
+        ],
+        answer_index: 2,
+    });
+    assert_eq!(finalized.options, vec!["Cytosol", "Mitochondria"]);
+    assert_eq!(finalized.answer_index, 1);
+
+    let too_few = finalize_question(&QuizQuestion {
+        id: "q3".to_string(),
+        prompt: String::new(),
+        options: vec!["Only one".to_string(), String::new()],
+        answer_index: 0,
+    });
+    assert_eq!(too_few.options.len(), 2);
 }
 
 #[test]

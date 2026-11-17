@@ -1,10 +1,11 @@
 use std::collections::HashMap;
 
+use dioxus::html::{Key, ModifiersInteraction};
 use dioxus::prelude::*;
 
 use crate::domain::document::QuizQuestion;
 use crate::domain::quiz::{
-    MIN_QUIZ_OPTIONS, add_option, delete_option, new_question, update_option,
+    MIN_QUIZ_OPTIONS, add_option, delete_option, finalize_question, new_question, update_option,
 };
 
 #[component]
@@ -16,6 +17,7 @@ pub fn QuizPanel(
     let mut answers = use_signal(HashMap::<String, usize>::new);
     let answered = !answers.read().is_empty();
     let questions_for_add = questions.clone();
+    let questions_for_finish = questions.clone();
 
     let add_question = move |_| {
         let mut next = questions_for_add.clone();
@@ -23,6 +25,12 @@ pub fn QuizPanel(
         editing.set(true);
         on_change.call(next);
     };
+
+    // Leaving edit mode saves the current draft and removes blank choices.
+    let finish_editing = use_callback(move |_: ()| {
+        editing.set(false);
+        on_change.call(questions_for_finish.iter().map(finalize_question).collect());
+    });
 
     rsx! {
         div { class: "scroll-panel",
@@ -48,11 +56,20 @@ pub fn QuizPanel(
                                 "Reset"
                             }
                         }
-                        button {
-                            r#type: "button",
-                            class: "text-button",
-                            onclick: move |_| editing.set(!editing()),
-                            if editing() { "Practice" } else { "Edit" }
+                        if editing() {
+                            button {
+                                r#type: "button",
+                                class: "text-button",
+                                onclick: move |_| finish_editing.call(()),
+                                "Practice"
+                            }
+                        } else {
+                            button {
+                                r#type: "button",
+                                class: "text-button",
+                                onclick: move |_| editing.set(true),
+                                "Edit"
+                            }
                         }
                     }
                 }
@@ -62,6 +79,12 @@ pub fn QuizPanel(
                         {
                             let question = question.clone();
                             let answer = answers().get(&question.id).copied();
+                            let can_finish = question
+                                .options
+                                .iter()
+                                .filter(|option| !option.trim().is_empty())
+                                .count()
+                                >= MIN_QUIZ_OPTIONS;
                             rsx! {
                                 if editing() {
                                     div { key: "{question.id}", class: "question-editor",
@@ -73,15 +96,25 @@ pub fn QuizPanel(
                                                 let delete_questions = questions.clone();
                                                 let delete_id = question.id.clone();
                                                 rsx! {
-                                                    button {
-                                                        r#type: "button",
-                                                        class: "button-danger-small",
-                                                        onclick: move |_| {
-                                                            let mut updated = delete_questions.clone();
-                                                            updated.retain(|item| item.id != delete_id);
-                                                            on_change.call(updated);
-                                                        },
-                                                        "Delete"
+                                                    div { class: "block-actions",
+                                                        button {
+                                                            r#type: "button",
+                                                            class: "button-small",
+                                                            disabled: !can_finish,
+                                                            title: if can_finish { "" } else { "Add at least two answer choices" },
+                                                            onclick: move |_| finish_editing.call(()),
+                                                            "Done"
+                                                        }
+                                                        button {
+                                                            r#type: "button",
+                                                            class: "button-danger-small",
+                                                            onclick: move |_| {
+                                                                let mut updated = delete_questions.clone();
+                                                                updated.retain(|item| item.id != delete_id);
+                                                                on_change.call(updated);
+                                                            },
+                                                            "Delete"
+                                                        }
                                                     }
                                                 }
                                             }
@@ -101,6 +134,16 @@ pub fn QuizPanel(
                                                             item.prompt = event.value();
                                                         }
                                                         on_change.call(updated);
+                                                    },
+                                                    onkeydown: move |event| {
+                                                        if event.key() == Key::Enter
+                                                            && (event.modifiers().ctrl() || event.modifiers().meta())
+                                                        {
+                                                            event.prevent_default();
+                                                            if can_finish {
+                                                                finish_editing.call(());
+                                                            }
+                                                        }
                                                     },
                                                 }
                                             }
@@ -141,6 +184,16 @@ pub fn QuizPanel(
                                                                         *item = update_option(item, option_index, event.value());
                                                                     }
                                                                     on_change.call(updated);
+                                                                },
+                                                                onkeydown: move |event| {
+                                                                    if event.key() == Key::Enter
+                                                                        && (event.modifiers().ctrl() || event.modifiers().meta())
+                                                                    {
+                                                                        event.prevent_default();
+                                                                        if can_finish {
+                                                                            finish_editing.call(());
+                                                                        }
+                                                                    }
                                                                 },
                                                             }
                                                             button {

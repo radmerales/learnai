@@ -21,8 +21,11 @@ pub fn CanvasNode(
     on_context_menu: EventHandler<(String, f64, f64)>,
     on_connect_start: EventHandler<(String, Side, Point)>,
 ) -> Element {
-    let mut hovered = use_signal(|| false);
-    let show_handles = hovered() || connect_active || anchor_side.is_some();
+    let handles_class = if connect_active || anchor_side.is_some() {
+        "node-handles is-visible"
+    } else {
+        "node-handles"
+    };
 
     let down_id = node.id.clone();
     let double_click_id = node.id.clone();
@@ -32,8 +35,6 @@ pub fn CanvasNode(
         g {
             transform: "translate({node.x - node.width / 2.0}, {node.y - NODE_H / 2.0})",
             class: "node-group",
-            onpointerenter: move |_| hovered.set(true),
-            onpointerleave: move |_| hovered.set(false),
             onpointerdown: move |event| {
                 event.stop_propagation();
                 if event.trigger_button() != Some(MouseButton::Primary) {
@@ -72,7 +73,7 @@ pub fn CanvasNode(
                 "{node.label}"
             }
 
-            if show_handles {
+            g { class: "{handles_class}",
                 for (index, side) in SIDES.iter().enumerate() {
                     {
                         let point = local_handle_point(node.width, side);

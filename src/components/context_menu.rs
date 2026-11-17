@@ -54,9 +54,8 @@ pub fn ContextMenu(
                     fill: "none",
                     stroke: "currentColor",
                     stroke_width: "1.5",
-                    stroke_linecap: "round",
-                    stroke_linejoin: "round",
-                    path { d: "M3 4.5h10M6.5 4.5V3.25c0-.414.336-.75.75-.75h1.5c.414 0 .75.336.75.75V4.5m-6 0 .5 8.25c.027.414.37.75.786.75h4.428c.416 0 .759-.336.786-.75l.5-8.25" }
+                    stroke_linecap: "square",
+                    path { d: "M3 4.5h10M6 4.5V3h4v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5M6.5 7v3.5M9.5 7v3.5" }
                 }
                 "{delete_label}"
             }

@@ -89,7 +89,7 @@ origin.
 | `domain/quiz.rs` | `new_id`, `new_question`, `new_node` | stable IDs and defaults |
 | | `measure_node_width` | approximate label width |
 | | `next_node_number` | continue Node N numbering (tested; future use) |
-| | `update_option`, `add_option`, `delete_option` | pure MCQ edits |
+| | `update_option`, `add_option`, `delete_option`, `finalize_question` | pure MCQ edits and blank-choice cleanup |
 | `domain/validation.rs` | `normalize_title` | blank title fallback |
 | | `validate_document` | document limits + graph rules |
 | | `validate_nodes`, `validate_quiz`, `validate_links` | focused validators |
@@ -132,7 +132,7 @@ origin.
 | `components/header.rs` | `Header` | title, picker, save status, new/delete | app callbacks |
 | `components/workspace_canvas.rs` | `WorkspaceCanvas` | canvas/state wiring, context-menu host | Canvas, ContextMenu, state |
 | `components/canvas.rs` | `Canvas` | SVG grid, drag/connect/rewire/marquee coordinator | CanvasNode, CanvasEdges, CanvasOverlays |
-| `components/canvas_node.rs` | `CanvasNode` | node shape, side handles, drag/context events | geometry |
+| `components/canvas_node.rs` | `CanvasNode` | node shape, fading side handles, drag/context events | geometry |
 | `components/canvas_edges.rs` | `CanvasEdges` | edge strokes, hit paths, rewire handles | geometry |
 | `components/canvas_overlays.rs` | `CanvasOverlays` | connect/edge previews, ghost node, marquee box | geometry |
 | `components/canvas_types.rs` | interaction types | outcomes/state/pointer conversion | geometry |
@@ -140,7 +140,7 @@ origin.
 | `components/panel.rs` | `NodePanel` | title/status/tabs and panel actions | LearnPanel, QuizPanel |
 | `components/learn.rs` | `LearnPanel` | block add/edit/delete/preview | markdown renderer |
 | `components/markdown.rs` | `render_markdown`, `extract_math`, `render_math` | safe markdown + KaTeX HTML | pulldown-cmark, ammonia, katex-rs |
-| `components/quiz.rs` | `QuizPanel` | MCQ editor and practice feedback | quiz helpers |
+| `components/quiz.rs` | `QuizPanel` | MCQ editor, Done/finalize flow, practice feedback | quiz helpers |
 | `components/workspace_footer.rs` | `WorkspaceFooter` | selection/delete footer | app callbacks |
 | `components/mod.rs` | module exports | component surface | — |
 

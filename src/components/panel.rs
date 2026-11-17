@@ -34,14 +34,17 @@ pub fn NodePanel(
                             for (index, status) in [NoteStatus::Todo, NoteStatus::Doing, NoteStatus::Done].iter().enumerate() {
                                 {
                                     let active = node.status == *status;
-                                    let style = if active { format!("background-color: {}", status.outline()) } else { String::new() };
+                                    let status_class = match status {
+                                        NoteStatus::Todo => "status-button is-todo",
+                                        NoteStatus::Doing => "status-button is-doing",
+                                        NoteStatus::Done => "status-button is-done",
+                                    };
                                     let status = status.clone();
                                     rsx! {
                                         button {
                                             key: "{index}",
                                             r#type: "button",
-                                            class: if active { "status-button is-active" } else { "status-button" },
-                                            style: "{style}",
+                                            class: if active { "{status_class} is-active" } else { "{status_class}" },
                                             onclick: move |_| on_status_change.call(status.clone()),
                                             "{status.label()}"
                                         }

@@ -9,6 +9,24 @@
   cursor: grab;
 }
 
+.node-handles {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+
+.node-group:hover .node-handles,
+.node-handles.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node-handles {
+    transition: none;
+  }
+}
+
 .handle-hit {
   cursor: crosshair;
 }
@@ -114,7 +132,20 @@
   color: var(--foreground);
 }
 
+.status-button.is-todo {
+  --status-color: #6b6a6a;
+}
+
+.status-button.is-doing {
+  --status-color: #1d4ed8;
+}
+
+.status-button.is-done {
+  --status-color: #15803d;
+}
+
 .status-button.is-active {
+  background: var(--status-color);
   color: #ffffff;
   font-weight: 700;
 }

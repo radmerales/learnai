@@ -1,3 +1,4 @@
+use dioxus::html::{Key, ModifiersInteraction};
 use dioxus::prelude::*;
 
 use super::markdown::render_markdown;
@@ -70,6 +71,14 @@ pub fn LearnPanel(blocks: Vec<String>, on_change: EventHandler<Vec<String>>) -> 
                                                     *value = event.value();
                                                 }
                                                 on_change.call(updated);
+                                            },
+                                            onkeydown: move |event| {
+                                                if event.key() == Key::Enter
+                                                    && (event.modifiers().ctrl() || event.modifiers().meta())
+                                                {
+                                                    event.prevent_default();
+                                                    editing.set(None);
+                                                }
                                             },
                                         }
                                     }

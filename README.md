@@ -70,8 +70,9 @@ Copy `.env.example` to `.env` if you prefer file-based settings.
 - Node panel with live title, study status, Learn tab, and Quiz tab
 - Markdown blocks with headings, lists, task lists, quotes, code, links, and
   inline/display math
-- MCQ editor with options, correct-answer radio, add/delete options, practice
-  feedback, and reset
+- MCQ editor with options, correct-answer radio, add/delete options, a Done
+  action that drops blank choices, practice feedback, and reset
+- Ctrl/Cmd+Enter finishes Learn block and quiz question editing
 - Existing SQLite data migration, including normalization of old timestamp rows
 
 The previous UI's inline node-name editor and selection-bounds outline are not

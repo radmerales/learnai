@@ -81,3 +81,33 @@ pub fn delete_option(question: &QuizQuestion, index: usize) -> QuizQuestion {
     }
     next
 }
+
+/// Drop blank choices when the author finishes a question. The answer index
+/// follows its option; if the selected option was blank, it falls back to the
+/// first remaining choice. Questions with fewer than two filled choices are
+/// left untouched so the existing editor state and validation message remain.
+pub fn finalize_question(question: &QuizQuestion) -> QuizQuestion {
+    let kept: Vec<usize> = question
+        .options
+        .iter()
+        .enumerate()
+        .filter_map(|(index, option)| (!option.trim().is_empty()).then_some(index))
+        .collect();
+    if kept.len() < MIN_QUIZ_OPTIONS {
+        return question.clone();
+    }
+
+    let answer_index = kept
+        .iter()
+        .position(|index| *index == question.answer_index)
+        .unwrap_or(0);
+    QuizQuestion {
+        id: question.id.clone(),
+        prompt: question.prompt.clone(),
+        options: kept
+            .iter()
+            .map(|index| question.options[*index].clone())
+            .collect(),
+        answer_index,
+    }
+}
