@@ -1,62 +1,33 @@
 {
   "$defs": {
     "LearnContent": {
-      "additionalProperties": false,
-      "description": "The Learn tab: ordered markdown blocks.",
       "properties": {
         "blocks": {
+          "default": [],
           "items": {
-            "maxLength": 50000,
             "type": "string"
           },
-          "maxItems": 200,
-          "title": "Blocks",
           "type": "array"
         }
       },
-      "title": "LearnContent",
       "type": "object"
     },
     "MindmapLink": {
-      "additionalProperties": false,
       "properties": {
         "from": {
-          "maxLength": 64,
-          "minLength": 1,
-          "title": "From",
           "type": "string"
         },
         "fromSide": {
-          "enum": [
-            "top",
-            "right",
-            "bottom",
-            "left"
-          ],
-          "title": "Fromside",
-          "type": "string"
+          "$ref": "#/$defs/Side"
         },
         "id": {
-          "maxLength": 64,
-          "minLength": 1,
-          "title": "Id",
           "type": "string"
         },
         "to": {
-          "maxLength": 64,
-          "minLength": 1,
-          "title": "To",
           "type": "string"
         },
         "toSide": {
-          "enum": [
-            "top",
-            "right",
-            "bottom",
-            "left"
-          ],
-          "title": "Toside",
-          "type": "string"
+          "$ref": "#/$defs/Side"
         }
       },
       "required": [
@@ -66,52 +37,43 @@
         "fromSide",
         "toSide"
       ],
-      "title": "MindmapLink",
       "type": "object"
     },
     "MindmapNode": {
-      "additionalProperties": false,
       "properties": {
         "id": {
-          "maxLength": 64,
-          "minLength": 1,
-          "title": "Id",
           "type": "string"
         },
         "label": {
           "default": "",
-          "maxLength": 300,
-          "title": "Label",
           "type": "string"
         },
         "learn": {
-          "$ref": "#/$defs/LearnContent"
+          "$ref": "#/$defs/LearnContent",
+          "default": {
+            "blocks": []
+          }
         },
         "quiz": {
-          "$ref": "#/$defs/QuizContent"
+          "$ref": "#/$defs/QuizContent",
+          "default": {
+            "questions": []
+          }
         },
         "status": {
-          "default": "todo",
-          "enum": [
-            "todo",
-            "doing",
-            "done"
-          ],
-          "title": "Status",
-          "type": "string"
+          "$ref": "#/$defs/NoteStatus",
+          "default": "todo"
         },
         "width": {
-          "maximum": 5000,
-          "minimum": 40,
-          "title": "Width",
+          "format": "double",
           "type": "number"
         },
         "x": {
-          "title": "X",
+          "format": "double",
           "type": "number"
         },
         "y": {
-          "title": "Y",
+          "format": "double",
           "type": "number"
         }
       },
@@ -121,53 +83,46 @@
         "y",
         "width"
       ],
-      "title": "MindmapNode",
       "type": "object"
     },
+    "NoteStatus": {
+      "enum": [
+        "todo",
+        "doing",
+        "done"
+      ],
+      "type": "string"
+    },
     "QuizContent": {
-      "additionalProperties": false,
-      "description": "The Quiz tab: all multiple-choice questions for one node.",
       "properties": {
         "questions": {
+          "default": [],
           "items": {
             "$ref": "#/$defs/QuizQuestion"
           },
-          "maxItems": 200,
-          "title": "Questions",
           "type": "array"
         }
       },
-      "title": "QuizContent",
       "type": "object"
     },
     "QuizQuestion": {
-      "additionalProperties": false,
       "properties": {
         "answerIndex": {
+          "format": "uint",
           "minimum": 0,
-          "title": "Answerindex",
           "type": "integer"
         },
         "id": {
-          "maxLength": 64,
-          "minLength": 1,
-          "title": "Id",
           "type": "string"
         },
         "options": {
           "items": {
-            "maxLength": 1000,
             "type": "string"
           },
-          "maxItems": 8,
-          "minItems": 2,
-          "title": "Options",
           "type": "array"
         },
         "prompt": {
           "default": "",
-          "maxLength": 4000,
-          "title": "Prompt",
           "type": "string"
         }
       },
@@ -176,59 +131,55 @@
         "options",
         "answerIndex"
       ],
-      "title": "QuizQuestion",
       "type": "object"
+    },
+    "Side": {
+      "enum": [
+        "top",
+        "right",
+        "bottom",
+        "left"
+      ],
+      "type": "string"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "additionalProperties": false,
-  "description": "A stored map: the write fields plus server-generated metadata.",
   "properties": {
     "createdAt": {
-      "title": "Createdat",
       "type": "string"
     },
     "id": {
-      "maxLength": 64,
-      "minLength": 1,
-      "title": "Id",
       "type": "string"
     },
     "links": {
       "items": {
         "$ref": "#/$defs/MindmapLink"
       },
-      "maxItems": 5000,
-      "title": "Links",
       "type": "array"
     },
     "nodes": {
       "items": {
         "$ref": "#/$defs/MindmapNode"
       },
-      "maxItems": 2000,
-      "title": "Nodes",
       "type": "array"
     },
     "schemaVersion": {
-      "const": 1,
-      "default": 1,
-      "title": "Schemaversion",
+      "format": "uint32",
+      "minimum": 0,
       "type": "integer"
     },
     "title": {
-      "default": "Untitled mindmap",
-      "maxLength": 200,
-      "minLength": 1,
-      "title": "Title",
       "type": "string"
     },
     "updatedAt": {
-      "title": "Updatedat",
       "type": "string"
     }
   },
   "required": [
+    "schemaVersion",
+    "title",
+    "nodes",
+    "links",
     "id",
     "createdAt",
     "updatedAt"

@@ -1,0 +1,89 @@
+[package]
+name = "learn-ai"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.90"
+default-run = "learn-ai"
+
+[[bin]]
+name = "learn-ai"
+path = "src/main.rs"
+
+[[bin]]
+name = "export-schema"
+path = "src/bin/export_schema.rs"
+
+[dependencies]
+dioxus = { version = "0.7.10", features = ["fullstack"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+schemars = { version = "1.2", features = ["derive"] }
+thiserror = "2"
+uuid = { version = "1", features = ["v4", "js"] }
+tracing = "0.1"
+pulldown-cmark = "0.13"
+ammonia = "4"
+katex-rs = "0.3"
+
+# Server-only dependencies
+sqlx = { version = "0.8", features = ["runtime-tokio", "sqlite", "chrono", "json", "migrate"], optional = true }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync"], optional = true }
+chrono = { version = "0.4", features = ["serde"], optional = true }
+tracing-subscriber = { version = "0.3", features = ["env-filter"], optional = true }
+
+# Web-only dependencies
+wasm-bindgen = { version = "0.2", optional = true }
+wasm-bindgen-futures = { version = "0.4", optional = true }
+js-sys = { version = "0.3", optional = true }
+web-sys = { version = "0.3", features = [
+    "Window",
+    "Document",
+    "Element",
+    "HtmlElement",
+    "SvgElement",
+    "SvgGraphicsElement",
+    "DomRect",
+    "ResizeObserver",
+    "ResizeObserverEntry",
+    "KeyboardEvent",
+    "PointerEvent",
+    "Storage",
+], optional = true }
+gloo-storage = { version = "0.4", optional = true }
+gloo-timers = { version = "0.3", features = ["futures"], optional = true }
+
+[features]
+default = ["web"]
+web = [
+    "dioxus/web",
+    "dep:wasm-bindgen",
+    "dep:wasm-bindgen-futures",
+    "dep:js-sys",
+    "dep:web-sys",
+    "dep:gloo-storage",
+    "dep:gloo-timers",
+]
+server = [
+    "dioxus/server",
+    "dep:sqlx",
+    "dep:tokio",
+    "dep:chrono",
+    "dep:tracing-subscriber",
+]
+
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.release]
+debug = 0
+lto = false
+codegen-units = 16
+opt-level = "s"
+strip = true
+
+[profile.wasm-dev]
+inherits = "dev"
+
+[profile.wasm-release]
+inherits = "release"
