@@ -137,4 +137,34 @@ describe("useMindmapAutosave", () => {
     expect(mockedSave).toHaveBeenCalledTimes(2)
     expect(result.current.saveStatus).toBe("saved")
   })
+
+  it("cancels a pending debounce and marks an empty state", async () => {
+    const { result } = setup()
+    const document = toMindmapDocument("Biology", [makeNode()], [])
+
+    act(() => {
+      result.current.cancelPending()
+      result.current.markSaved(null, "")
+    })
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000)
+    })
+
+    expect(mockedSave).not.toHaveBeenCalled()
+    expect(result.current.saveStatus).toBe("idle")
+    expect(document.schemaVersion).toBe(1)
+  })
+
+  it("flushes unsaved work on pagehide", async () => {
+    setup()
+
+    await act(async () => {
+      window.dispatchEvent(new Event("pagehide"))
+      await Promise.resolve()
+    })
+
+    expect(mockedSave).toHaveBeenCalledTimes(1)
+    expect(mockedSave.mock.calls[0][2]).toEqual({ keepalive: true })
+  })
 })

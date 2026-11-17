@@ -35,4 +35,46 @@ describe("markdown preview", () => {
     expect(screen.getByText("Click")).toBeInTheDocument()
     expect(screen.queryByRole("link")).not.toBeInTheDocument()
   })
+
+  it("renders inline formatting tokens", () => {
+    const { container } = render(
+      <MarkdownPreview content={"`code` **bold** *em* ~~gone~~ ==mark=="} />,
+    )
+
+    expect(container.querySelector("code")).toHaveTextContent("code")
+    expect(container.querySelector("strong")).toHaveTextContent("bold")
+    expect(container.querySelector("em")).toHaveTextContent("em")
+    expect(container.querySelector("del")).toHaveTextContent("gone")
+    expect(container.querySelector("mark")).toHaveTextContent("mark")
+  })
+
+  it("renders task lists, ordered lists, quotes, rules, and indented code", () => {
+    const { container } = render(
+      <MarkdownPreview
+        content={"- [x] Finished\n- [ ] Pending\n\n1. First\n\n> Quoted\n\n---\n\n    const x = 1"}
+      />,
+    )
+
+    expect(screen.getByText("Finished")).toBeInTheDocument()
+    expect(screen.getByText("Pending")).toBeInTheDocument()
+    expect(screen.getByText("First")).toBeInTheDocument()
+    expect(container.querySelector("blockquote")).toHaveTextContent("Quoted")
+    expect(container.querySelector("hr")).not.toBeNull()
+    expect(container.querySelector("pre")).toHaveTextContent("const x = 1")
+  })
+
+  it("renders inline and fenced display math with KaTeX", () => {
+    const { container } = render(
+      <MarkdownPreview content={"Inline $x^2$ math\n\n$$\n\\frac{1}{2}\n$$"} />,
+    )
+
+    expect(container.querySelectorAll(".katex").length).toBeGreaterThan(0)
+    expect(container.querySelector(".katex-display")).not.toBeNull()
+  })
+
+  it("shows a placeholder for empty content", () => {
+    render(<MarkdownPreview content="" />)
+
+    expect(screen.getByText(/Nothing here yet/)).toBeInTheDocument()
+  })
 })

@@ -55,4 +55,41 @@ describe("NodeQuiz", () => {
       expect.objectContaining({ id: "q1", prompt: "Updated prompt?" }),
     ])
   })
+
+  it("resets answer feedback", () => {
+    render(<NodeQuiz questions={[question]} onChange={vi.fn()} />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Nucleus" }))
+    expect(screen.getByText("Correct answer: Cytosol")).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole("button", { name: "Reset" }))
+    expect(screen.queryByText("Correct answer: Cytosol")).not.toBeInTheDocument()
+  })
+
+  it("deletes a question through the editor", () => {
+    const onChange = vi.fn()
+    render(<NodeQuiz questions={[question]} onChange={onChange} />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete question 1" }))
+
+    expect(onChange).toHaveBeenCalledWith([])
+  })
+
+  it("adds and removes answer options and changes the correct one", () => {
+    const onChange = vi.fn()
+    render(<NodeQuiz questions={[question]} onChange={onChange} />)
+
+    fireEvent.click(screen.getByRole("button", { name: "Edit" }))
+    fireEvent.click(screen.getByRole("button", { name: "Add answer" }))
+    expect(onChange.mock.calls.at(-1)?.[0][0].options).toHaveLength(4)
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete option 1" }))
+    expect(onChange.mock.calls.at(-1)?.[0][0].options).toEqual([
+      "Mitochondria",
+      "Nucleus",
+    ])
+
+    fireEvent.click(screen.getByRole("radio", { name: "Mark option 2 as correct" }))
+    expect(onChange.mock.calls.at(-1)?.[0][0].answerIndex).toBe(1)
+  })
 })

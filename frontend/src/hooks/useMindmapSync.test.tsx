@@ -1,7 +1,7 @@
 import { act, renderHook, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { createMindmap, deleteMindmap, getMindmap, listMindmaps } from "../api/mindmaps"
+import { createMindmap, deleteMindmap, getMindmap, listMindmaps, saveMindmap } from "../api/mindmaps"
 import type { MindmapResource, MindmapSummary } from "../api/types"
 import { toMindmapDocument } from "../persistence"
 import { makeNode } from "../test/fixtures"
@@ -30,6 +30,7 @@ const summary: MindmapSummary = {
 }
 
 beforeEach(() => {
+  vi.resetAllMocks()
   window.localStorage.clear()
 })
 
@@ -120,5 +121,64 @@ describe("useMindmapSync", () => {
 
     expect(deleteMindmap).toHaveBeenCalledWith("m1")
     await waitFor(() => expect(result.current.currentId).toBe("m2"))
+  })
+
+  it("creates a new map and makes it current", async () => {
+    vi.mocked(listMindmaps).mockResolvedValue([summary])
+    vi.mocked(getMindmap).mockResolvedValue(resource)
+    vi.mocked(saveMindmap).mockResolvedValue(resource)
+    const created = { ...resource, id: "m2", title: "Untitled mindmap" }
+    vi.mocked(createMindmap).mockResolvedValue(created)
+
+    const { result } = renderSync()
+    await waitFor(() => expect(result.current.currentId).toBe("m1"))
+
+    await act(async () => {
+      await result.current.newMap()
+    })
+
+    expect(createMindmap).toHaveBeenCalledOnce()
+    expect(result.current.currentId).toBe("m2")
+    expect(result.current.title).toBe("Untitled mindmap")
+  })
+
+  it("opens another map and replaces the graph", async () => {
+    const secondSummary = { ...summary, id: "m2", title: "History" }
+    const secondResource = { ...resource, id: "m2", title: "History" }
+    vi.mocked(listMindmaps).mockResolvedValue([summary, secondSummary])
+    vi.mocked(getMindmap)
+      .mockResolvedValueOnce(resource)
+      .mockResolvedValueOnce(secondResource)
+    vi.mocked(saveMindmap).mockResolvedValue(resource)
+    const onLoad = vi.fn()
+
+    const { result } = renderSync(onLoad)
+    await waitFor(() => expect(result.current.currentId).toBe("m1"))
+
+    await act(async () => {
+      await result.current.openMap("m2")
+    })
+
+    expect(getMindmap).toHaveBeenLastCalledWith("m2")
+    expect(result.current.currentId).toBe("m2")
+    expect(result.current.title).toBe("History")
+    expect(onLoad).toHaveBeenCalledTimes(2)
+  })
+
+  it("retries loading after a library failure", async () => {
+    vi.mocked(listMindmaps).mockRejectedValueOnce(new Error("Offline"))
+    const { result } = renderSync()
+
+    await waitFor(() => expect(result.current.loadError).toBe("Offline"))
+
+    vi.mocked(listMindmaps).mockResolvedValue([summary])
+    vi.mocked(getMindmap).mockResolvedValue(resource)
+
+    await act(async () => {
+      await result.current.reload()
+    })
+
+    expect(result.current.currentId).toBe("m1")
+    expect(result.current.loadError).toBeNull()
   })
 })

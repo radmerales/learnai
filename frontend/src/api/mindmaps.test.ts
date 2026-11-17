@@ -1,7 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { emptyMindmap } from "../persistence"
-import { MindmapApiError, deleteMindmap, listMindmaps, saveMindmap } from "./mindmaps"
+import {
+  MindmapApiError,
+  createMindmap,
+  deleteMindmap,
+  getMindmap,
+  listMindmaps,
+  saveMindmap,
+} from "./mindmaps"
 
 const fetchMock = vi.fn()
 
@@ -45,6 +52,35 @@ describe("mindmap API client", () => {
       headers: { "Content-Type": "application/json" },
     })
     expect(JSON.parse(init.body)).toEqual(document)
+  })
+
+  it("creates and retrieves maps", async () => {
+    const document = emptyMindmap()
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ...document, id: "m1" }))
+    await createMindmap(document)
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/mindmaps")
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({ method: "POST" })
+
+    fetchMock.mockResolvedValueOnce(jsonResponse({ ...document, id: "m/1" }))
+    await getMindmap("m/1")
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/mindmaps/m%2F1")
+  })
+
+  it("uses a string detail from the server", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ detail: "Access denied" }, 403))
+
+    await expect(listMindmaps()).rejects.toThrow("Access denied")
+  })
+
+  it("falls back to the HTTP status for unusable error bodies", async () => {
+    fetchMock.mockResolvedValue({
+      ok: false,
+      status: 500,
+      statusText: "Server Error",
+      json: async () => ({ detail: [{}] }),
+    })
+
+    await expect(listMindmaps()).rejects.toThrow("500 Server Error")
   })
 
   it("turns FastAPI validation details into a readable error", async () => {
