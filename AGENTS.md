@@ -34,6 +34,7 @@
 - `backend/app/` — FastAPI app, SQLAlchemy models, Pydantic schemas, and routes
 - `backend/tests/` — pytest API, validation, and persistence tests
 - `docs/mindmap.schema.json` — generated JSON Schema for the document format
+- `docs/system-map.md` — complete file/function call map and data-flow guide
 - `scripts/dev.sh` — run the backend and frontend together
 
 ## Commits

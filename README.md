@@ -9,6 +9,9 @@ The project is intentionally small, but it is a complete full-stack app: a
 React/TypeScript frontend, a FastAPI/Python backend, a SQLite database, unit and
 component tests, and a documented JSON format.
 
+For a complete file-by-file call map, see
+[`docs/system-map.md`](docs/system-map.md).
+
 ## Start here: web terms for Python developers
 
 If you know Python but not web development, these are the ideas the code uses:
@@ -293,7 +296,8 @@ Run everything:
 
 ```bash
 npm --prefix frontend run test
-cd backend && ../.venv/bin/python -m pytest
+npm --prefix frontend run test:coverage
+cd backend && ../.venv/bin/python -m pytest --cov=app --cov-report=term-missing
 ```
 
 The frontend suite uses Vitest + jsdom + Testing Library. It covers:
