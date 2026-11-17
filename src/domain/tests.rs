@@ -3,8 +3,8 @@ use crate::domain::document::{
     Side,
 };
 use crate::domain::geometry::{
-    Point, edge_target, hit_test_node, nodes_in_rect, opposite_side, render_edges,
-    side_from_vector, side_point,
+    Point, connect_target, edge_target, find_connect_candidate, hit_test_node, nodes_in_rect,
+    opposite_side, render_edges, side_from_vector, side_point,
 };
 use crate::domain::quiz::{delete_option, new_node, next_node_number, update_option};
 use crate::domain::schema::render_schema;
@@ -112,6 +112,35 @@ fn computes_geometry_and_edges() {
 }
 
 #[test]
+fn snaps_connections_to_side_anchors() {
+    let a = node("a", 100.0, 100.0);
+    let b = node("b", 300.0, 100.0);
+    let nodes = vec![a, b];
+    let right_anchor = side_point(&nodes[1], &Side::Right);
+
+    assert_eq!(
+        find_connect_candidate(&nodes, right_anchor),
+        Some(("b".to_string(), Side::Right))
+    );
+    // Just outside the 36px halo, so the pointer is empty canvas.
+    assert_eq!(
+        find_connect_candidate(&nodes, Point::new(right_anchor.x + 40.0, right_anchor.y)),
+        None
+    );
+    assert_eq!(
+        connect_target(&nodes, &[], right_anchor, "a"),
+        Some(("b".to_string(), Side::Right))
+    );
+    // The source is never a valid target.
+    assert_eq!(connect_target(&nodes, &[], right_anchor, "b"), None);
+    // Nor is a pair that already has an edge.
+    assert_eq!(
+        connect_target(&nodes, &[link("l1", "a", "b")], right_anchor, "a"),
+        None
+    );
+}
+
+#[test]
 fn resolves_valid_edge_rewire_targets() {
     let a = node("a", 100.0, 100.0);
     let b = node("b", 300.0, 100.0);
@@ -123,6 +152,17 @@ fn resolves_valid_edge_rewire_targets() {
     assert_eq!(
         edge_target(&nodes, &links, "l1", "b", Point::new(500.0, 100.0)),
         Some(("c".to_string(), Side::Right))
+    );
+    // Near the left anchor, outside the node rectangle, snaps to that side.
+    assert_eq!(
+        edge_target(
+            &nodes,
+            &links,
+            "l1",
+            "b",
+            side_point(&nodes[2], &Side::Left)
+        ),
+        Some(("c".to_string(), Side::Left))
     );
     // The fixed end and the other end are not valid targets.
     assert_eq!(

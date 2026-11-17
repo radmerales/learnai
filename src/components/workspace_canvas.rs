@@ -36,7 +36,7 @@ pub fn WorkspaceCanvas(
         let mut state = graph.write();
         if let Some((target_id, target_side)) = outcome.target {
             state.add_link(&outcome.from_id, &target_id, outcome.from_side, target_side);
-        } else {
+        } else if !outcome.over_candidate {
             let node = state.add_node_at(outcome.point.x, outcome.point.y);
             let to_side = opposite_side(&outcome.from_side);
             state.add_link(&outcome.from_id, &node.id, outcome.from_side, to_side);
@@ -48,7 +48,7 @@ pub fn WorkspaceCanvas(
         let mut state = graph.write();
         if let Some((node_id, side)) = outcome.target {
             state.rewire_link(&outcome.edge_id, outcome.moving, &node_id, side);
-        } else if outcome.over_node_id.is_none() {
+        } else if !outcome.over_candidate {
             state.remove_link(&outcome.edge_id);
         }
         drop(state);

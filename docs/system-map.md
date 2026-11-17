@@ -81,6 +81,7 @@ origin.
 | `domain/geometry.rs` | `Point`, `RenderedEdge`, `EdgeEnd` | canvas geometry values |
 | | `side_point`, `local_handle_point` | anchor coordinates |
 | | `hit_test_node`, `side_toward_point`, `side_from_vector` | pointer/target hit testing |
+| | `find_connect_candidate`, `connect_target` | 36px anchor snapping and connect rules |
 | | `edge_exists_between`, `edge_target` | rewire/connect duplicate and endpoint rules |
 | | `opposite_side` | connect-to-empty target side |
 | | `curve_path`, `render_edge`, `render_edges` | cubic SVG paths |
@@ -93,7 +94,7 @@ origin.
 | | `validate_document` | document limits + graph rules |
 | | `validate_nodes`, `validate_quiz`, `validate_links` | focused validators |
 | `domain/schema.rs` | `build_schema`, `render_schema` | schemars JSON Schema |
-| `domain/tests.rs` | seven tests | validation, geometry, edge targets, quiz, schema |
+| `domain/tests.rs` | eight tests | validation, geometry, edge/connect targets, quiz, schema |
 
 ### Server
 
@@ -133,7 +134,7 @@ origin.
 | `components/canvas.rs` | `Canvas` | SVG grid, drag/connect/rewire/marquee coordinator | CanvasNode, CanvasEdges, CanvasOverlays |
 | `components/canvas_node.rs` | `CanvasNode` | node shape, side handles, drag/context events | geometry |
 | `components/canvas_edges.rs` | `CanvasEdges` | edge strokes, hit paths, rewire handles | geometry |
-| `components/canvas_overlays.rs` | `CanvasOverlays` | connect/edge previews + marquee box | geometry |
+| `components/canvas_overlays.rs` | `CanvasOverlays` | connect/edge previews, ghost node, marquee box | geometry |
 | `components/canvas_types.rs` | interaction types | outcomes/state/pointer conversion | geometry |
 | `components/context_menu.rs` | `ContextMenu` | fixed-position node/edge delete menu | platform viewport size |
 | `components/panel.rs` | `NodePanel` | title/status/tabs and panel actions | LearnPanel, QuizPanel |

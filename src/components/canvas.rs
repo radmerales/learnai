@@ -4,7 +4,7 @@ use dioxus::prelude::*;
 
 use crate::domain::document::{MindmapLink, MindmapNode, Side};
 use crate::domain::geometry::{
-    EdgeEnd, Point, distance, edge_target, hit_test_node, nodes_in_rect, side_toward_point,
+    EdgeEnd, Point, connect_target, distance, edge_target, find_connect_candidate, nodes_in_rect,
 };
 
 use super::canvas_edges::CanvasEdges;
@@ -43,6 +43,7 @@ pub fn Canvas(
     let nodes_for_up = nodes.clone();
     let links_for_up = links.clone();
     let nodes_for_connect_move = nodes.clone();
+    let links_for_connect_move = links.clone();
     let nodes_for_edge_move = nodes.clone();
     let links_for_edge_move = links.clone();
     let links_for_edge_start = links.clone();
@@ -75,6 +76,7 @@ pub fn Canvas(
             source_id,
             source_side,
             point,
+            candidate: None,
             target: None,
         }));
         drag.set(None);
@@ -139,10 +141,13 @@ pub fn Canvas(
 
                 if let Some(mut state) = connect() {
                     state.point = point;
-                    state.target = hit_test_node(&nodes_for_connect_move, point)
-                        .map(|index| &nodes_for_connect_move[index])
-                        .filter(|node| node.id != state.source_id)
-                        .map(|node| (node.id.clone(), side_toward_point(node, point)));
+                    state.candidate = find_connect_candidate(&nodes_for_connect_move, point);
+                    state.target = connect_target(
+                        &nodes_for_connect_move,
+                        &links_for_connect_move,
+                        point,
+                        &state.source_id,
+                    );
                     connect.set(Some(state));
                     return;
                 }
@@ -178,15 +183,14 @@ pub fn Canvas(
                 }
 
                 if let Some(state) = connect() {
-                    let target = hit_test_node(&nodes_for_up, point)
-                        .map(|index| &nodes_for_up[index])
-                        .filter(|node| node.id != state.source_id)
-                        .map(|node| (node.id.clone(), side_toward_point(node, point)));
+                    let candidate = find_connect_candidate(&nodes_for_up, point);
+                    let target = connect_target(&nodes_for_up, &links_for_up, point, &state.source_id);
                     on_connect.call(ConnectOutcome {
                         from_id: state.source_id,
                         from_side: state.source_side,
                         point,
                         target,
+                        over_candidate: candidate.is_some(),
                     });
                     connect.set(None);
                     return;
@@ -200,12 +204,12 @@ pub fn Canvas(
                         &state.fixed_node_id,
                         point,
                     );
-                    let over_node_id = hit_test_node(&nodes_for_up, point)
-                        .map(|index| nodes_for_up[index].id.clone());
+                    let over_candidate =
+                        find_connect_candidate(&nodes_for_up, point).is_some();
                     on_edge_rewire.call(EdgeDragOutcome {
                         edge_id: state.edge_id,
                         moving: state.moving,
-                        over_node_id,
+                        over_candidate,
                         target,
                     });
                     edge_drag.set(None);

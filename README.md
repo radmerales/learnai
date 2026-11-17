@@ -61,9 +61,10 @@ Copy `.env.example` to `.env` if you prefer file-based settings.
 - Multiple maps with a picker, new/delete actions, and an editable title
 - Debounced autosave with save state and retry
 - SVG canvas with grid, nodes, dashed curved edges, and status colors
-- Node dragging, drag-to-connect, drag-to-empty-canvas node creation
-- Hover handles for rewiring an edge endpoint; dropping on empty canvas deletes
-  the edge
+- Node dragging, drag-to-connect with side-anchor snapping, and a “New node”
+  ghost preview when releasing on empty canvas
+- Hover handles for rewiring an edge endpoint with side-anchor snapping;
+  dropping on truly empty canvas deletes the edge
 - Right-click menus on nodes and edges for quick deletion
 - Marquee selection and Delete-selected action
 - Node panel with live title, study status, Learn tab, and Quiz tab

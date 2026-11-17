@@ -2,6 +2,7 @@ use super::document::{MindmapLink, MindmapNode, Side};
 
 pub const NODE_H: f64 = 44.0;
 pub const HANDLE_R: f64 = 4.5;
+pub const HANDLE_HIT_R: f64 = 36.0;
 pub const ANCHOR_OFFSET: f64 = 10.0;
 pub const SIDES: [Side; 4] = [Side::Top, Side::Right, Side::Bottom, Side::Left];
 
@@ -34,13 +35,19 @@ pub enum EdgeEnd {
     To,
 }
 
-pub fn side_point(node: &MindmapNode, side: &Side) -> Point {
+/// Anchor point for a node-sized rectangle centered on `x`/`y`. Also used by
+/// the ghost preview, which does not have a real `MindmapNode` yet.
+pub fn node_anchor_point(x: f64, y: f64, width: f64, side: &Side) -> Point {
     match side {
-        Side::Top => Point::new(node.x, node.y - NODE_H / 2.0 - ANCHOR_OFFSET),
-        Side::Right => Point::new(node.x + node.width / 2.0 + ANCHOR_OFFSET, node.y),
-        Side::Bottom => Point::new(node.x, node.y + NODE_H / 2.0 + ANCHOR_OFFSET),
-        Side::Left => Point::new(node.x - node.width / 2.0 - ANCHOR_OFFSET, node.y),
+        Side::Top => Point::new(x, y - NODE_H / 2.0 - ANCHOR_OFFSET),
+        Side::Right => Point::new(x + width / 2.0 + ANCHOR_OFFSET, y),
+        Side::Bottom => Point::new(x, y + NODE_H / 2.0 + ANCHOR_OFFSET),
+        Side::Left => Point::new(x - width / 2.0 - ANCHOR_OFFSET, y),
     }
+}
+
+pub fn side_point(node: &MindmapNode, side: &Side) -> Point {
+    node_anchor_point(node.x, node.y, node.width, side)
 }
 
 pub fn local_handle_point(width: f64, side: &Side) -> Point {
@@ -117,9 +124,8 @@ pub fn edge_target(
     point: Point,
 ) -> Option<(String, Side)> {
     let link = links.iter().find(|link| link.id == edge_id)?;
-    let index = hit_test_node(nodes, point)?;
-    let hit = &nodes[index];
-    if hit.id == fixed_node_id {
+    let (node_id, side) = find_connect_candidate(nodes, point)?;
+    if node_id == fixed_node_id {
         return None;
     }
 
@@ -130,11 +136,54 @@ pub fn edge_target(
     } else {
         return None;
     };
-    if hit.id == *other_end || edge_exists_between(links, other_end, &hit.id, Some(edge_id)) {
+    if node_id == *other_end || edge_exists_between(links, other_end, &node_id, Some(edge_id)) {
         return None;
     }
 
-    Some((hit.id.clone(), side_toward_point(hit, point)))
+    Some((node_id, side))
+}
+
+/// Find the nearest connection anchor, with a forgiving 36px halo around each
+/// side midpoint. This makes it easy to aim at a particular side without
+/// landing exactly on the small visible handle.
+pub fn find_connect_candidate(nodes: &[MindmapNode], point: Point) -> Option<(String, Side)> {
+    if let Some(index) = hit_test_node(nodes, point) {
+        let node = &nodes[index];
+        return Some((node.id.clone(), side_toward_point(node, point)));
+    }
+
+    let mut best: Option<(String, Side, f64)> = None;
+    for node in nodes {
+        for side in SIDES.iter() {
+            let anchor = side_point(node, side);
+            let distance = distance(anchor, point);
+            if distance <= HANDLE_HIT_R
+                && best
+                    .as_ref()
+                    .map(|(_, _, best_distance)| distance < *best_distance)
+                    .unwrap_or(true)
+            {
+                best = Some((node.id.clone(), side.clone(), distance));
+            }
+        }
+    }
+    best.map(|(id, side, _)| (id, side))
+}
+
+/// Resolve a connection candidate into a valid target: no self-links and no
+/// duplicate edges in either direction.
+pub fn connect_target(
+    nodes: &[MindmapNode],
+    links: &[MindmapLink],
+    point: Point,
+    source_id: &str,
+) -> Option<(String, Side)> {
+    let (node_id, side) = find_connect_candidate(nodes, point)?;
+    if node_id == source_id || edge_exists_between(links, source_id, &node_id, None) {
+        None
+    } else {
+        Some((node_id, side))
+    }
 }
 
 pub fn curve_path(from: Point, from_side: &Side, to: Point, to_side: &Side) -> String {

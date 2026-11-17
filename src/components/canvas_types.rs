@@ -10,6 +10,10 @@ pub struct ConnectOutcome {
     pub from_side: Side,
     pub point: Point,
     pub target: Option<(String, Side)>,
+    /// True when the pointer was over a node/anchor, even if that target was
+    /// invalid (the source itself or an existing link). In that case releasing
+    /// must not create a new node.
+    pub over_candidate: bool,
 }
 
 #[derive(Clone, Debug)]
@@ -18,14 +22,14 @@ pub struct MarqueeOutcome {
     pub additive: bool,
 }
 
-/// Result of releasing an edge endpoint drag. `over_node_id` tells the caller
-/// whether the pointer was over any node, which distinguishes "cancel the drag"
-/// from "drop on empty canvas and delete the edge".
+/// Result of releasing an edge endpoint drag. `over_candidate` tells the caller
+/// whether the pointer was over a node or anchor, which distinguishes "cancel
+/// the drag" from "drop on empty canvas and delete the edge".
 #[derive(Clone, Debug)]
 pub struct EdgeDragOutcome {
     pub edge_id: String,
     pub moving: EdgeEnd,
-    pub over_node_id: Option<String>,
+    pub over_candidate: bool,
     pub target: Option<(String, Side)>,
 }
 
@@ -55,6 +59,7 @@ pub(crate) struct ConnectState {
     pub source_id: String,
     pub source_side: Side,
     pub point: Point,
+    pub candidate: Option<(String, Side)>,
     pub target: Option<(String, Side)>,
 }
 
