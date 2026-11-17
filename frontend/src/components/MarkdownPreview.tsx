@@ -8,6 +8,10 @@ type Props = {
 }
 
 export function MarkdownPreview({ content }: Props) {
+  if (!content.trim()) {
+    return <p className="text-sm text-mutedink">Nothing here yet. Use Edit to start writing markdown.</p>
+  }
+
   const lines = content.split("\n")
   const blocks: ReactNode[] = []
   let code: string[] | null = null
@@ -81,10 +85,6 @@ export function MarkdownPreview({ content }: Props) {
         <Latex formula={math.join("\n")} displayMode />
       </div>,
     )
-  }
-
-  if (blocks.length === 0) {
-    return <p className="text-sm text-mutedink">Nothing here yet. Use Edit to start writing markdown.</p>
   }
 
   return <div className="space-y-1">{blocks}</div>

@@ -19,9 +19,9 @@ SCHEMA_PATH = Path(__file__).resolve().parents[2] / "docs" / "mindmap.schema.jso
 def build_schema() -> dict:
     schema = MindmapResource.model_json_schema(by_alias=True)
     return {
+        **schema,
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "title": "Mindmap document (v1)",
-        **schema,
     }
 
 

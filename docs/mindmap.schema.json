@@ -233,6 +233,6 @@
     "createdAt",
     "updatedAt"
   ],
-  "title": "MindmapResource",
+  "title": "Mindmap document (v1)",
   "type": "object"
 }
