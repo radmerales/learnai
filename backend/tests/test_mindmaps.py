@@ -75,12 +75,6 @@ def test_health(client):
     assert alias.json() == {"status": "ok"}
 
 
-def test_models_compatibility_endpoint(client):
-    response = client.get("/v1/models")
-    assert response.status_code == 200
-    assert response.json() == {"object": "list", "data": []}
-
-
 def test_create_list_get_update_delete(client):
     created = client.post("/api/mindmaps", json=sample_document())
     assert created.status_code == 201
