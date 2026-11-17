@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react"
 
 import { MarkdownPreview } from "./MarkdownPreview"
-import { TrashIcon } from "./TrashIcon"
+import { DeleteButton } from "./DeleteButton"
+import { SMALL_BUTTON_CLASS } from "./buttonStyles"
 
 type Props = {
   content: string
@@ -11,36 +12,6 @@ type Props = {
   onEdit: () => void
   onDone: () => void
   onDelete: () => void
-}
-
-const smallButton =
-  "border border-hairline bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:bg-surface hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-
-function DeleteBlockButton({
-  blockNumber,
-  onDelete,
-  className = "",
-}: {
-  blockNumber: number
-  onDelete: () => void
-  className?: string
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={`Delete block ${blockNumber}`}
-      title="Delete block"
-      onClick={(e) => {
-        e.stopPropagation()
-        onDelete()
-      }}
-      onDoubleClick={(e) => e.stopPropagation()}
-      className={`flex items-center gap-1.5 border border-red-700 bg-red-600 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${className}`}
-    >
-      <TrashIcon size={13} strokeWidth={1.25} />
-      Delete
-    </button>
-  )
 }
 
 export function MarkdownBlock({
@@ -65,9 +36,10 @@ export function MarkdownBlock({
   if (!editing) {
     return (
       <div className="group relative border border-transparent hover:border-hairline focus-within:border-hairline">
-        <DeleteBlockButton
-          blockNumber={blockNumber}
-          onDelete={onDelete}
+        <DeleteButton
+          label={`Delete block ${blockNumber}`}
+          title="Delete block"
+          onClick={onDelete}
           className="absolute right-2 top-2 z-10 opacity-0 focus-visible:opacity-100 group-hover:opacity-100"
         />
 
@@ -100,8 +72,12 @@ export function MarkdownBlock({
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-hairline px-3 py-1.5">
         <p className="font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink">Editing block</p>
         <div className="flex items-center gap-1.5">
-          <DeleteBlockButton blockNumber={blockNumber} onDelete={onDelete} />
-          <button type="button" onClick={onDone} className={smallButton}>
+          <DeleteButton
+            label={`Delete block ${blockNumber}`}
+            title="Delete block"
+            onClick={onDelete}
+          />
+          <button type="button" onClick={onDone} className={SMALL_BUTTON_CLASS}>
             Done
           </button>
         </div>

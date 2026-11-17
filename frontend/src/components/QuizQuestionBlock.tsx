@@ -5,8 +5,10 @@ import {
   updateOption,
   type QuizQuestion,
 } from "../quiz"
+import { DeleteButton } from "./DeleteButton"
 import { PlusIcon } from "./PlusIcon"
 import { TrashIcon } from "./TrashIcon"
+import { SMALL_BUTTON_CLASS } from "./buttonStyles"
 
 type Props = {
   question: QuizQuestion
@@ -20,38 +22,8 @@ type Props = {
   onDelete: () => void
 }
 
-const smallButton =
-  "border border-hairline bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:bg-surface hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
-
 const fieldClass =
   "w-full border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink outline-none placeholder:text-mutedink focus-visible:border-ink focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ink"
-
-function DeleteQuestionButton({
-  index,
-  onDelete,
-  className = "",
-}: {
-  index: number
-  onDelete: () => void
-  className?: string
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={`Delete question ${index + 1}`}
-      title="Delete question"
-      onClick={(e) => {
-        e.stopPropagation()
-        onDelete()
-      }}
-      onDoubleClick={(e) => e.stopPropagation()}
-      className={`flex items-center gap-1.5 border border-red-700 bg-red-600 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.08em] text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${className}`}
-    >
-      <TrashIcon size={13} strokeWidth={1.25} />
-      Delete
-    </button>
-  )
-}
 
 export function QuizQuestionBlock({
   question,
@@ -72,8 +44,12 @@ export function QuizQuestionBlock({
             Editing question {index + 1}
           </p>
           <div className="flex items-center gap-1.5">
-            <DeleteQuestionButton index={index} onDelete={onDelete} />
-            <button type="button" onClick={onDone} className={smallButton}>
+            <DeleteButton
+              label={`Delete question ${index + 1}`}
+              title="Delete question"
+              onClick={onDelete}
+            />
+            <button type="button" onClick={onDone} className={SMALL_BUTTON_CLASS}>
               Done
             </button>
           </div>
@@ -140,7 +116,7 @@ export function QuizQuestionBlock({
             <button
               type="button"
               onClick={() => onChange(addOption(question))}
-              className={`mt-2 inline-flex items-center gap-1.5 ${smallButton}`}
+              className={`mt-2 inline-flex items-center gap-1.5 ${SMALL_BUTTON_CLASS}`}
             >
               <PlusIcon />
               Add answer
@@ -159,10 +135,14 @@ export function QuizQuestionBlock({
   return (
     <div className="group relative border border-transparent hover:border-hairline focus-within:border-hairline">
       <div className="absolute right-2 top-2 z-10 flex gap-1.5 opacity-0 focus-within:opacity-100 group-hover:opacity-100">
-        <button type="button" onClick={onEdit} className={smallButton}>
+        <button type="button" onClick={onEdit} className={SMALL_BUTTON_CLASS}>
           Edit
         </button>
-        <DeleteQuestionButton index={index} onDelete={onDelete} />
+        <DeleteButton
+          label={`Delete question ${index + 1}`}
+          title="Delete question"
+          onClick={onDelete}
+        />
       </div>
 
       <div className="px-3 py-2 pr-32">
