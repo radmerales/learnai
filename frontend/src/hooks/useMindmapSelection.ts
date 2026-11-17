@@ -76,5 +76,3 @@ export function useMindmapSelection() {
     closePanel,
   }
 }
-
-export type MindmapSelection = ReturnType<typeof useMindmapSelection>

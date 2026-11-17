@@ -39,7 +39,7 @@ export const NODE_W = 140
 export const NODE_H = 44
 export const HANDLE_R = 4.5
 export const HANDLE_HIT_R = 36
-export const ANCHOR_OFFSET = 10
+const ANCHOR_OFFSET = 10
 export const SIDES: Side[] = ["top", "right", "bottom", "left"]
 
 const NODE_TEXT_FONT = '14px "IBM Plex Sans", sans-serif'
@@ -92,7 +92,7 @@ export function sidePoint(node: Node, side: Side): Point {
   }
 }
 
-export function sideNormal(side: Side): Point {
+function sideNormal(side: Side): Point {
   switch (side) {
     case "top":
       return { x: 0, y: -1 }

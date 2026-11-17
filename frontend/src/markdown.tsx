@@ -6,7 +6,7 @@ function safeHref(url: string): string | undefined {
   return /^(https?:\/\/|mailto:|#)/i.test(url) ? url : undefined
 }
 
-export function parseInlineMarkdown(text: string): ReactNode[] {
+function parseInlineMarkdown(text: string): ReactNode[] {
   const nodes: ReactNode[] = []
   const pattern = /(`[^`]+`|\$[^$\n]+\$|\*\*[^*]+\*\*|__[^_]+__|~~[^~]+~~|==[^=]+==|\*[^*]+\*|_[^_]+_|\[[^\]]+\]\([^)]+\))/g
   let lastIndex = 0

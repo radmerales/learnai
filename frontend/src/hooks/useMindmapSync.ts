@@ -268,5 +268,3 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
     reload: loadLibrary,
   }
 }
-
-export type MindmapSync = ReturnType<typeof useMindmapSync>

@@ -37,5 +37,3 @@ export function useEdgeHover() {
 
   return { hoveredEdgeId, show, scheduleHide, clear, reset }
 }
-
-export type EdgeHover = ReturnType<typeof useEdgeHover>

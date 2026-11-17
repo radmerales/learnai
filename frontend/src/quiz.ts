@@ -8,7 +8,7 @@ export type QuizQuestion = {
 }
 
 export const MIN_QUIZ_OPTIONS = 2
-export const DEFAULT_QUIZ_OPTIONS = 4
+const DEFAULT_QUIZ_OPTIONS = 4
 
 /** New questions start with four empty MCQ options and the first marked correct. */
 export function createQuestion(): QuizQuestion {
