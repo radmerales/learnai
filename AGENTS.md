@@ -32,7 +32,7 @@
 - `src/state/graph.rs` — node/link mutations
 - `src/state/selection.rs` — node/edge/panel selection
 - `src/components/` — Header, WorkspaceCanvas, Canvas, NodePanel, Learn, Quiz, context menu, markdown
-- `assets/` — HTML shell, Tailwind source, favicon
+- `assets/` — HTML shell, hand-written CSS, favicon
 - `migrations/` — SQLite schema and timestamp normalization
 - `scripts/` — build, dev, and check commands
 - `docs/system-map.md` — complete file/function/call map

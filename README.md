@@ -10,7 +10,8 @@ The project is a full-stack Rust application:
 - **Dioxus 0.7** for the web UI and server functions
 - **Axum 0.8** as the HTTP server under Dioxus fullstack
 - **SQLx + SQLite** for persistence
-- **Tailwind CSS** for the paper/ink visual language
+- **Hand-written CSS** for the paper/ink visual language; no Node or CSS build
+  step
 - **pulldown-cmark, ammonia, and katex-rs** for Learn content
 
 ## Requirements
@@ -18,7 +19,6 @@ The project is a full-stack Rust application:
 - Rust 1.100 or newer (`rust-toolchain.toml` pins the toolchain)
 - `wasm32-unknown-unknown` target
 - `wasm-bindgen-cli` 0.2.130
-- Tailwind CSS CLI 3.4 (or `npx`, which the build script can use)
 
 ```bash
 rustup target add wasm32-unknown-unknown
@@ -179,7 +179,7 @@ src/
   platform.rs             web storage/timers/confirm with server fallbacks
   bin/export_schema.rs    schema export tool
 
-assets/                   HTML template, Tailwind input, favicon
+assets/                   HTML shell, hand-written CSS, favicon
 migrations/               SQLx schema + timestamp normalization
 scripts/                  build, dev, check
 examples/mindmap.json     hand-written contract example
@@ -222,7 +222,7 @@ the first Rust run.
 - **Document storage.** A map is one JSON document in one SQLite row; saves are
   full-document replacements.
 - **Separate build path.** `scripts/build.sh` performs the steps the Dioxus CLI
-  normally coordinates: Tailwind, WASM, wasm-bindgen, server, and public assets.
-  This keeps the app buildable in constrained environments.
+  normally coordinates: WASM, wasm-bindgen, server, and public assets. CSS is
+  copied as-is from `assets/styles/`.
 - **No authentication.** This is a local single-user workspace. Add auth before
   exposing it publicly.

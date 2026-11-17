@@ -19,8 +19,7 @@
     "vscode": {
       "extensions": [
         "rust-lang.rust-analyzer",
-        "tamasfe.even-better-toml",
-        "bradlc.vscode-tailwindcss"
+        "tamasfe.even-better-toml"
       ],
       "settings": {
         "editor.formatOnSave": true,

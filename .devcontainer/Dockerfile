@@ -11,8 +11,6 @@ RUN apt-get update \
         ca-certificates \
         curl \
         git \
-        nodejs \
-        npm \
         pkg-config \
         sudo \
     && rm -rf /var/lib/apt/lists/*

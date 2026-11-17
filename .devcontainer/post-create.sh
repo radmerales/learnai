@@ -11,10 +11,6 @@ fi
 rustup target add wasm32-unknown-unknown
 cargo fetch
 
-if [ -f package.json ]; then
-  npm install
-fi
-
 echo
 echo "Dev container ready."
 echo "Build and run with: ./scripts/dev.sh"

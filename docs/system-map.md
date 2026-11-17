@@ -152,17 +152,20 @@ origin.
 | `rust-toolchain.toml` | Rust 1.100 + wasm target |
 | `migrations/0001_init.sql` | mindmaps table |
 | `migrations/0002_normalize_timestamps.sql` | Python-era timestamps → RFC 3339 |
-| `assets/index.html` | client HTML shell, hydration shim, fonts, KaTeX CSS |
-| `assets/tailwind.css` | Tailwind input + markdown/theme components |
+| `assets/index.html` | client HTML shell, hydration shim, fonts, stylesheet links |
+| `assets/styles/base.css` | tokens, reset, shell, overlays, shared buttons |
+| `assets/styles/header.css` | header, map picker, save state, footer |
+| `assets/styles/workspace.css` | canvas, node panel, tabs, context menu |
+| `assets/styles/content.css` | Learn blocks, Quiz editor/practice |
+| `assets/styles/markdown.css` | rendered markdown typography and code styles |
 | `assets/favicon.svg` | static icon |
-| `tailwind.config.js`, `postcss.config.js` | Tailwind build config |
-| `scripts/build.sh` | Tailwind → WASM → wasm-bindgen → server → public assets |
+| `scripts/build.sh` | copy CSS → WASM → wasm-bindgen → server → public assets |
 | `scripts/dev.sh` | build and run server |
 | `scripts/check.sh` | fmt, clippy, tests |
 | `examples/mindmap.json` | hand-written document example |
 | `docs/mindmap.schema.json` | generated schema |
 | `.env.example` | database URL example |
-| `.devcontainer/*` | Rust/WASM/Tailwind development container |
+| `.devcontainer/*` | Rust/WASM development container |
 | `.dockerignore`, `.gitignore` | build/data exclusions |
 | `README.md`, `AGENTS.md`, this map | documentation |
 

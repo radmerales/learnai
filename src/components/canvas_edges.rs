@@ -42,7 +42,7 @@ pub fn CanvasEdges(
                                 stroke: "transparent",
                                 stroke_width: "16",
                                 pointer_events: "stroke",
-                                class: "cursor-pointer",
+                                class: "edge-hit",
                                 onpointerdown: move |event| {
                                     event.stop_propagation();
                                     let additive = event.modifiers().shift()
@@ -94,7 +94,7 @@ fn EdgeHandle(
                 cy: "{point.y}",
                 r: "14",
                 fill: "transparent",
-                class: "cursor-crosshair",
+                class: "handle-hit",
                 onpointerdown: move |event| {
                     event.stop_propagation();
                     if event.trigger_button() != Some(MouseButton::Primary) {

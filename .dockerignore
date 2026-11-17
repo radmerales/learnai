@@ -1,13 +1,6 @@
 target
 dist
-.venv
-venv
-__pycache__
-*.pyc
-node_modules
-.vite
 *.db
 *.sqlite3
 .env
 .env.*
-.pytest_cache

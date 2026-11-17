@@ -109,7 +109,7 @@ pub fn Canvas(
 
     rsx! {
         svg {
-            class: "h-full w-full touch-none select-none",
+            class: "canvas-svg",
             onpointerdown: move |event| {
                 if event.trigger_button() != Some(MouseButton::Primary) {
                     return;

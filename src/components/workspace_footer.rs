@@ -8,7 +8,7 @@ pub fn WorkspaceFooter(
     on_delete_selected: EventHandler<()>,
 ) -> Element {
     rsx! {
-        footer { class: "flex items-center justify-between gap-4 border-t border-hairline bg-surface px-6 py-2 font-mono text-xs text-mutedink",
+        footer { class: "workspace-footer",
             span {
                 if selected_count > 0 {
                     "{selected_count} selected"
@@ -19,7 +19,7 @@ pub fn WorkspaceFooter(
             if selected_count > 0 {
                 button {
                     r#type: "button",
-                    class: "text-red-700 underline underline-offset-4 hover:text-red-900",
+                    class: "text-danger-button footer-delete",
                     onclick: move |_| on_delete_selected.call(()),
                     "Delete selected"
                 }

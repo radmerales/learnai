@@ -1,20 +1,5 @@
-# Python
-__pycache__/
-*.py[cod]
-*.egg-info/
-.venv/
-venv/
-.pytest_cache/
-.ruff_cache/
-.coverage
-htmlcov/
-
-# Node
-node_modules/
+# Build output
 dist/
-.vite/
-*.local
-package-lock.json
 
 # Environment / secrets
 .env

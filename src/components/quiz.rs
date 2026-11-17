@@ -25,48 +25,48 @@ pub fn QuizPanel(
     };
 
     rsx! {
-        div { class: "h-full overflow-y-auto px-3 py-3",
+        div { class: "scroll-panel",
             if questions.is_empty() {
                 button {
                     r#type: "button",
-                    class: "flex w-full items-center justify-center gap-2 border border-hairline px-3 py-3 text-center font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:border-ink hover:text-ink",
+                    class: "add-empty",
                     onclick: add_question,
                     "+ Click here to add a new question"
                 }
             } else {
-                div { class: "flex items-baseline justify-between gap-3 px-2 pb-3",
+                div { class: "quiz-toolbar",
                     div {
-                        p { class: "font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink", "Multiple choice" }
-                        p { class: "mt-1 text-sm text-[#3f3e3e]", "Pick one answer per question." }
+                        p { class: "eyebrow", "Multiple choice" }
+                        p { class: "quiz-subtitle", "Pick one answer per question." }
                     }
-                    div { class: "flex gap-3",
+                    div { class: "quiz-actions",
                         if answered {
                             button {
                                 r#type: "button",
-                                class: "font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink underline underline-offset-4 hover:text-ink",
+                                class: "text-button",
                                 onclick: move |_| answers.set(HashMap::new()),
                                 "Reset"
                             }
                         }
                         button {
                             r#type: "button",
-                            class: "font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink underline underline-offset-4 hover:text-ink",
+                            class: "text-button",
                             onclick: move |_| editing.set(!editing()),
                             if editing() { "Practice" } else { "Edit" }
                         }
                     }
                 }
 
-                div { class: "space-y-2",
+                div { class: "stack-sm",
                     for (index, question) in questions.iter().enumerate() {
                         {
                             let question = question.clone();
                             let answer = answers().get(&question.id).copied();
                             rsx! {
                                 if editing() {
-                                    div { key: "{question.id}", class: "border border-ink bg-paper p-3",
-                                        div { class: "flex items-center justify-between gap-2",
-                                            p { class: "font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink",
+                                    div { key: "{question.id}", class: "question-editor",
+                                        div { class: "question-editor-head",
+                                            p { class: "eyebrow question-editor-title",
                                                 "Question {index + 1}"
                                             }
                                             {
@@ -75,7 +75,7 @@ pub fn QuizPanel(
                                                 rsx! {
                                                     button {
                                                         r#type: "button",
-                                                        class: "border border-red-700 bg-red-600 px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-white hover:bg-red-700",
+                                                        class: "button-danger-small",
                                                         onclick: move |_| {
                                                             let mut updated = delete_questions.clone();
                                                             updated.retain(|item| item.id != delete_id);
@@ -91,7 +91,7 @@ pub fn QuizPanel(
                                             let prompt_id = question.id.clone();
                                             rsx! {
                                                 textarea {
-                                                    class: "mt-2 w-full resize-y border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink outline-none focus-visible:border-ink",
+                                                    class: "question-prompt",
                                                     "aria-label": "Question",
                                                     rows: 2,
                                                     value: "{question.prompt}",
@@ -105,7 +105,7 @@ pub fn QuizPanel(
                                                 }
                                             }
                                         }
-                                        div { class: "mt-3 space-y-2",
+                                        div { class: "option-list",
                                             for (option_index, option) in question.options.iter().enumerate() {
                                                 {
                                                     let option = option.clone();
@@ -117,7 +117,7 @@ pub fn QuizPanel(
                                                     let delete_questions = questions.clone();
                                                     let delete_id = question.id.clone();
                                                     rsx! {
-                                                        div { key: "{option_index}", class: "flex items-center gap-2",
+                                                        div { key: "{option_index}", class: "option-edit-row",
                                                             input {
                                                                 r#type: "radio",
                                                                 name: "correct-{question.id}",
@@ -132,7 +132,7 @@ pub fn QuizPanel(
                                                             }
                                                             input {
                                                                 r#type: "text",
-                                                                class: "w-full border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink outline-none focus-visible:border-ink",
+                                                                class: "option-input",
                                                                 value: "{option}",
                                                                 placeholder: "Option {option_index + 1}",
                                                                 oninput: move |event| {
@@ -145,7 +145,7 @@ pub fn QuizPanel(
                                                             }
                                                             button {
                                                                 r#type: "button",
-                                                                class: "shrink-0 border border-hairline px-1.5 py-1 text-mutedink hover:border-red-700 hover:text-red-700 disabled:opacity-40",
+                                                                class: "remove-option",
                                                                 disabled: question.options.len() <= MIN_QUIZ_OPTIONS,
                                                                 onclick: move |_| {
                                                                     let mut updated = delete_questions.clone();
@@ -166,7 +166,7 @@ pub fn QuizPanel(
                                                 rsx! {
                                                     button {
                                                         r#type: "button",
-                                                        class: "border border-hairline bg-paper px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink hover:bg-surface hover:text-ink",
+                                                        class: "button-small add-answer",
                                                         onclick: move |_| {
                                                             let mut updated = add_questions.clone();
                                                             if let Some(item) = updated.iter_mut().find(|item| item.id == add_id) {
@@ -181,12 +181,12 @@ pub fn QuizPanel(
                                         }
                                     }
                                 } else {
-                                    div { key: "{question.id}", class: "px-3 py-2",
-                                        p { class: "text-sm font-medium leading-5 text-ink",
-                                            span { class: "mr-2 font-mono text-xs text-mutedink", "{index + 1}." }
+                                    div { key: "{question.id}", class: "practice-question",
+                                        p { class: "practice-prompt",
+                                            span { class: "question-number", "{index + 1}." }
                                             "{question.prompt}"
                                         }
-                                        div { class: "mt-3 space-y-2",
+                                        div { class: "practice-options",
                                             for (option_index, option) in question.options.iter().enumerate() {
                                                 {
                                                     let option = option.clone();
@@ -194,17 +194,17 @@ pub fn QuizPanel(
                                                     let correct = answer == Some(option_index) && option_index == question.answer_index;
                                                     let wrong = answer == Some(option_index) && option_index != question.answer_index;
                                                     let tone = if correct {
-                                                        "border-ink bg-accent text-accentink"
+                                                        "quiz-option is-correct"
                                                     } else if wrong {
-                                                        "border-red-700 bg-red-600 text-white"
+                                                        "quiz-option is-wrong"
                                                     } else {
-                                                        "border-hairline bg-paper text-ink hover:bg-surface"
+                                                        "quiz-option"
                                                     };
                                                     rsx! {
                                                         button {
                                                             key: "{option_index}",
                                                             r#type: "button",
-                                                            class: "w-full border px-3 py-2 text-left text-sm leading-5 {tone}",
+                                                            class: "{tone}",
                                                             disabled: answer.is_some(),
                                                             onclick: move |_| {
                                                                 answers.write().insert(qid.clone(), option_index);
@@ -216,7 +216,7 @@ pub fn QuizPanel(
                                             }
                                         }
                                         if let Some(selected) = answer {
-                                            p { class: "mt-2 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink",
+                                            p { class: "feedback",
                                                 if selected == question.answer_index { "Correct" } else { "Incorrect" }
                                             }
                                         }
@@ -227,10 +227,10 @@ pub fn QuizPanel(
                     }
                 }
 
-                div { class: "group mt-2 border border-transparent hover:border-hairline",
+                div { class: "add-row",
                     button {
                         r#type: "button",
-                        class: "flex h-10 w-full items-center justify-center px-3 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink opacity-0 hover:text-ink focus-visible:opacity-100 group-hover:opacity-100",
+                        class: "add-row-button",
                         onclick: add_question,
                         "+ Add question"
                     }

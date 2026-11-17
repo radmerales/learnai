@@ -172,12 +172,11 @@ pub fn App() -> Element {
     let load_error_value = load_error();
 
     rsx! {
-        document::Stylesheet { href: "/assets/tailwind.css" }
         document::Link {
             rel: "stylesheet",
             href: "https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css",
         }
-        div { class: "flex h-full flex-col bg-paper text-ink",
+        div { class: "app-shell",
             Header {
                 title: title(),
                 maps: maps(),
@@ -192,7 +191,7 @@ pub fn App() -> Element {
                 on_retry_save,
             }
 
-            div { class: "relative flex-1 overflow-hidden",
+            div { class: "workspace",
                 WorkspaceCanvas {
                     nodes: graph().nodes,
                     links: graph().links,
@@ -207,31 +206,29 @@ pub fn App() -> Element {
                 }
 
                 if loading_value {
-                    div { class: "absolute inset-0 z-10 flex items-center justify-center bg-paper px-4",
-                        div { class: "border border-hairline bg-surface px-6 py-5 text-center",
-                            p { class: "font-medium", "Loading map" }
-                            p { class: "mt-1 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink",
-                                "Fetching nodes, notes, and questions…"
-                            }
+                    div { class: "overlay",
+                        div { class: "overlay-card",
+                            p { class: "overlay-title", "Loading map" }
+                            p { class: "overlay-status", "Fetching nodes, notes, and questions…" }
                         }
                     }
                 } else if let Some(error) = load_error_value {
-                    div { class: "absolute inset-0 z-10 flex items-center justify-center bg-paper px-4",
-                        div { class: "max-w-sm border border-hairline bg-surface px-6 py-5 text-center",
-                            p { class: "font-medium", "Could not load map" }
-                            p { class: "mt-1 break-words text-sm text-[#3f3e3e]", "{error}" }
+                    div { class: "overlay",
+                        div { class: "overlay-card",
+                            p { class: "overlay-title", "Could not load map" }
+                            p { class: "overlay-copy", "{error}" }
                         }
                     }
                 } else if graph().nodes.is_empty() {
-                    div { class: "absolute inset-0 z-10 flex items-center justify-center bg-paper px-4",
-                        div { class: "max-w-sm border border-hairline bg-surface px-6 py-5 text-center",
-                            p { class: "font-medium", "Empty canvas" }
-                            p { class: "mt-1 text-sm text-[#3f3e3e]",
+                    div { class: "overlay",
+                        div { class: "overlay-card",
+                            p { class: "overlay-title", "Empty canvas" }
+                            p { class: "overlay-copy",
                                 "Start with one node, then drag from its edge handles to grow the map."
                             }
                             button {
                                 r#type: "button",
-                                class: "mt-4 border border-ink bg-accent px-3 py-2 text-sm font-medium text-accentink hover:brightness-95",
+                                class: "button button-accent overlay-action",
                                 onclick: move |_| {
                                     let node = graph.write().add_node_at(420.0, 260.0);
                                     selection.write().focus_node(node.id);

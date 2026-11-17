@@ -31,7 +31,7 @@ pub fn CanvasNode(
     rsx! {
         g {
             transform: "translate({node.x - node.width / 2.0}, {node.y - NODE_H / 2.0})",
-            class: "cursor-grab",
+            class: "node-group",
             onpointerenter: move |_| hovered.set(true),
             onpointerleave: move |_| hovered.set(false),
             onpointerdown: move |event| {
@@ -96,7 +96,7 @@ pub fn CanvasNode(
                                     cy: "{point.y}",
                                     r: "14",
                                     fill: "transparent",
-                                    class: "cursor-crosshair",
+                                    class: "handle-hit",
                                     onpointerdown: move |event| {
                                         event.stop_propagation();
                                         if event.trigger_button() != Some(MouseButton::Primary) {

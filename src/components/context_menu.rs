@@ -19,7 +19,7 @@ pub fn ContextMenu(
 
     rsx! {
         div {
-            class: "fixed inset-0 z-40",
+            class: "menu-backdrop",
             "aria-hidden": "true",
             onpointerdown: move |_| on_close.call(()),
             oncontextmenu: move |event| {
@@ -30,16 +30,16 @@ pub fn ContextMenu(
         div {
             role: "menu",
             "aria-label": "Actions for {label}",
-            class: "fixed z-50 w-52 border border-ink bg-paper p-1",
+            class: "context-menu",
             style: "left: {left}px; top: {top}px;",
-            p { class: "truncate px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.08em] text-mutedink",
+            p { class: "context-menu-label",
                 "{label}"
             }
             button {
                 r#type: "button",
                 role: "menuitem",
                 autofocus: true,
-                class: "flex w-full items-center gap-2 bg-red-600 px-3 py-2 text-left text-sm font-medium text-white hover:bg-red-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink",
+                class: "context-menu-delete",
                 onkeydown: move |event| {
                     if event.key() == Key::Escape {
                         event.stop_propagation();
@@ -48,7 +48,7 @@ pub fn ContextMenu(
                 },
                 onclick: move |_| on_delete.call(()),
                 svg {
-                    class: "h-4 w-4 shrink-0",
+                    class: "context-menu-icon",
                     "aria-hidden": "true",
                     view_box: "0 0 16 16",
                     fill: "none",

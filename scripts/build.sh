@@ -21,20 +21,11 @@ if ! command -v "$WASM_BINDGEN" >/dev/null 2>&1; then
   exit 1
 fi
 
-if command -v tailwindcss >/dev/null 2>&1; then
-  TAILWIND=tailwindcss
-elif command -v npx >/dev/null 2>&1; then
-  TAILWIND="npx --yes tailwindcss@3.4.15"
-else
-  echo "Missing Tailwind CLI." >&2
-  exit 1
-fi
-
 rm -rf "$DIST"
-mkdir -p "$DIST/assets"
-$TAILWIND -i assets/tailwind.css -o "$DIST/assets/tailwind.css" --minify
+mkdir -p "$DIST/assets/styles"
 cp assets/index.html "$DIST/index.html"
 cp assets/favicon.svg "$DIST/assets/favicon.svg"
+cp assets/styles/*.css "$DIST/assets/styles/"
 
 echo "Building WASM client…"
 cargo build --bin learn-ai --features web --no-default-features --target "$WASM_TARGET" --profile "$PROFILE"
