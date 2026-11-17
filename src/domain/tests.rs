@@ -166,15 +166,18 @@ fn resolves_valid_edge_rewire_targets() {
         ),
         Some(("c".to_string(), Side::Left))
     );
-    // The fixed end and the other end are not valid targets.
+    // Dropping on the moving endpoint's own node changes that side without
+    // changing the node pair.
+    assert_eq!(
+        edge_target(&nodes, &links, "l1", "b", side_point(&nodes[0], &Side::Top)),
+        Some(("a".to_string(), Side::Top))
+    );
+    // The fixed end is not a valid target.
     assert_eq!(
         edge_target(&nodes, &links, "l1", "b", Point::new(300.0, 100.0)),
         None
     );
-    assert_eq!(
-        edge_target(&nodes, &links, "l1", "b", Point::new(100.0, 100.0)),
-        None
-    );
+    // Empty canvas has no target.
     // Empty canvas has no target.
     assert_eq!(
         edge_target(&nodes, &links, "l1", "b", Point::new(900.0, 900.0)),

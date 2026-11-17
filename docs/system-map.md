@@ -82,7 +82,7 @@ origin.
 | | `side_point`, `local_handle_point` | anchor coordinates |
 | | `hit_test_node`, `side_toward_point`, `side_from_vector` | pointer/target hit testing |
 | | `find_connect_candidate`, `connect_target` | 36px anchor snapping and connect rules |
-| | `edge_exists_between`, `edge_target` | rewire/connect duplicate and endpoint rules |
+| | `edge_exists_between`, `edge_target` | rewire/connect duplicates, same-pair side changes |
 | | `opposite_side` | connect-to-empty target side |
 | | `curve_path`, `render_edge`, `render_edges` | cubic SVG paths |
 | | `distance`, `nodes_in_rect` | drag threshold and marquee hits |

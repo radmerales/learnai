@@ -161,6 +161,9 @@ mod tests {
         assert!(!graph.rewire_link("l1", EdgeEnd::From, "b", Side::Right));
         assert!(!graph.rewire_link("l1", EdgeEnd::From, "c", Side::Right));
         assert!(!graph.rewire_link("missing", EdgeEnd::From, "d", Side::Right));
+        assert!(graph.rewire_link("l1", EdgeEnd::From, "a", Side::Top));
+        assert_eq!(graph.links[0].from_node, "a");
+        assert_eq!(graph.links[0].from_side, Side::Top);
         assert!(graph.rewire_link("l1", EdgeEnd::From, "d", Side::Right));
         assert_eq!(graph.links[0].from_node, "d");
         assert_eq!(graph.links[0].from_side, Side::Right);

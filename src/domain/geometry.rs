@@ -113,9 +113,10 @@ pub fn edge_exists_between(
 
 /// Resolve the node under the pointer as the new endpoint of an existing edge.
 ///
-/// `fixed_node_id` is the endpoint that is *not* moving. Releasing over that
-/// node, the other endpoint, or a node that already has an edge to the other
-/// endpoint is not a valid move.
+/// `fixed_node_id` is the endpoint that is *not* moving. Dropping on the moving
+/// endpoint's own node is allowed so the edge can switch sides without changing
+/// the node pair. The fixed node and nodes that would create a duplicate edge
+/// are not valid targets.
 pub fn edge_target(
     nodes: &[MindmapNode],
     links: &[MindmapLink],
@@ -125,18 +126,14 @@ pub fn edge_target(
 ) -> Option<(String, Side)> {
     let link = links.iter().find(|link| link.id == edge_id)?;
     let (node_id, side) = find_connect_candidate(nodes, point)?;
-    if node_id == fixed_node_id {
+    let fixed_is_endpoint = link.from_node == fixed_node_id || link.to == fixed_node_id;
+    if !fixed_is_endpoint || node_id == fixed_node_id {
         return None;
     }
 
-    let other_end = if link.from_node == fixed_node_id {
-        &link.to
-    } else if link.to == fixed_node_id {
-        &link.from_node
-    } else {
-        return None;
-    };
-    if node_id == *other_end || edge_exists_between(links, other_end, &node_id, Some(edge_id)) {
+    // Dropping on the endpoint's own node is allowed: it changes which side
+    // that endpoint leaves from while keeping the same node pair.
+    if edge_exists_between(links, fixed_node_id, &node_id, Some(edge_id)) {
         return None;
     }
 

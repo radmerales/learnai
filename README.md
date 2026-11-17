@@ -63,8 +63,9 @@ Copy `.env.example` to `.env` if you prefer file-based settings.
 - SVG canvas with grid, nodes, dashed curved edges, and status colors
 - Node dragging, drag-to-connect with side-anchor snapping, and a “New node”
   ghost preview when releasing on empty canvas
-- Hover handles for rewiring an edge endpoint with side-anchor snapping;
-  dropping on truly empty canvas deletes the edge
+- Hover handles for rewiring an edge endpoint with side-anchor snapping,
+  including changing sides between the same node pair; dropping on truly empty
+  canvas deletes the edge
 - Right-click menus on nodes and edges for quick deletion
 - Marquee selection and Delete-selected action
 - Node panel with live title, study status, Learn tab, and Quiz tab
