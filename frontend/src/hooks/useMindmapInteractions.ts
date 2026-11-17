@@ -1,23 +1,21 @@
 import { useRef, useState, type MouseEvent, type PointerEvent } from "react"
 
-import { oppositeSide, type RenderedEdge, type Side } from "../graph"
-import {
-  clampNewNodePoint,
-  findConnectCandidate,
-  hitTestNode,
-  resolveConnectTarget,
-  resolveEdgeTarget,
-  type ConnectDrag,
-  type EdgeDrag,
-  type SelectionResult,
-} from "../interaction"
-import { buildConnectPreview, buildEdgePreview, buildGhostNode } from "../previews"
+import { toSvgPoint as clientToSvgPoint } from "../canvasPoint"
+import type { RenderedEdge } from "../graph"
+import { clampNewNodePoint, type SelectionResult } from "../interaction"
 import { useCanvasSize } from "./useCanvasSize"
+import { useConnectDrag } from "./useConnectDrag"
+import { useEdgeDrag } from "./useEdgeDrag"
 import { useEdgeHover } from "./useEdgeHover"
 import { useMarqueeSelection } from "./useMarqueeSelection"
 import type { MindmapGraph } from "./useMindmapGraph"
+import { useNodeDrag } from "./useNodeDrag"
 
-type GraphActions = Pick<MindmapGraph, "nodes" | "links" | "byId" | "moveNodes" | "addNode" | "addLink" | "updateLink" | "removeLink">
+type GraphActions = Pick<
+  MindmapGraph,
+  "nodes" | "links" | "byId" | "moveNodes" | "addNode" | "addLink" | "updateLink" | "removeLink"
+>
+
 type Options = GraphActions & {
   edges: RenderedEdge[]
   selectedNodeIds: string[]
@@ -27,86 +25,97 @@ type Options = GraphActions & {
   clearEdgeSelection: () => void
 }
 
-type DragState = { ids: string[]; starts: Record<string, { x: number; y: number }>; startX: number; startY: number; moved: boolean; additive: boolean; anchorId: string }
-
+/**
+ * Pointer-interaction coordinator.
+ *
+ * Each interaction mode owns its own state in a focused hook:
+ * - useNodeDrag: moving nodes and groups
+ * - useConnectDrag: dragging from a side handle to create an edge
+ * - useEdgeDrag: moving an existing edge endpoint
+ * - useMarqueeSelection: box selection
+ *
+ * This hook decides which mode receives pointer move/up events and assembles
+ * the preview data consumed by the presentational canvas.
+ */
 export function useMindmapInteractions(options: Options) {
-  const { nodes, links, byId, edges, moveNodes, addNode, addLink, updateLink, removeLink, selectedNodeIds, selectNode, focusNode, selectMarquee, clearEdgeSelection } = options
-  const [drag, setDrag] = useState<DragState | null>(null)
-  const [connect, setConnect] = useState<ConnectDrag | null>(null)
-  const [edgeDrag, setEdgeDrag] = useState<EdgeDrag | null>(null)
+  const {
+    nodes,
+    links,
+    byId,
+    edges,
+    moveNodes,
+    addNode,
+    addLink,
+    updateLink,
+    removeLink,
+    selectedNodeIds,
+    selectNode,
+    focusNode,
+    selectMarquee,
+    clearEdgeSelection,
+  } = options
+
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const svgRef = useRef<SVGSVGElement | null>(null)
   const canvasSize = useCanvasSize(svgRef)
   const edgeHover = useEdgeHover()
 
   function toSvgPoint(clientX: number, clientY: number) {
-    const svg = svgRef.current
-    if (!svg) return { x: clientX, y: clientY }
-    const pt = svg.createSVGPoint()
-    pt.x = clientX
-    pt.y = clientY
-    const ctm = svg.getScreenCTM()
-    if (!ctm) return { x: clientX, y: clientY }
-    const p = pt.matrixTransform(ctm.inverse())
-    return { x: p.x, y: p.y }
+    return clientToSvgPoint(svgRef.current, clientX, clientY)
+  }
+
+  function clampPoint(point: { x: number; y: number }) {
+    return clampNewNodePoint(point, canvasSize.width, canvasSize.height)
   }
 
   const marquee = useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect: selectMarquee })
 
-  function nodeAtPoint(p: { x: number; y: number }) {
-    return hitTestNode(nodes, p)
+  const nodeDrag = useNodeDrag({
+    byId,
+    moveNodes,
+    selectedNodeIds,
+    selectNode,
+    focusNode,
+    toSvgPoint,
+    onStart: edgeHover.reset,
+  })
+
+  const connectDrag = useConnectDrag({
+    nodes,
+    links,
+    byId,
+    addNode,
+    addLink,
+    focusNode,
+    toSvgPoint,
+    clampPoint,
+    onStart: () => {
+      clearEdgeSelection()
+      edgeHover.reset()
+    },
+  })
+
+  const edgeDrag = useEdgeDrag({
+    nodes,
+    links,
+    byId,
+    updateLink,
+    removeLink,
+    toSvgPoint,
+    onStart: () => {
+      clearEdgeSelection()
+      edgeHover.reset()
+    },
+  })
+
+  function onBackgroundPointerDown(event: PointerEvent<SVGSVGElement>) {
+    marquee.start(event)
   }
 
-  function clampPoint(p: { x: number; y: number }) {
-    return clampNewNodePoint(p, canvasSize.width, canvasSize.height)
-  }
-
-  function onBackgroundPointerDown(e: PointerEvent<SVGSVGElement>) {
-    marquee.start(e)
-  }
-
-  function onCanvasDoubleClick(e: MouseEvent<SVGSVGElement>) {
-    if (e.button !== 0) return
-    const node = addNode(clampPoint(toSvgPoint(e.clientX, e.clientY)))
+  function onCanvasDoubleClick(event: MouseEvent<SVGSVGElement>) {
+    if (event.button !== 0) return
+    const node = addNode(clampPoint(toSvgPoint(event.clientX, event.clientY)))
     focusNode(node.id)
-  }
-
-  function onNodePointerDown(e: PointerEvent<SVGGElement>, id: string) {
-    e.stopPropagation()
-    if (e.button !== 0) return
-    const node = byId.get(id)
-    if (!node) return
-
-    edgeHover.reset()
-    const p = toSvgPoint(e.clientX, e.clientY)
-    const additive = e.shiftKey || e.metaKey || e.ctrlKey
-    selectNode(id, additive)
-
-    const alreadySelected = selectedNodeIds.includes(id)
-    const ids = additive
-      ? alreadySelected
-        ? selectedNodeIds
-        : [...selectedNodeIds, id]
-      : alreadySelected
-        ? selectedNodeIds
-        : [id]
-
-    const starts: DragState["starts"] = {}
-    ids.forEach((dragId) => {
-      const dragNode = byId.get(dragId)
-      if (dragNode) starts[dragId] = { x: dragNode.x, y: dragNode.y }
-    })
-
-    setDrag({
-      ids,
-      starts,
-      startX: p.x,
-      startY: p.y,
-      moved: false,
-      additive,
-      anchorId: id,
-    })
-    ;(e.currentTarget as SVGGElement).setPointerCapture?.(e.pointerId)
   }
 
   function onNodePointerEnter(id: string) {
@@ -114,179 +123,70 @@ export function useMindmapInteractions(options: Options) {
   }
 
   function onNodePointerLeave(id: string) {
-    setHoveredId((prev) => (prev === id ? null : prev))
+    setHoveredId((previous) => (previous === id ? null : previous))
   }
 
-  function startConnect(e: PointerEvent<SVGPathElement>, id: string, side: Side) {
-    e.stopPropagation()
-    if (e.button !== 0) return
-    clearEdgeSelection()
-    edgeHover.reset()
-    const p = toSvgPoint(e.clientX, e.clientY)
-    setConnect({ sourceId: id, sourceSide: side, x: p.x, y: p.y, targetId: null, targetSide: null })
-  }
-
-  function startEdgeDrag(e: PointerEvent<SVGCircleElement>, edge: RenderedEdge, moving: "from" | "to") {
-    e.stopPropagation()
-    if (e.button !== 0) return
-    clearEdgeSelection()
-    edgeHover.reset()
-    const fixed = moving === "from" ? edge.to : edge.from
-    const fixedSide = moving === "from" ? edge.toSide : edge.fromSide
-    const p = toSvgPoint(e.clientX, e.clientY)
-    setEdgeDrag({
-      edgeId: edge.id,
-      moving,
-      fixedNodeId: fixed.id,
-      fixedSide,
-      x: p.x,
-      y: p.y,
-      targetNodeId: null,
-      targetSide: null,
-    })
-  }
-
-  function onPointerMove(e: PointerEvent<SVGSVGElement>) {
+  function onPointerMove(event: PointerEvent<SVGSVGElement>) {
     if (marquee.active) {
-      marquee.move(e)
+      marquee.move(event)
       return
     }
-
-    const p = toSvgPoint(e.clientX, e.clientY)
-
-    if (drag) {
-      const moved = drag.moved || Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3
-      const dx = p.x - drag.startX
-      const dy = p.y - drag.startY
-      moveNodes(
-        Object.entries(drag.starts).map(([id, start]) => ({
-          id,
-          x: start.x + dx,
-          y: start.y + dy,
-        })),
-      )
-      if (moved !== drag.moved) setDrag((prev) => (prev ? { ...prev, moved } : prev))
+    if (nodeDrag.drag) {
+      nodeDrag.move(event)
       return
     }
-
-    if (connect) {
-      const target = resolveConnectTarget(nodes, links, p, connect.sourceId)
-      setConnect((prev) =>
-        prev ? { ...prev, x: p.x, y: p.y, targetId: target?.node.id ?? null, targetSide: target?.side ?? null } : prev,
-      )
+    if (connectDrag.connect) {
+      connectDrag.move(event)
       return
     }
-
-    if (edgeDrag) {
-      const hit = nodeAtPoint(p)
-      const target = resolveEdgeTarget(links, byId, hit, p, edgeDrag)
-      setEdgeDrag((prev) =>
-        prev
-          ? {
-              ...prev,
-              x: p.x,
-              y: p.y,
-              targetNodeId: target?.node.id ?? null,
-              targetSide: target?.side ?? null,
-            }
-          : prev,
-      )
+    if (edgeDrag.edgeDrag) {
+      edgeDrag.move(event)
     }
   }
 
-  function onPointerUp(e: PointerEvent<SVGSVGElement>) {
+  function onPointerUp(event: PointerEvent<SVGSVGElement>) {
     if (marquee.active) {
-      marquee.finish(e)
+      marquee.finish(event)
       return
     }
-
-    const p = toSvgPoint(e.clientX, e.clientY)
-
-    if (connect) {
-      const source = byId.get(connect.sourceId)
-      const candidate = findConnectCandidate(nodes, p)
-      const target = resolveConnectTarget(nodes, links, p, connect.sourceId)
-      if (source && target) {
-        addLink({
-          from: source.id,
-          to: target.node.id,
-          fromSide: connect.sourceSide,
-          toSide: target.side,
-        })
-      } else if (source && !candidate) {
-        const node = addNode(clampPoint(p))
-        addLink({
-          from: source.id,
-          to: node.id,
-          fromSide: connect.sourceSide,
-          toSide: oppositeSide(connect.sourceSide),
-        })
-        focusNode(node.id)
-      }
-      setConnect(null)
+    if (connectDrag.connect) {
+      connectDrag.finish(event)
       return
     }
-
-    if (edgeDrag) {
-      const hit = nodeAtPoint(p)
-      const target = resolveEdgeTarget(links, byId, hit, p, edgeDrag)
-
-      if (target) {
-        updateLink(
-          edgeDrag.edgeId,
-          edgeDrag.moving === "from"
-            ? { from: target.node.id, fromSide: target.side }
-            : { to: target.node.id, toSide: target.side },
-        )
-      } else if (!hit) {
-        removeLink(edgeDrag.edgeId)
-      }
-
-      setEdgeDrag(null)
+    if (edgeDrag.edgeDrag) {
+      edgeDrag.finish(event)
       return
     }
-
-    if (drag && !drag.moved) {
-      const moved = Math.hypot(p.x - drag.startX, p.y - drag.startY) > 3
-      if (!moved && !drag.additive) focusNode(drag.anchorId)
-    }
-
-    setDrag(null)
+    nodeDrag.finish(event)
   }
 
   function onPointerLeave() {
-    setDrag(null)
-    setConnect(null)
-    setEdgeDrag(null)
+    nodeDrag.cancel()
+    connectDrag.cancel()
+    edgeDrag.cancel()
     marquee.cancel()
     edgeHover.reset()
   }
-
-  const connectPoint = connect ? clampPoint({ x: connect.x, y: connect.y }) : null
-  const connectCandidate = connect ? findConnectCandidate(nodes, { x: connect.x, y: connect.y }) : null
-  const ghostNode = buildGhostNode(connect, connectPoint, connectCandidate?.node ?? null)
-  const connectPreview = buildConnectPreview(connect, byId, ghostNode)
-  const edgePreview = buildEdgePreview(edgeDrag, byId)
 
   return {
     svgRef,
     canvasSize,
     marquee: marquee.rect,
-    drag,
-    connect,
-    edgeDrag,
+    drag: nodeDrag.drag,
+    connect: connectDrag.connect,
+    edgeDrag: edgeDrag.edgeDrag,
     hoveredId,
     hoveredEdgeId: edgeHover.hoveredEdgeId,
-    ghostNode,
-    connectPreview,
-    edgePreview,
+    ghostNode: connectDrag.ghostNode,
+    connectPreview: connectDrag.connectPreview,
+    edgePreview: edgeDrag.edgePreview,
     onBackgroundPointerDown,
     onCanvasDoubleClick,
-    onNodePointerDown,
+    onNodePointerDown: nodeDrag.start,
     onNodePointerEnter,
     onNodePointerLeave,
-    startConnect,
-    startEdgeDrag,
+    startConnect: connectDrag.start,
+    startEdgeDrag: edgeDrag.start,
     showEdge: edgeHover.show,
     scheduleEdgeHide: edgeHover.scheduleHide,
     clearEdgeHoverTimer: edgeHover.clear,
