@@ -8,30 +8,26 @@
     "bash .devcontainer/post-create.sh",
     "opencode auth import /tmp/opencode-credentials.json || true"
   ],
-  "forwardPorts": [8080, 5173],
+  "forwardPorts": [8080],
   "portsAttributes": {
     "8080": {
-      "label": "FastAPI",
-      "onAutoForward": "notify"
-    },
-    "5173": {
-      "label": "Vite dev server",
+      "label": "learn.ai",
       "onAutoForward": "openPreview"
     }
   },
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-python.python",
-        "ms-python.vscode-pylance",
-        "dbaeumer.vscode-eslint",
-        "bradlc.vscode-tailwindcss",
-        "esbenp.prettier-vscode"
+        "rust-lang.rust-analyzer",
+        "tamasfe.even-better-toml",
+        "bradlc.vscode-tailwindcss"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "/workspace/.venv/bin/python",
         "editor.formatOnSave": true,
-        "files.eol": "\n"
+        "files.eol": "\n",
+        "[rust]": {
+          "editor.defaultFormatter": "rust-lang.rust-analyzer"
+        }
       }
     }
   }

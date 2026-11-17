@@ -1,11 +1,10 @@
-.git
-.gitignore
+target
+dist
 .venv
 venv
 __pycache__
 *.pyc
 node_modules
-dist
 .vite
 *.db
 *.sqlite3

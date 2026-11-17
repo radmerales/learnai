@@ -8,20 +8,14 @@ if [ ! -f .env ]; then
   echo "Created .env from .env.example"
 fi
 
-# A .venv created on the host points at an interpreter that does not exist
-# inside the container, so recreate it when it cannot actually run.
-if ! .venv/bin/python -c 'import sys' >/dev/null 2>&1; then
-  rm -rf .venv
-  python -m venv .venv
-fi
+rustup target add wasm32-unknown-unknown
+cargo fetch
 
-.venv/bin/pip install --upgrade pip
-.venv/bin/pip install -r backend/requirements-dev.txt
-
-if [ -f frontend/package.json ]; then
-  npm --prefix frontend install
+if [ -f package.json ]; then
+  npm install
 fi
 
 echo
 echo "Dev container ready."
-echo "Start both servers with: ./scripts/dev.sh"
+echo "Build and run with: ./scripts/dev.sh"
+echo "Or use Dioxus hot reload: dx serve --port 8080"
