@@ -14,7 +14,7 @@ fi
 # process ID. Vite starts the same way on the next lines.
 (
   cd backend
-  ../.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+  ../.venv/bin/uvicorn app.main:app --reload --host 0.0.0.0 --port 8080
 ) &
 BACKEND_PID=$!
 

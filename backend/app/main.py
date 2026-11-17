@@ -2,7 +2,7 @@
 
 Start it with:
     cd backend
-    ../.venv/bin/uvicorn app.main:app --reload --port 8000
+    ../.venv/bin/uvicorn app.main:app --reload --port 8080
 
 Uvicorn is the web server; FastAPI is the framework that maps URLs to Python
 functions. `--reload` restarts the server when source files change.

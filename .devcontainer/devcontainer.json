@@ -8,9 +8,9 @@
     "bash .devcontainer/post-create.sh",
     "opencode auth import /tmp/opencode-credentials.json || true"
   ],
-  "forwardPorts": [8000, 5173],
+  "forwardPorts": [8080, 5173],
   "portsAttributes": {
-    "8000": {
+    "8080": {
       "label": "FastAPI",
       "onAutoForward": "notify"
     },

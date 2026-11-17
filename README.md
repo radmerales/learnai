@@ -76,21 +76,21 @@ npm --prefix frontend install
 ./scripts/dev.sh
 ```
 
-Open <http://localhost:5173>. The API runs on <http://localhost:8000>, and
-FastAPI's interactive API explorer is at <http://localhost:8000/docs>.
+Open <http://localhost:5173>. The API runs on <http://localhost:8080>, and
+FastAPI's interactive API explorer is at <http://localhost:8080/docs>.
 
 You can also run the two servers separately:
 
 ```bash
 # terminal 1
 cd backend
-../.venv/bin/uvicorn app.main:app --reload --port 8000
+../.venv/bin/uvicorn app.main:app --reload --port 8080
 
 # terminal 2
 npm --prefix frontend run dev
 ```
 
-The Vite development server proxies `/api` to port 8000 (see
+The Vite development server proxies `/api` to port 8080 (see
 `frontend/vite.config.ts`), so the browser can call the backend without CORS
 configuration.
 
@@ -337,7 +337,7 @@ part of the document.
 
 ## Troubleshooting
 
-- **"Could not load map"** — make sure the backend is running on port 8000 and
+- **"Could not load map"** — make sure the backend is running on port 8080 and
   that `/health` or `/api/health` returns `{"status":"ok"}`.
 - **"Save failed"** — the frontend keeps your local changes and offers Retry.
   Check the backend terminal for validation or database errors.
