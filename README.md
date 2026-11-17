@@ -260,6 +260,7 @@ frontend/
     api/               Typed fetch client and API document types
     persistence.ts     JSON <-> graph-state conversion
     mindmapLibrary.ts  localStorage helpers and map summaries
+    canvasPoint.ts     Browser -> SVG coordinate conversion
     graph.ts           Domain types, node geometry, edge rendering
     interaction.ts     Hit-testing and connection rules
     markdown.tsx       Safe inline markdown renderer
@@ -267,10 +268,15 @@ frontend/
     status.ts          Study statuses and colors
     state/             Pure reducer and graph transitions
     hooks/
-      useMindmapSync.ts     Load/create/switch maps, orchestrate saves
-      useMindmapAutosave.ts Debounced PUT queue and save status
-      useMindmapGraph.ts    Graph state and mutations
-      ...                   Selection, marquee, labels, pointer interaction
+      useMindmapSync.ts         Load/create/switch maps, orchestrate saves
+      useMindmapAutosave.ts     Debounced PUT queue and save status
+      useMindmapGraph.ts        Graph state and mutations
+      useMindmapInteractions.ts Pointer-event coordinator
+      useNodeDrag.ts            Node and group dragging
+      useConnectDrag.ts         Create edges and connected nodes
+      useEdgeDrag.ts            Rewire or remove edges
+      useMindmapContextMenu.ts  Right-click menu lifecycle
+      ...                       Selection, marquee, labels, hover
     components/        Presentational React components
     test/              Shared test fixtures and setup
 

@@ -25,9 +25,10 @@
 - `frontend/src/selectionBounds.ts` — exact multi-selection bounds
 - `frontend/src/persistence.ts` — JSON document <-> graph-state serialization
 - `frontend/src/mindmapLibrary.ts` — local-storage helpers and map summaries
+- `frontend/src/canvasPoint.ts` — browser-to-SVG coordinate conversion
 - `frontend/src/api/` — typed HTTP client and API document types
 - `frontend/src/state/` — pure reducer and state transitions
-- `frontend/src/hooks/` — graph, persistence, selection, marquee, edge-hover, label-editing, and pointer-interaction controllers
+- `frontend/src/hooks/` — graph, persistence, context-menu, selection, marquee, hover, label-editing, and focused pointer-interaction controllers (`useNodeDrag`, `useConnectDrag`, `useEdgeDrag`)
 - `frontend/src/components/` — presentational React components
 - `frontend/src/test/` — Vitest setup and shared fixtures
 - `backend/app/` — FastAPI app, SQLAlchemy models, Pydantic schemas, and routes
