@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react"
 
 import { buildRenderedEdges, type Node, type RenderedEdge } from "../graph"
-import { panelShiftX } from "../panelViewport"
+import type { Viewport } from "../hooks/useCanvasViewport"
+import { panelFocusTarget } from "../panelViewport"
 import { getSelectionBounds } from "../selectionBounds"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapContextMenu } from "../hooks/useMindmapContextMenu"
@@ -74,10 +75,12 @@ export function MindmapPage() {
 
   const { svgRef, ...canvasInteractions } = interactions
   const resetViewport = interactions.resetViewport
+  const panelOriginalRef = useRef<Viewport | null>(null)
 
   // A different map should open at the home viewport rather than wherever the
   // previous map was panned.
   useEffect(() => {
+    panelOriginalRef.current = null
     resetViewport()
   }, [resetViewport, sync.currentId])
 
@@ -101,21 +104,44 @@ export function MindmapPage() {
   const animateTo = interactions.animateTo
   const viewportScale = interactions.viewport.scale
   const canvasWidth = interactions.canvasSize.width
+  const canvasHeight = interactions.canvasSize.height
 
-  // When the detail panel opens over the right half, pan the world left if the
-  // selected node would otherwise be hidden underneath it.
+  // Center the selected node in the left canvas area while the panel is open,
+  // then return to the pre-panel viewport when the panel closes.
   useEffect(() => {
     const node = panelNodeRef.current
-    if (!node || !canvasWidth) return
+    const current = viewportRef.current
+
+    if (!node) {
+      const original = panelOriginalRef.current
+      if (original) {
+        panelOriginalRef.current = null
+        animateTo(original.x, original.y)
+      }
+      return
+    }
+
+    if (!canvasWidth || !canvasHeight) return
+    if (!panelOriginalRef.current) panelOriginalRef.current = { ...current }
+
     const panelWidth = canvasWidth >= 768 ? canvasWidth / 2 : 0
     if (!panelWidth) return
 
-    const current = viewportRef.current
-    const target = panelShiftX(current, node, canvasWidth, panelWidth)
-    if (target !== null) {
-      animateTo(target, current.y)
-    }
-  }, [animateTo, canvasWidth, panelNode?.id, viewportScale])
+    const target = panelFocusTarget(
+      current,
+      node,
+      canvasWidth,
+      canvasHeight,
+      panelWidth,
+    )
+    if (target) animateTo(target.x, target.y)
+  }, [
+    animateTo,
+    canvasHeight,
+    canvasWidth,
+    panelNode?.id,
+    viewportScale,
+  ])
 
   const deleteSelection = useCallback(() => {
     selectedEdgeIds.forEach((id) => removeLink(id))

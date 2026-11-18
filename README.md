@@ -126,8 +126,8 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
 - Edge endpoint rewiring, including same-pair side changes and right-click
   deletion menus
 - Marquee selection, inline node renaming, and selection-bounds outline
-- Animated node panel that slides in and auto-pans the canvas so the selected
-  node stays visible to its left
+- Animated node panel that slides in, centers the selected node in the left
+  half of the canvas, and returns the canvas to its original position on close
 - Node panel with live title, study status, Learn tab, and Quiz tab
 - Markdown blocks with headings, lists, task lists, quotes, code, links, and
   inline/display math

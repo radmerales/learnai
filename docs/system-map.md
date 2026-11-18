@@ -95,7 +95,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/markdown.tsx` | Markdown parsing, sanitizing, math rendering |
 | `frontend/src/canvasPoint.ts` | Client coordinates -> SVG coordinates |
 | `frontend/src/selectionBounds.ts` | Bounds outline for selected items |
-| `frontend/src/panelViewport.ts` | Panel-aware viewport shift calculation |
+| `frontend/src/panelViewport.ts` | Left-half centering target and panel viewport restore |
 | `frontend/src/state/mindmapReducer.ts` | Pure node/link/add/move/update/remove transitions |
 | `frontend/src/persistence.ts` | UI model <-> portable JSON document |
 | `frontend/src/storage/mindmaps.ts` | localStorage CRUD repository |
@@ -168,7 +168,8 @@ The production build was also checked from a nested static path
 - first-node creation and node dragging after zooming
 - zoom HUD percentage changes from the +/- buttons and Ctrl/Cmd+wheel
 - wheel panning and Space-drag panning
-- opening the panel over a right-side node shifts and animates the canvas
+- opening the panel centers the selected node in the left half
+- closing the panel animates the canvas back to its previous viewport
 - viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests

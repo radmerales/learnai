@@ -163,8 +163,8 @@ function setup(overrides: Partial<Mocks> = {}) {
   vi.mocked(useMindmapContextMenu).mockReturnValue(
     mocks.context as unknown as ReturnType<typeof useMindmapContextMenu>,
   )
-  render(<MindmapPage />)
-  return mocks
+  const view = render(<MindmapPage />)
+  return { ...mocks, view }
 }
 
 beforeEach(() => {
@@ -181,10 +181,9 @@ describe("MindmapPage", () => {
     expect(mocks.selection.focusNode).toHaveBeenCalledWith("new")
   })
 
-  it("pans the canvas left when the detail panel would cover the node", async () => {
+  it("centers the selected node in the left half while the panel is open", async () => {
     const base = makeMocks()
-    const node = makeNode({ id: "n1", label: "Right side", x: 500, width: 140 })
-    const animateTo = vi.fn()
+    const node = makeNode({ id: "n1", label: "Right side", x: 500, y: 100 })
     const mocks = setup({
       graph: {
         ...base.graph,
@@ -200,12 +199,50 @@ describe("MindmapPage", () => {
         ...base.interactions,
         canvasSize: { width: 800, height: 600 },
         viewport: { x: 0, y: 0, scale: 1 },
-        animateTo,
+        animateTo: vi.fn(),
       },
     })
 
     await waitFor(() =>
-      expect(mocks.interactions.animateTo).toHaveBeenCalledWith(-198, 0),
+      expect(mocks.interactions.animateTo).toHaveBeenCalledWith(-300, 200),
+    )
+  })
+
+  it("animates back to the original viewport when the panel closes", async () => {
+    const base = makeMocks()
+    const node = makeNode({ id: "n1", label: "Right side", x: 500, y: 100 })
+    const mocks = setup({
+      graph: {
+        ...base.graph,
+        nodes: [node],
+        byId: new Map([[node.id, node]]),
+      },
+      selection: {
+        ...base.selection,
+        panelOpen: true,
+        selectedNodeIds: [node.id],
+      },
+      interactions: {
+        ...base.interactions,
+        canvasSize: { width: 800, height: 600 },
+        viewport: { x: 80, y: 40, scale: 1 },
+        animateTo: vi.fn(),
+      },
+    })
+
+    await waitFor(() =>
+      expect(mocks.interactions.animateTo).toHaveBeenCalledWith(-300, 200),
+    )
+
+    vi.mocked(useMindmapSelection).mockReturnValue({
+      ...base.selection,
+      selectedNodeIds: [],
+      panelOpen: false,
+    })
+    mocks.view.rerender(<MindmapPage />)
+
+    await waitFor(() =>
+      expect(mocks.interactions.animateTo).toHaveBeenLastCalledWith(80, 40),
     )
   })
 
