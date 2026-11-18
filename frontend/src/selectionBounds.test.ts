@@ -6,8 +6,8 @@ import { makeLink, makeNode } from "./test/fixtures"
 
 describe("multi-selection bounds", () => {
   it("returns null when fewer than two items are selected", () => {
-    expect(getSelectionBounds([makeNode()], [], ["n1"], [])).toBeNull()
-    expect(getSelectionBounds([makeNode()], [], [], [])).toBeNull()
+    expect(getSelectionBounds([makeNode()], [], [], ["n1"], [], [])).toBeNull()
+    expect(getSelectionBounds([makeNode()], [], [], [], [], [])).toBeNull()
   })
 
   it("surrounds two nodes with an 8px padded box", () => {
@@ -16,7 +16,7 @@ describe("multi-selection bounds", () => {
       makeNode({ id: "n2", x: 300, y: 200, width: 140 }),
     ]
 
-    expect(getSelectionBounds(nodes, [], ["n1", "n2"], [])).toEqual({
+    expect(getSelectionBounds(nodes, [], [], ["n1", "n2"], [], [])).toEqual({
       x: 22,
       y: 70,
       width: 356,
@@ -31,7 +31,7 @@ describe("multi-selection bounds", () => {
       makeNode({ id: "far-away", x: 2_000, y: 2_000 }),
     ]
 
-    const bounds = getSelectionBounds(nodes, [], ["n1", "n2"], [])
+    const bounds = getSelectionBounds(nodes, [], [], ["n1", "n2"], [], [])
 
     expect(bounds?.width).toBe(356)
     expect(bounds?.height).toBe(160)
@@ -48,7 +48,7 @@ describe("multi-selection bounds", () => {
       byId,
     )
 
-    const bounds = getSelectionBounds(nodes, edges, ["a"], ["l1"])
+    const bounds = getSelectionBounds(nodes, edges, [], ["a"], ["l1"], [])
 
     expect(bounds).not.toBeNull()
     expect(bounds!.x).toBeLessThanOrEqual(edges[0].fromPoint.x)
@@ -65,9 +65,9 @@ describe("multi-selection bounds", () => {
     const edge = buildRenderedEdges([makeLink({ id: "l1", from: "a", to: "b" })], byId)[0]
     const second = { ...edge, id: "l2" }
 
-    const bounds = getSelectionBounds(nodes, [edge, second], [], ["l1", "l2"])
+    const bounds = getSelectionBounds(nodes, [edge, second], [], [], ["l1", "l2"], [])
 
     expect(bounds).not.toBeNull()
-    expect(getSelectionBounds(nodes, [edge], [], ["missing", "other"])).toBeNull()
+    expect(getSelectionBounds(nodes, [edge], [], [], ["missing", "other"], [])).toBeNull()
   })
 })

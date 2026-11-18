@@ -38,18 +38,32 @@ describe("useMindmapSelection", () => {
   it("applies marquee results and clears selections", () => {
     const { result } = renderHook(() => useMindmapSelection())
 
-    act(() => result.current.selectMarquee({ nodeIds: ["a"], edgeIds: ["e"] }, false))
+    act(() => result.current.selectMarquee({ nodeIds: ["a"], edgeIds: ["e"], textIds: ["t"] }, false))
     expect(result.current.selectedNodeIds).toEqual(["a"])
     expect(result.current.selectedEdgeIds).toEqual(["e"])
+    expect(result.current.selectedTextIds).toEqual(["t"])
 
-    act(() => result.current.selectMarquee({ nodeIds: ["b"], edgeIds: [] }, true))
+    act(() => result.current.selectMarquee({ nodeIds: ["b"], edgeIds: [], textIds: ["t2"] }, true))
     expect(result.current.selectedNodeIds).toEqual(["a", "b"])
+    expect(result.current.selectedTextIds).toEqual(["t", "t2"])
 
     act(() => result.current.clearEdgeSelection())
     expect(result.current.selectedEdgeIds).toEqual([])
 
     act(() => result.current.clearSelection())
     expect(result.current.selectedNodeIds).toEqual([])
+    expect(result.current.selectedTextIds).toEqual([])
+  })
+
+  it("selects a text box and clears nodes and edges", () => {
+    const { result } = renderHook(() => useMindmapSelection())
+
+    act(() => result.current.selectNode("a"))
+    act(() => result.current.selectText("t1"))
+
+    expect(result.current.selectedTextIds).toEqual(["t1"])
+    expect(result.current.selectedNodeIds).toEqual([])
+    expect(result.current.selectedEdgeIds).toEqual([])
   })
 
   it("closes the panel without clearing selection", () => {

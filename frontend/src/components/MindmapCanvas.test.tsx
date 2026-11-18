@@ -63,6 +63,7 @@ function renderCanvas(
     texts: [],
     selectedNodeIds: [],
     selectedEdgeIds: [],
+    selectedTextIds: [],
     editingId: null,
     editingTextId: null,
     selectionBox: null,

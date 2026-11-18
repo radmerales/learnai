@@ -37,7 +37,7 @@
 - `frontend/src/components/MindmapPage.tsx` — workspace composition and actions
 - `frontend/src/components/` — canvas, text boxes, zoom HUD, header, panel, Learn, Quiz, menus
 - `frontend/src/components/ContextMenu.tsx` — shared right-click menu
-- `frontend/src/hooks/` — drag/selection, sync, autosave, viewport, annotations, canvas size
+- `frontend/src/hooks/` — drag/selection (nodes, edges, texts), sync, autosave, viewport, annotations
 - `frontend/src/contextMenus.ts` — canvas/node/edge/text menu builders
 - `frontend/src/state/mindmapReducer.ts` — node/link/text mutations
 - `frontend/src/storage/mindmaps.ts` — localStorage repository

@@ -39,6 +39,7 @@ function setup() {
     removeLink: vi.fn(),
     selectNode: vi.fn(),
     focusNode: vi.fn(),
+    selectText: vi.fn(),
     selectMarquee: vi.fn(),
     clearEdgeSelection: vi.fn(),
   }

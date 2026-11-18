@@ -1,6 +1,13 @@
 import { useState, type PointerEvent } from "react"
 
-import { NODE_H, type Node, type Point, type RenderedEdge } from "../graph"
+import {
+  NODE_H,
+  measureTextBoxHeight,
+  type Node,
+  type Point,
+  type RenderedEdge,
+  type TextBox,
+} from "../graph"
 import type { SelectionResult } from "../interaction"
 
 type Rect = { x: number; y: number; width: number; height: number }
@@ -9,6 +16,7 @@ type Options = {
   toSvgPoint: (clientX: number, clientY: number) => Point
   nodes: Node[]
   edges: RenderedEdge[]
+  texts: TextBox[]
   onSelect: (result: SelectionResult, additive: boolean) => void
 }
 
@@ -44,7 +52,22 @@ function edgeRect(edge: RenderedEdge): Rect {
   }
 }
 
-export function useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect }: Options) {
+function textRect(text: TextBox): Rect {
+  return {
+    x: text.x,
+    y: text.y,
+    width: text.width,
+    height: measureTextBoxHeight(text.text),
+  }
+}
+
+export function useMarqueeSelection({
+  toSvgPoint,
+  nodes,
+  edges,
+  texts,
+  onSelect,
+}: Options) {
   const [drag, setDrag] = useState<{ start: Point; current: Point; additive: boolean } | null>(null)
 
   function start(e: PointerEvent<SVGSVGElement>) {
@@ -70,7 +93,9 @@ export function useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect }: Opti
     const moved = rect.width > 3 || rect.height > 3
 
     if (!moved) {
-      if (!drag.additive) onSelect({ nodeIds: [], edgeIds: [] }, false)
+      if (!drag.additive) {
+        onSelect({ nodeIds: [], edgeIds: [], textIds: [] }, false)
+      }
       setDrag(null)
       return
     }
@@ -79,8 +104,11 @@ export function useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect }: Opti
     const edgeIds = edges
       .filter((edge) => edge.from.id !== edge.to.id && intersects(edgeRect(edge), rect))
       .map((edge) => edge.id)
+    const textIds = texts
+      .filter((text) => intersects(textRect(text), rect))
+      .map((text) => text.id)
 
-    onSelect({ nodeIds, edgeIds }, drag.additive)
+    onSelect({ nodeIds, edgeIds, textIds }, drag.additive)
     setDrag(null)
   }
 

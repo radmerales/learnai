@@ -13,11 +13,12 @@ type DragState = {
 type Options = {
   texts: TextBox[]
   moveText: (id: string, x: number, y: number) => void
+  selectText: (id: string, additive?: boolean) => void
   toSvgPoint: (clientX: number, clientY: number) => Point
 }
 
 /** Drag a free-standing canvas text annotation. */
-export function useTextDrag({ texts, moveText, toSvgPoint }: Options) {
+export function useTextDrag({ texts, moveText, selectText, toSvgPoint }: Options) {
   const [drag, setDrag] = useState<DragState | null>(null)
 
   function start(event: PointerEvent<SVGForeignObjectElement>, id: string) {
@@ -25,6 +26,7 @@ export function useTextDrag({ texts, moveText, toSvgPoint }: Options) {
     if (event.button !== 0) return
     const text = texts.find((item) => item.id === id)
     if (!text) return
+    selectText(id, event.shiftKey || event.metaKey || event.ctrlKey)
     const point = toSvgPoint(event.clientX, event.clientY)
     setDrag({
       id,

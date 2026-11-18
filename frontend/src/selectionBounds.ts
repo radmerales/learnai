@@ -1,4 +1,11 @@
-import { NODE_H, curveGeometry, type Node, type RenderedEdge } from "./graph"
+import {
+  NODE_H,
+  curveGeometry,
+  measureTextBoxHeight,
+  type Node,
+  type RenderedEdge,
+  type TextBox,
+} from "./graph"
 
 export type SelectionBox = { x: number; y: number; width: number; height: number }
 
@@ -52,13 +59,18 @@ function include(bounds: Bounds | null, minX: number, minY: number, maxX: number
 export function getSelectionBounds(
   nodes: Node[],
   edges: RenderedEdge[],
+  texts: TextBox[],
   selectedNodeIds: string[],
   selectedEdgeIds: string[],
+  selectedTextIds: string[],
 ): SelectionBox | null {
-  if (selectedNodeIds.length + selectedEdgeIds.length < 2) return null
+  if (selectedNodeIds.length + selectedEdgeIds.length + selectedTextIds.length < 2) {
+    return null
+  }
 
   const nodeIds = new Set(selectedNodeIds)
   const edgeIds = new Set(selectedEdgeIds)
+  const textIds = new Set(selectedTextIds)
   let bounds: Bounds | null = null
 
   for (const node of nodes) {
@@ -70,6 +82,17 @@ export function getSelectionBounds(
     if (!edgeIds.has(edge.id)) continue
     const edgeBox = edgeBounds(edge)
     bounds = include(bounds, edgeBox.minX, edgeBox.minY, edgeBox.maxX, edgeBox.maxY)
+  }
+
+  for (const text of texts) {
+    if (!textIds.has(text.id)) continue
+    bounds = include(
+      bounds,
+      text.x,
+      text.y,
+      text.x + text.width,
+      text.y + measureTextBoxHeight(text.text),
+    )
   }
 
   if (!bounds) return null

@@ -8,6 +8,7 @@ const textBox = { id: "t1", text: "Remember", x: 10, y: 20, width: 220 }
 function renderBox(overrides: Partial<Parameters<typeof CanvasTextBox>[0]> = {}) {
   const props = {
     textBox,
+    selected: false,
     editing: false,
     onStartEdit: vi.fn(),
     onCommit: vi.fn(),

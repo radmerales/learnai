@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useMemo } from "react"
-
+import { useEffect, useMemo } from "react"
 import { buildRenderedEdges } from "../graph"
 import { getSelectionBounds } from "../selectionBounds"
 import { useCanvasAnnotations } from "../hooks/useCanvasAnnotations"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapContextMenu } from "../hooks/useMindmapContextMenu"
+import { useMindmapDeletion } from "../hooks/useMindmapDeletion"
 import { useMindmapGraph } from "../hooks/useMindmapGraph"
 import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
 import { useMindmapMenus } from "../hooks/useMindmapMenus"
@@ -20,7 +20,6 @@ import { MindmapCanvas } from "./MindmapCanvas"
 import { MindmapFooter } from "./MindmapFooter"
 import { MindmapHeader } from "./MindmapHeader"
 import { NodePanel } from "./NodePanel"
-
 export function MindmapPage() {
   const graph = useMindmapGraph()
   // `onLoad` is how loaded JSON enters the graph reducer; the sync hook also
@@ -37,28 +36,27 @@ export function MindmapPage() {
   const {
     selectedNodeIds,
     selectedEdgeIds,
+    selectedTextIds,
     panelOpen,
     selectNode,
     focusNode,
     selectEdge,
+    selectText,
     selectMarquee,
     clearSelection,
     clearEdgeSelection,
     closePanel,
   } = selection
   const { removeNode, removeLink, moveNodes, moveText, addText, updateText, removeText } = graph
-
   // A map switch replaces every node ID, so old selections no longer point at
   // real nodes. Clearing them also closes the note panel.
   useEffect(() => {
     clearSelection()
   }, [clearSelection, sync.currentId])
-
   const edges = useMemo(
     () => buildRenderedEdges(graph.links, graph.byId),
     [graph.byId, graph.links],
   )
-
   const interactions = useMindmapInteractions({
     nodes: graph.nodes,
     links: graph.links,
@@ -74,21 +72,29 @@ export function MindmapPage() {
     selectedNodeIds,
     selectNode,
     focusNode,
+    selectText,
     selectMarquee,
     clearEdgeSelection,
   })
 
   const { svgRef, ...canvasInteractions } = interactions
-
   const selectedNode =
     selectedNodeIds.length === 1 ? graph.byId.get(selectedNodeIds[0]) ?? null : null
   const panelNode = panelOpen && selectedNodeIds.length === 1 ? selectedNode : null
-  const selectedCount = selectedNodeIds.length + selectedEdgeIds.length
+  const selectedCount =
+    selectedNodeIds.length + selectedEdgeIds.length + selectedTextIds.length
   const selectionBox = useMemo(
-    () => getSelectionBounds(graph.nodes, edges, selectedNodeIds, selectedEdgeIds),
-    [edges, graph.nodes, selectedEdgeIds, selectedNodeIds],
+    () =>
+      getSelectionBounds(
+        graph.nodes,
+        edges,
+        graph.texts,
+        selectedNodeIds,
+        selectedEdgeIds,
+        selectedTextIds,
+      ),
+    [edges, graph.nodes, graph.texts, selectedEdgeIds, selectedNodeIds, selectedTextIds],
   )
-
   usePanelCanvasFocus({
     node: panelNode,
     canvasWidth: interactions.canvasSize.width,
@@ -109,30 +115,16 @@ export function MindmapPage() {
     updateLink: graph.updateLink,
   })
 
-  const deleteSelection = useCallback(() => {
-    selectedEdgeIds.forEach((id) => removeLink(id))
-    selectedNodeIds.forEach((id) => removeNode(id))
-    clearSelection()
-    cancelEditing()
-  }, [cancelEditing, clearSelection, removeLink, removeNode, selectedEdgeIds, selectedNodeIds])
-
-  const deleteNodeById = useCallback(
-    (id: string) => {
-      removeNode(id)
-      clearSelection()
-      cancelEditing()
-    },
-    [cancelEditing, clearSelection, removeNode],
-  )
-
-  const deleteEdgeById = useCallback(
-    (id: string) => {
-      removeLink(id)
-      clearSelection()
-      cancelEditing()
-    },
-    [cancelEditing, clearSelection, removeLink],
-  )
+  const { deleteSelection, deleteNodeById, deleteEdgeById } = useMindmapDeletion({
+    selectedNodeIds,
+    selectedEdgeIds,
+    selectedTextIds,
+    removeNode,
+    removeLink,
+    removeText,
+    clearSelection,
+    cancelEditing,
+  })
 
   const menu = useMindmapContextMenu()
   const menus = useMindmapMenus({
@@ -141,6 +133,7 @@ export function MindmapPage() {
     selectNode,
     focusNode,
     selectEdge,
+    selectText,
     closePanel,
     addNode: graph.addNode,
     addText,
@@ -150,7 +143,10 @@ export function MindmapPage() {
     beginEdgeText: annotations.beginEdgeText,
     cancelEdgeText: annotations.cancelEdgeText,
     beginText: annotations.beginText,
-    deleteText: annotations.deleteText,
+    deleteText: (id) => {
+      annotations.deleteText(id)
+      clearSelection()
+    },
   })
 
   useEffect(() => {
@@ -223,6 +219,7 @@ export function MindmapPage() {
           texts={graph.texts}
           selectedNodeIds={selectedNodeIds}
           selectedEdgeIds={selectedEdgeIds}
+          selectedTextIds={selectedTextIds}
           editingId={editing.editingId}
           editingTextId={annotations.editingTextId}
           selectionBox={selectionBox}
@@ -288,6 +285,7 @@ export function MindmapPage() {
         selectedLabel={selectedNode?.label ?? null}
         selectedNodeCount={selectedNodeIds.length}
         selectedEdgeCount={selectedEdgeIds.length}
+        selectedTextCount={selectedTextIds.length}
         nodeCount={graph.nodes.length}
         linkCount={graph.links.length}
       />

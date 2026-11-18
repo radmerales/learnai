@@ -142,7 +142,9 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
   both) in an Arrow submenu
 - Edge endpoint rewiring, including same-pair side changes and right-click
   deletion menus
-- Marquee selection, inline node renaming, and selection-bounds outline
+- Marquee selection for nodes, edges, and text boxes; selected text boxes get an
+  outline and Delete removes the whole selection
+- Inline node renaming and selection-bounds outline
 - Animated node panel that slides in, centers the selected node in the left
   half of the canvas, and returns to the original position on close unless the
   canvas was manually panned or zoomed while previewing

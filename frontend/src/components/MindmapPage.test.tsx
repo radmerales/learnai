@@ -70,10 +70,12 @@ function makeMocks() {
   const selection = {
     selectedNodeIds: [] as string[],
     selectedEdgeIds: [] as string[],
+    selectedTextIds: [] as string[],
     panelOpen: false,
     selectNode: vi.fn(),
     focusNode: vi.fn(),
     selectEdge: vi.fn(),
+    selectText: vi.fn(),
     selectMarquee: vi.fn(),
     clearSelection: vi.fn(),
     clearEdgeSelection: vi.fn(),

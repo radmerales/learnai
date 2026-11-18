@@ -7,6 +7,7 @@ const baseProps = {
   selectedLabel: null,
   selectedNodeCount: 0,
   selectedEdgeCount: 0,
+  selectedTextCount: 0,
   nodeCount: 2,
   linkCount: 1,
 }
@@ -31,10 +32,16 @@ describe("MindmapFooter", () => {
     expect(screen.getByText(/Edge selected/)).toBeInTheDocument()
   })
 
+  it("describes a single selected text box", () => {
+    render(<MindmapFooter {...baseProps} selectedTextCount={1} />)
+
+    expect(screen.getByText(/Text selected/)).toBeInTheDocument()
+  })
+
   it("describes a multi-selection", () => {
     render(<MindmapFooter {...baseProps} selectedNodeCount={2} selectedEdgeCount={1} />)
 
-    expect(screen.getByText(/2 nodes · 1 edge selected/)).toBeInTheDocument()
+    expect(screen.getByText(/2 nodes · 1 edge · 0 texts selected/)).toBeInTheDocument()
     expect(screen.getByText(/drag a selected node/)).toBeInTheDocument()
   })
 

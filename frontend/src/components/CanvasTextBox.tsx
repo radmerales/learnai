@@ -4,6 +4,7 @@ import { measureTextBoxHeight, type TextBox } from "../graph"
 
 type Props = {
   textBox: TextBox
+  selected: boolean
   editing: boolean
   onStartEdit: (id: string) => void
   onCommit: (id: string, text: string) => void
@@ -15,6 +16,7 @@ type Props = {
 /** Free-standing, draggable text annotation rendered inside the SVG world. */
 export function CanvasTextBox({
   textBox,
+  selected,
   editing,
   onStartEdit,
   onCommit,
@@ -88,7 +90,9 @@ export function CanvasTextBox({
               onStartEdit(textBox.id)
             }
           }}
-          className="h-full w-full cursor-grab overflow-hidden whitespace-pre-wrap border-0 bg-transparent px-2 py-2 font-sans text-sm leading-5 text-ink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-[-1px] focus-visible:outline-ink"
+          className={`h-full w-full cursor-grab overflow-hidden whitespace-pre-wrap border-0 bg-transparent px-2 py-2 font-sans text-sm leading-5 text-ink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-[-1px] focus-visible:outline-ink ${
+            selected ? "outline outline-2 outline-offset-2 outline-ink" : ""
+          }`}
         >
           {textBox.text || <span className="text-mutedink">Double-click to edit text</span>}
         </div>

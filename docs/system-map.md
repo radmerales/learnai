@@ -113,7 +113,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `useMindmapGraph` | Reducer state, stable ID lookup, graph mutations |
 | `useMindmapSync` | Library load, map switching/creating/deleting, storage flush |
 | `useMindmapAutosave` | Debounce, save queue, status/retry, page-hide flush |
-| `useMindmapSelection` | Node/edge/panel selection |
+| `useMindmapSelection` | Node/edge/text/panel selection |
 | `useMindmapInteractions` | Coordinates the interaction hooks, space/middle-drag panning |
 | `useCanvasAnnotations` | Text-box and edge-label editing state |
 | `useTextDrag` | Free-standing text annotation dragging |
@@ -123,7 +123,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `useConnectDrag` | Drag from a side handle to create an edge/ghost node |
 | `useEdgeDrag` | Rewire an existing edge endpoint |
 | `useEdgeHover` | Hover state and delayed handle hiding |
-| `useMarqueeSelection` | Box selection |
+| `useMarqueeSelection` | Box selection for nodes, edges, and text boxes |
 | `useLabelEditing` | Inline node-name editing |
 | `useMindmapContextMenu` | Shared context-menu open/close state |
 | `useCanvasSize` | ResizeObserver-based canvas dimensions |
@@ -178,6 +178,7 @@ The production build was also checked from a nested static path
 - closing the panel restores the previous viewport when the canvas was not
   manually panned or zoomed during preview
 - Escape closes the panel from the canvas or an active editor
+- marquee selection includes text boxes and Delete removes them
 - blank-canvas right-click adds nodes or draggable text boxes
 - edge right-click or double-click edits labels; the Arrow submenu switches directions
 - viewport reset when switching maps

@@ -5,6 +5,7 @@ import type { SelectionResult } from "../interaction"
 export function useMindmapSelection() {
   const [selectedNodeIds, setSelectedNodeIds] = useState<string[]>([])
   const [selectedEdgeIds, setSelectedEdgeIds] = useState<string[]>([])
+  const [selectedTextIds, setSelectedTextIds] = useState<string[]>([])
   const [panelOpen, setPanelOpen] = useState(false)
 
   const selectNode = useCallback(
@@ -17,6 +18,7 @@ export function useMindmapSelection() {
       if (selectedNodeIds.includes(id)) return
       setSelectedNodeIds([id])
       setSelectedEdgeIds([])
+      setSelectedTextIds([])
     },
     [selectedNodeIds],
   )
@@ -24,6 +26,7 @@ export function useMindmapSelection() {
   const focusNode = useCallback((id: string) => {
     setSelectedNodeIds([id])
     setSelectedEdgeIds([])
+    setSelectedTextIds([])
     setPanelOpen(true)
   }, [])
 
@@ -35,6 +38,19 @@ export function useMindmapSelection() {
     }
     setSelectedNodeIds([])
     setSelectedEdgeIds([id])
+    setSelectedTextIds([])
+    setPanelOpen(false)
+  }, [])
+
+  const selectText = useCallback((id: string, additive = false) => {
+    if (additive) {
+      setSelectedTextIds((prev) => (prev.includes(id) ? prev : [...prev, id]))
+      setPanelOpen(false)
+      return
+    }
+    setSelectedNodeIds([])
+    setSelectedEdgeIds([])
+    setSelectedTextIds([id])
     setPanelOpen(false)
   }, [])
 
@@ -42,9 +58,11 @@ export function useMindmapSelection() {
     if (additive) {
       setSelectedNodeIds((prev) => Array.from(new Set([...prev, ...result.nodeIds])))
       setSelectedEdgeIds((prev) => Array.from(new Set([...prev, ...result.edgeIds])))
+      setSelectedTextIds((prev) => Array.from(new Set([...prev, ...result.textIds])))
     } else {
       setSelectedNodeIds(result.nodeIds)
       setSelectedEdgeIds(result.edgeIds)
+      setSelectedTextIds(result.textIds)
     }
     setPanelOpen(false)
   }, [])
@@ -52,6 +70,7 @@ export function useMindmapSelection() {
   const clearSelection = useCallback(() => {
     setSelectedNodeIds([])
     setSelectedEdgeIds([])
+    setSelectedTextIds([])
     setPanelOpen(false)
   }, [])
 
@@ -66,10 +85,12 @@ export function useMindmapSelection() {
   return {
     selectedNodeIds,
     selectedEdgeIds,
+    selectedTextIds,
     panelOpen,
     selectNode,
     focusNode,
     selectEdge,
+    selectText,
     selectMarquee,
     clearSelection,
     clearEdgeSelection,

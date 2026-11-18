@@ -2,7 +2,7 @@ import { act, renderHook } from "@testing-library/react"
 import type { PointerEvent } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-import type { RenderedEdge } from "../graph"
+import type { RenderedEdge, TextBox } from "../graph"
 import { makeNode } from "../test/fixtures"
 import { useMarqueeSelection } from "./useMarqueeSelection"
 
@@ -40,13 +40,14 @@ const edge: RenderedEdge = {
   path: "",
 }
 
-function setup() {
+function setup(texts: TextBox[] = []) {
   const onSelect = vi.fn()
   const hook = renderHook(() =>
     useMarqueeSelection({
       toSvgPoint: (clientX, clientY) => ({ x: clientX, y: clientY }),
       nodes,
       edges: [edge],
+      texts,
       onSelect,
     }),
   )
@@ -68,10 +69,30 @@ describe("useMarqueeSelection", () => {
     })
 
     expect(onSelect).toHaveBeenCalledWith(
-      { nodeIds: ["a", "b"], edgeIds: ["l1"] },
+      { nodeIds: ["a", "b"], edgeIds: ["l1"], textIds: [] },
       false,
     )
     expect(result.current.active).toBe(false)
+  })
+
+  it("selects text annotations inside the marquee", () => {
+    const text = { id: "t1", text: "Note", x: 50, y: 50, width: 220 }
+    const { result, onSelect } = setup([text])
+
+    act(() => {
+      result.current.start(eventAt(0, 0))
+    })
+    act(() => {
+      result.current.move(eventAt(400, 200))
+    })
+    act(() => {
+      result.current.finish(eventAt(400, 200))
+    })
+
+    expect(onSelect).toHaveBeenCalledWith(
+      expect.objectContaining({ textIds: ["t1"] }),
+      false,
+    )
   })
 
   it("clears selection on a click without movement", () => {
@@ -84,7 +105,10 @@ describe("useMarqueeSelection", () => {
       result.current.finish(eventAt(10, 10))
     })
 
-    expect(onSelect).toHaveBeenCalledWith({ nodeIds: [], edgeIds: [] }, false)
+    expect(onSelect).toHaveBeenCalledWith(
+      { nodeIds: [], edgeIds: [], textIds: [] },
+      false,
+    )
   })
 
   it("supports additive marquee selection and cancellation", () => {
@@ -113,7 +137,7 @@ describe("useMarqueeSelection", () => {
       result.current.finish(eventAt(400, 200))
     })
     expect(onSelect).toHaveBeenCalledWith(
-      { nodeIds: ["a", "b"], edgeIds: ["l1"] },
+      { nodeIds: ["a", "b"], edgeIds: ["l1"], textIds: [] },
       true,
     )
   })

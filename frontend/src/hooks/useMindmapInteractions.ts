@@ -32,6 +32,7 @@ type Options = GraphActions & {
   selectedNodeIds: string[]
   selectNode: (id: string, additive?: boolean) => void
   focusNode: (id: string) => void
+  selectText: (id: string, additive?: boolean) => void
   selectMarquee: (result: SelectionResult, additive: boolean) => void
   clearEdgeSelection: () => void
 }
@@ -64,6 +65,7 @@ export function useMindmapInteractions(options: Options) {
     selectedNodeIds,
     selectNode,
     focusNode,
+    selectText,
     selectMarquee,
     clearEdgeSelection,
   } = options
@@ -121,8 +123,14 @@ export function useMindmapInteractions(options: Options) {
     }
   }, [])
 
-  const marquee = useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect: selectMarquee })
-  const textDrag = useTextDrag({ texts, moveText, toSvgPoint })
+  const marquee = useMarqueeSelection({
+    toSvgPoint,
+    nodes,
+    edges,
+    texts,
+    onSelect: selectMarquee,
+  })
+  const textDrag = useTextDrag({ texts, moveText, selectText, toSvgPoint })
 
   const nodeDrag = useNodeDrag({
     byId,

@@ -16,6 +16,7 @@ type Props = {
   texts: TextBox[]
   selectedNodeIds: string[]
   selectedEdgeIds: string[]
+  selectedTextIds: string[]
   editingId: string | null
   editingTextId: string | null
   selectionBox: SelectionBox | null
@@ -40,6 +41,7 @@ export function MindmapCanvas({
   texts,
   selectedNodeIds,
   selectedEdgeIds,
+  selectedTextIds,
   editingId,
   editingTextId,
   selectionBox,
@@ -161,6 +163,7 @@ export function MindmapCanvas({
           <CanvasTextBox
             key={`${text.id}-${editingTextId === text.id ? "edit" : "view"}`}
             textBox={text}
+            selected={selectedTextIds.includes(text.id)}
             editing={editingTextId === text.id}
             onStartEdit={onTextStartEdit}
             onCommit={onTextCommit}

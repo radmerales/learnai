@@ -15,6 +15,7 @@ type Options = {
   selectNode: (id: string) => void
   focusNode: (id: string) => void
   selectEdge: (id: string) => void
+  selectText: (id: string) => void
   closePanel: () => void
   addNode: (point: Point) => Node
   addText: (point: Point) => TextBox
@@ -34,6 +35,7 @@ export function useMindmapMenus({
   selectNode,
   focusNode,
   selectEdge,
+  selectText,
   closePanel,
   addNode,
   addText,
@@ -86,6 +88,7 @@ export function useMindmapMenus({
     text: TextBox,
     event: MouseEvent<SVGForeignObjectElement>,
   ) {
+    selectText(text.id)
     menu.open(
       textBoxContextMenu(text, event.clientX, event.clientY, {
         onEdit: () => beginText(text.id),
