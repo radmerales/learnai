@@ -76,22 +76,36 @@ export function MindmapCanvas({
           viewBox="0 0 10 10"
           refX="9"
           refY="5"
-          markerWidth="7"
-          markerHeight="7"
+          markerWidth="8"
+          markerHeight="8"
           orient="auto-start-reverse"
         >
-          <path d="M0,0 L10,5 L0,10 Z" fill="#3f3e3e" />
+          <path
+            d="M1.5 1.5 L8.5 5 L1.5 8.5"
+            fill="none"
+            stroke="#3f3e3e"
+            strokeWidth="1.5"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+          />
         </marker>
         <marker
           id="edge-arrow-selected"
           viewBox="0 0 10 10"
           refX="9"
           refY="5"
-          markerWidth="7"
-          markerHeight="7"
+          markerWidth="8"
+          markerHeight="8"
           orient="auto-start-reverse"
         >
-          <path d="M0,0 L10,5 L0,10 Z" fill="#000000" />
+          <path
+            d="M1.5 1.5 L8.5 5 L1.5 8.5"
+            fill="none"
+            stroke="#000000"
+            strokeWidth="1.5"
+            strokeLinecap="square"
+            strokeLinejoin="miter"
+          />
         </marker>
         <mask
           id="edge-label-mask"
