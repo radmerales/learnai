@@ -1,15 +1,17 @@
 import { NODE_H, type Node } from "../graph"
+import type { Viewport } from "../hooks/useCanvasViewport"
 import { NOTE_STATUSES } from "../status"
 
 type Props = {
   node: Node
+  viewport: Viewport
   value: string
   onChange: (value: string) => void
   onCommit: () => void
   onCancel: () => void
 }
 
-export function InlineNodeEditor({ node, value, onChange, onCommit, onCancel }: Props) {
+export function InlineNodeEditor({ node, viewport, value, onChange, onCommit, onCancel }: Props) {
   const status = NOTE_STATUSES[node.status]
 
   return (
@@ -32,11 +34,12 @@ export function InlineNodeEditor({ node, value, onChange, onCommit, onCancel }: 
         }
       }}
       style={{
-        left: node.x - node.width / 2,
-        top: node.y - NODE_H / 2,
-        width: node.width,
-        height: NODE_H,
+        left: viewport.x + (node.x - node.width / 2) * viewport.scale,
+        top: viewport.y + (node.y - NODE_H / 2) * viewport.scale,
+        width: node.width * viewport.scale,
+        height: NODE_H * viewport.scale,
         color: status.text,
+        fontSize: `${14 * viewport.scale}px`,
       }}
       className="absolute z-10 border-0 bg-transparent px-2 text-center font-sans text-sm outline-none"
     />

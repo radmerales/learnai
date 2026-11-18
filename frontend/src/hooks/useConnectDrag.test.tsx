@@ -33,7 +33,6 @@ function setup() {
       addLink,
       focusNode,
       toSvgPoint: (clientX, clientY) => ({ x: clientX, y: clientY }),
-      clampPoint: (point) => point,
     }),
   )
 

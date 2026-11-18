@@ -1,7 +1,6 @@
 import {
   HANDLE_HIT_R,
   NODE_H,
-  NODE_W,
   SIDES,
   sidePoint,
   sideTowardPoint,
@@ -106,15 +105,4 @@ export function resolveEdgeTarget(
   if (edgeExistsBetween(links, otherEnd, hit.id, link.id)) return null
 
   return { node: hit, side: sideTowardPoint(hit, point) }
-}
-
-export function clampNewNodePoint(p: Point, width: number, height: number): Point {
-  if (!width || !height) return p
-  const pad = 10
-  const minX = NODE_W / 2 + pad
-  const minY = NODE_H / 2 + pad
-  return {
-    x: Math.min(Math.max(p.x, minX), Math.max(minX, width - NODE_W / 2 - pad)),
-    y: Math.min(Math.max(p.y, minY), Math.max(minY, height - NODE_H / 2 - pad)),
-  }
 }

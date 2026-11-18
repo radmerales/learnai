@@ -9,6 +9,7 @@ import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
 import { useMindmapSelection } from "../hooks/useMindmapSelection"
 import { useMindmapSync } from "../hooks/useMindmapSync"
 import { CanvasStatusOverlay } from "./CanvasStatusOverlay"
+import { CanvasZoomControls } from "./CanvasZoomControls"
 import { InlineNodeEditor } from "./InlineNodeEditor"
 import { ContextMenu } from "./ContextMenu"
 import { MindmapCanvas } from "./MindmapCanvas"
@@ -71,6 +72,14 @@ export function MindmapPage() {
   })
 
   const { svgRef, ...canvasInteractions } = interactions
+  const resetViewport = interactions.resetViewport
+
+  // A different map should open at the home viewport rather than wherever the
+  // previous map was panned.
+  useEffect(() => {
+    resetViewport()
+  }, [resetViewport, sync.currentId])
+
   const selectedNode =
     selectedNodeIds.length === 1 ? graph.byId.get(selectedNodeIds[0]) ?? null : null
   const panelNode = panelOpen && selectedNodeIds.length === 1 ? selectedNode : null
@@ -128,9 +137,10 @@ export function MindmapPage() {
 
   function handleCreateFirstNode() {
     const { width, height } = interactions.canvasSize
+    const { x, y, scale } = interactions.viewport
     const node = graph.addNode({
-      x: width ? width / 2 : 420,
-      y: height ? height / 2 : 220,
+      x: width ? (width / 2 - x) / scale : 420,
+      y: height ? (height / 2 - y) / scale : 220,
     })
     focusNode(node.id)
   }
@@ -191,6 +201,7 @@ export function MindmapPage() {
           selectedEdgeIds={selectedEdgeIds}
           editingId={editing.editingId}
           selectionBox={selectionBox}
+          viewport={interactions.viewport}
           svgRef={svgRef}
           interactions={canvasInteractions}
           onNodeDoubleClick={handleNodeDoubleClick}
@@ -199,9 +210,18 @@ export function MindmapPage() {
           onSelectEdge={selectEdge}
         />
 
+        <CanvasZoomControls
+          zoom={interactions.viewport.scale}
+          canZoomIn={interactions.canZoomIn}
+          canZoomOut={interactions.canZoomOut}
+          onZoomIn={interactions.zoomIn}
+          onZoomOut={interactions.zoomOut}
+        />
+
         {editing.editingNode && (
           <InlineNodeEditor
             node={editing.editingNode}
+            viewport={interactions.viewport}
             value={editing.draftLabel}
             onChange={editing.setDraftLabel}
             onCommit={editing.commitEditing}

@@ -1,9 +1,10 @@
-import { useRef, useState, type MouseEvent, type PointerEvent } from "react"
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from "react"
 
 import { toSvgPoint as clientToSvgPoint } from "../canvasPoint"
 import type { RenderedEdge } from "../graph"
-import { clampNewNodePoint, type SelectionResult } from "../interaction"
+import type { SelectionResult } from "../interaction"
 import { useCanvasSize } from "./useCanvasSize"
+import { useCanvasViewport } from "./useCanvasViewport"
 import { useConnectDrag } from "./useConnectDrag"
 import { useEdgeDrag } from "./useEdgeDrag"
 import { useEdgeHover } from "./useEdgeHover"
@@ -56,17 +57,57 @@ export function useMindmapInteractions(options: Options) {
   } = options
 
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const [pan, setPan] = useState<{
+    startX: number
+    startY: number
+    originX: number
+    originY: number
+  } | null>(null)
+  const [spaceHeld, setSpaceHeld] = useState(false)
   const svgRef = useRef<SVGSVGElement | null>(null)
   const canvasSize = useCanvasSize(svgRef)
+  const view = useCanvasViewport(svgRef, canvasSize)
   const edgeHover = useEdgeHover()
 
   function toSvgPoint(clientX: number, clientY: number) {
-    return clientToSvgPoint(svgRef.current, clientX, clientY)
+    const rootPoint = clientToSvgPoint(svgRef.current, clientX, clientY)
+    return view.toWorld(rootPoint)
   }
 
-  function clampPoint(point: { x: number; y: number }) {
-    return clampNewNodePoint(point, canvasSize.width, canvasSize.height)
-  }
+  useEffect(() => {
+    function isInteractive(target: EventTarget | null) {
+      return (
+        target instanceof HTMLElement &&
+        Boolean(
+          target.closest(
+            "input, textarea, select, button, a[href], [contenteditable='true']",
+          ),
+        )
+      )
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.code !== "Space" || isInteractive(event.target)) return
+      setSpaceHeld(true)
+    }
+
+    function onKeyUp(event: KeyboardEvent) {
+      if (event.code === "Space") setSpaceHeld(false)
+    }
+
+    function onBlur() {
+      setSpaceHeld(false)
+    }
+
+    window.addEventListener("keydown", onKeyDown)
+    window.addEventListener("keyup", onKeyUp)
+    window.addEventListener("blur", onBlur)
+    return () => {
+      window.removeEventListener("keydown", onKeyDown)
+      window.removeEventListener("keyup", onKeyUp)
+      window.removeEventListener("blur", onBlur)
+    }
+  }, [])
 
   const marquee = useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect: selectMarquee })
 
@@ -88,7 +129,6 @@ export function useMindmapInteractions(options: Options) {
     addLink,
     focusNode,
     toSvgPoint,
-    clampPoint,
     onStart: () => {
       clearEdgeSelection()
       edgeHover.reset()
@@ -109,12 +149,25 @@ export function useMindmapInteractions(options: Options) {
   })
 
   function onBackgroundPointerDown(event: PointerEvent<SVGSVGElement>) {
+    const wantsPan = event.button === 1 || (event.button === 0 && (spaceHeld || event.altKey))
+    if (wantsPan) {
+      event.preventDefault()
+      marquee.cancel()
+      setPan({
+        startX: event.clientX,
+        startY: event.clientY,
+        originX: view.viewport.x,
+        originY: view.viewport.y,
+      })
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+      return
+    }
     marquee.start(event)
   }
 
   function onCanvasDoubleClick(event: MouseEvent<SVGSVGElement>) {
     if (event.button !== 0) return
-    const node = addNode(clampPoint(toSvgPoint(event.clientX, event.clientY)))
+    const node = addNode(toSvgPoint(event.clientX, event.clientY))
     focusNode(node.id)
   }
 
@@ -127,6 +180,13 @@ export function useMindmapInteractions(options: Options) {
   }
 
   function onPointerMove(event: PointerEvent<SVGSVGElement>) {
+    if (pan) {
+      view.setOffset(
+        pan.originX + event.clientX - pan.startX,
+        pan.originY + event.clientY - pan.startY,
+      )
+      return
+    }
     if (marquee.active) {
       marquee.move(event)
       return
@@ -145,6 +205,10 @@ export function useMindmapInteractions(options: Options) {
   }
 
   function onPointerUp(event: PointerEvent<SVGSVGElement>) {
+    if (pan) {
+      setPan(null)
+      return
+    }
     if (marquee.active) {
       marquee.finish(event)
       return
@@ -161,6 +225,7 @@ export function useMindmapInteractions(options: Options) {
   }
 
   function onPointerLeave() {
+    setPan(null)
     nodeDrag.cancel()
     connectDrag.cancel()
     edgeDrag.cancel()
@@ -171,6 +236,14 @@ export function useMindmapInteractions(options: Options) {
   return {
     svgRef,
     canvasSize,
+    viewport: view.viewport,
+    zoomIn: view.zoomIn,
+    zoomOut: view.zoomOut,
+    resetViewport: view.resetViewport,
+    canZoomIn: view.canZoomIn,
+    canZoomOut: view.canZoomOut,
+    panning: pan !== null,
+    panReady: spaceHeld,
     marquee: marquee.rect,
     drag: nodeDrag.drag,
     connect: connectDrag.connect,

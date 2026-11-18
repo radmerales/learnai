@@ -118,7 +118,9 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
 - Multiple maps with a picker, new/delete actions, and an editable title
 - Debounced autosave to browser storage with save state, retry, and page-hide
   flush
-- SVG canvas with grid, nodes, dashed curved edges, and status colors
+- Infinite SVG canvas with panning, zooming, a scaled grid, and status colors
+- Wheel/space/middle-drag panning and Ctrl/Cmd+wheel zoom around the pointer
+- Bottom-left zoom HUD with percentage, zoom-out, and zoom-in controls
 - Node dragging, drag-to-connect with anchor snapping, and a “New node” ghost
   preview when releasing on empty canvas
 - Edge endpoint rewiring, including same-pair side changes and right-click
@@ -138,8 +140,8 @@ frontend/
   src/
     main.tsx              React entrypoint
     App.tsx               root component
-    components/           canvas, header, panel, Learn, Quiz, menus
-    hooks/                drag, selection, sync, autosave, canvas size
+    components/           canvas, zoom HUD, header, panel, Learn, Quiz, menus
+    hooks/                drag, selection, sync, autosave, viewport, canvas size
     state/                pure mindmap reducer
     storage/              localStorage repository and document types
     graph.ts              node/link types, geometry, curve rendering

@@ -10,6 +10,7 @@ describe("InlineNodeEditor", () => {
     render(
       <InlineNodeEditor
         node={node}
+        viewport={{ x: 0, y: 0, scale: 1 }}
         value="Biology"
         onChange={vi.fn()}
         onCommit={vi.fn()}
@@ -29,6 +30,7 @@ describe("InlineNodeEditor", () => {
     render(
       <InlineNodeEditor
         node={makeNode()}
+        viewport={{ x: 0, y: 0, scale: 1 }}
         value="Node 1"
         onChange={onChange}
         onCommit={onCommit}

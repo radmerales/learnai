@@ -35,7 +35,7 @@ export function MindmapFooter({
       ) : (
         <span>
           {nodeCount} node{nodeCount === 1 ? "" : "s"} · {linkCount} link{linkCount === 1 ? "" : "s"} · drag empty
-          canvas to select a group
+          canvas to select · space-drag or wheel to pan · Ctrl/Cmd+wheel to zoom
         </span>
       )}
     </footer>

@@ -16,6 +16,14 @@ type CanvasInteractions = Omit<MindmapInteractions, "svgRef">
 function interactions(overrides: Partial<CanvasInteractions> = {}): CanvasInteractions {
   return {
     canvasSize: { width: 800, height: 600 },
+    viewport: { x: 0, y: 0, scale: 1 },
+    zoomIn: vi.fn(),
+    zoomOut: vi.fn(),
+    resetViewport: vi.fn(),
+    canZoomIn: true,
+    canZoomOut: true,
+    panning: false,
+    panReady: false,
     marquee: null,
     drag: null,
     connect: null,
@@ -52,6 +60,7 @@ function renderCanvas(
     selectedEdgeIds: [],
     editingId: null,
     selectionBox: null,
+    viewport: { x: 0, y: 0, scale: 1 },
     svgRef: { current: null },
     interactions: interactions(),
     onNodeDoubleClick: vi.fn(),

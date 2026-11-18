@@ -58,8 +58,9 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/App.tsx` | Renders `MindmapPage` |
 | `frontend/src/components/MindmapPage.tsx` | Composes header/canvas/panel/footer, map actions, selection cleanup |
 | `frontend/src/components/MindmapHeader.tsx` | Title, map picker, save status, new/delete |
-| `frontend/src/components/MindmapFooter.tsx` | Selection and node/link counts |
+| `frontend/src/components/MindmapFooter.tsx` | Selection, counts, and canvas hints |
 | `frontend/src/components/CanvasStatusOverlay.tsx` | Loading/error/empty states |
+| `frontend/src/components/CanvasZoomControls.tsx` | Bottom-left zoom percentage and +/- controls |
 | `frontend/src/components/NodePanel.tsx` | Node title, status group, Learn/Quiz tabs |
 | `frontend/src/components/LearnTab.tsx` | Markdown block list/editor |
 | `frontend/src/components/MarkdownBlock.tsx` | Source editor, preview, Done/Ctrl+Enter |
@@ -76,7 +77,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 
 | File | Responsibility |
 | --- | --- |
-| `MindmapCanvas.tsx` | SVG surface, grid, node/edge/preview composition |
+| `MindmapCanvas.tsx` | SVG surface, pan/zoom transform, scaled grid, node/edge/preview composition |
 | `MindmapNode.tsx` | Node rectangle, status colors, anchors, fading handles |
 | `EdgePaths.tsx`, `EdgeStroke.tsx` | Dashed edge rendering and hit paths |
 | `EdgeHandles.tsx` | Endpoint rewire handles |
@@ -109,7 +110,8 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `useMindmapSync` | Library load, map switching/creating/deleting, storage flush |
 | `useMindmapAutosave` | Debounce, save queue, status/retry, page-hide flush |
 | `useMindmapSelection` | Node/edge/panel selection |
-| `useMindmapInteractions` | Coordinates the interaction hooks |
+| `useMindmapInteractions` | Coordinates the interaction hooks, space/middle-drag panning |
+| `useCanvasViewport` | Pan offset, zoom clamping/anchoring, wheel gestures, world conversion |
 | `useNodeDrag` | Move one or many selected nodes |
 | `useConnectDrag` | Drag from a side handle to create an edge/ghost node |
 | `useEdgeDrag` | Rewire an existing edge endpoint |
@@ -162,7 +164,10 @@ The production build was also checked from a nested static path
 (`/learn-ai/`) with a headless browser:
 
 - page load and hydration
-- first-node creation
+- first-node creation and node dragging after zooming
+- zoom HUD percentage changes from the +/- buttons and Ctrl/Cmd+wheel
+- wheel panning and Space-drag panning
+- viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests
 - no console or page errors

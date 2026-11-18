@@ -3,6 +3,7 @@ import type { MouseEvent } from "react"
 import type { Node, RenderedEdge } from "../graph"
 import type { SelectionBox } from "../selectionBounds"
 import type { MindmapInteractions } from "../hooks/useMindmapInteractions"
+import type { Viewport } from "../hooks/useCanvasViewport"
 import { EdgeHandles } from "./EdgeHandles"
 import { EdgePaths } from "./EdgePaths"
 import { EdgePreview } from "./EdgePreview"
@@ -15,6 +16,7 @@ type Props = {
   selectedEdgeIds: string[]
   editingId: string | null
   selectionBox: SelectionBox | null
+  viewport: Viewport
   svgRef: MindmapInteractions["svgRef"]
   interactions: Omit<MindmapInteractions, "svgRef">
   onNodeDoubleClick: (node: Node) => void
@@ -30,6 +32,7 @@ export function MindmapCanvas({
   selectedEdgeIds,
   editingId,
   selectionBox,
+  viewport,
   svgRef,
   interactions,
   onNodeDoubleClick,
@@ -42,7 +45,9 @@ export function MindmapCanvas({
   return (
     <svg
       ref={svgRef}
-      className="h-full w-full touch-none select-none"
+      className={`h-full w-full touch-none select-none ${
+        interactions.panning ? "cursor-grabbing" : interactions.panReady ? "cursor-grab" : ""
+      }`}
       onPointerMove={interactions.onPointerMove}
       onPointerUp={interactions.onPointerUp}
       onPointerLeave={interactions.onPointerLeave}
@@ -50,13 +55,20 @@ export function MindmapCanvas({
       onDoubleClick={interactions.onCanvasDoubleClick}
     >
       <defs>
-        <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
+        <pattern
+          id="grid"
+          width="32"
+          height="32"
+          patternUnits="userSpaceOnUse"
+          patternTransform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.scale})`}
+        >
           <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#d8d7d3" strokeWidth="1" />
         </pattern>
       </defs>
       <rect width="100%" height="100%" fill="url(#grid)" />
 
-      <EdgePaths
+      <g transform={`translate(${viewport.x} ${viewport.y}) scale(${viewport.scale})`}>
+        <EdgePaths
         edges={edges}
         hiddenEdgeId={interactions.edgeDrag?.edgeId ?? null}
         selectedEdgeIds={selectedEdgeIds}
@@ -138,6 +150,7 @@ export function MindmapCanvas({
           pointerEvents="none"
         />
       )}
+      </g>
     </svg>
   )
 }

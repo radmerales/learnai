@@ -16,7 +16,6 @@ type Options = {
   addLink: (link: Omit<Link, "id">) => void
   focusNode: (id: string) => void
   toSvgPoint: (clientX: number, clientY: number) => Point
-  clampPoint: (point: Point) => Point
   onStart?: () => void
 }
 
@@ -34,7 +33,6 @@ export function useConnectDrag({
   addLink,
   focusNode,
   toSvgPoint,
-  clampPoint,
   onStart,
 }: Options) {
   const [connect, setConnect] = useState<ConnectDrag | null>(null)
@@ -89,7 +87,7 @@ export function useConnectDrag({
         toSide: target.side,
       })
     } else if (source && !candidate) {
-      const node = addNode(clampPoint(point))
+      const node = addNode(point)
       addLink({
         from: source.id,
         to: node.id,
@@ -107,7 +105,7 @@ export function useConnectDrag({
   }
 
   // Preview geometry is derived state; it does not need its own state hook.
-  const connectPoint = connect ? clampPoint({ x: connect.x, y: connect.y }) : null
+  const connectPoint = connect ? { x: connect.x, y: connect.y } : null
   const connectCandidate = connect
     ? findConnectCandidate(nodes, { x: connect.x, y: connect.y })
     : null

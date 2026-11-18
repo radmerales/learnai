@@ -15,6 +15,7 @@
   - browser storage lives in `storage/mindmaps.ts`
   - geometry and hit testing stay in `graph.ts`, `interaction.ts`, and
     `previews.ts`
+  - canvas pan/zoom state lives in `hooks/useCanvasViewport.ts`
   - components receive data and callbacks; they do not read storage directly
 - Reuse the existing theme tokens and visual language (paper/surface/accent/ink,
   sharp corners, IBM Plex).
@@ -34,8 +35,8 @@
 - `frontend/src/main.tsx` — React root
 - `frontend/src/App.tsx` — app shell
 - `frontend/src/components/MindmapPage.tsx` — workspace composition and actions
-- `frontend/src/components/` — canvas, header, panel, Learn, Quiz, menus
-- `frontend/src/hooks/` — drag/selection, sync, autosave, canvas size
+- `frontend/src/components/` — canvas, zoom HUD, header, panel, Learn, Quiz, menus
+- `frontend/src/hooks/` — drag/selection, sync, autosave, viewport, canvas size
 - `frontend/src/state/mindmapReducer.ts` — node/link mutations
 - `frontend/src/storage/mindmaps.ts` — localStorage repository
 - `frontend/src/storage/types.ts` — stored JSON document types

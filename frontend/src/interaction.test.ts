@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import {
-  clampNewNodePoint,
   edgeExistsBetween,
   findConnectCandidate,
   hitTestNode,
@@ -63,16 +62,5 @@ describe("connection rules", () => {
     const nodes = [makeNode({ id: "a" }), makeNode({ id: "b", x: 300 })]
 
     expect(resolveConnectTarget(nodes, [], { x: 300, y: 100 }, "a")?.node.id).toBe("b")
-  })
-})
-
-describe("new node clamping", () => {
-  it("keeps nodes inside a sized canvas", () => {
-    expect(clampNewNodePoint({ x: 0, y: 0 }, 800, 600)).toEqual({ x: 80, y: 32 })
-    expect(clampNewNodePoint({ x: 2_000, y: 2_000 }, 800, 600)).toEqual({ x: 720, y: 568 })
-  })
-
-  it("leaves points untouched before the canvas has been measured", () => {
-    expect(clampNewNodePoint({ x: 12, y: 34 }, 0, 0)).toEqual({ x: 12, y: 34 })
   })
 })
