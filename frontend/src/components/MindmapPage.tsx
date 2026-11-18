@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, type MouseEvent } from "react"
+import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react"
 
 import { buildRenderedEdges, type Node, type RenderedEdge } from "../graph"
+import { panelShiftX } from "../panelViewport"
 import { getSelectionBounds } from "../selectionBounds"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapContextMenu } from "../hooks/useMindmapContextMenu"
@@ -88,6 +89,33 @@ export function MindmapPage() {
     () => getSelectionBounds(graph.nodes, edges, selectedNodeIds, selectedEdgeIds),
     [edges, graph.nodes, selectedEdgeIds, selectedNodeIds],
   )
+
+  // Keep the latest values available to the panel-placement effect without
+  // making every animation frame retrigger the effect.
+  const panelNodeRef = useRef(panelNode)
+  const viewportRef = useRef(interactions.viewport)
+  useEffect(() => {
+    panelNodeRef.current = panelNode
+    viewportRef.current = interactions.viewport
+  })
+  const animateTo = interactions.animateTo
+  const viewportScale = interactions.viewport.scale
+  const canvasWidth = interactions.canvasSize.width
+
+  // When the detail panel opens over the right half, pan the world left if the
+  // selected node would otherwise be hidden underneath it.
+  useEffect(() => {
+    const node = panelNodeRef.current
+    if (!node || !canvasWidth) return
+    const panelWidth = canvasWidth >= 768 ? canvasWidth / 2 : 0
+    if (!panelWidth) return
+
+    const current = viewportRef.current
+    const target = panelShiftX(current, node, canvasWidth, panelWidth)
+    if (target !== null) {
+      animateTo(target, current.y)
+    }
+  }, [animateTo, canvasWidth, panelNode?.id, viewportScale])
 
   const deleteSelection = useCallback(() => {
     selectedEdgeIds.forEach((id) => removeLink(id))

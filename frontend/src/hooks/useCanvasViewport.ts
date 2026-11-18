@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type RefObject } from "react"
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react"
 
 import type { Point } from "../graph"
 
@@ -30,22 +30,38 @@ export function useCanvasViewport(
   canvasSize: Size,
 ) {
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, scale: 1 })
+  const viewportRef = useRef(viewport)
+  const animationRef = useRef<number | null>(null)
 
-  const zoomAt = useCallback((factor: number, anchor: Point) => {
-    setViewport((current) => {
-      const scale = clampZoom(current.scale * factor)
-      if (scale === current.scale) return current
+  useEffect(() => {
+    viewportRef.current = viewport
+  }, [viewport])
 
-      // Keep the world point under the cursor fixed while the scale changes.
-      const worldX = (anchor.x - current.x) / current.scale
-      const worldY = (anchor.y - current.y) / current.scale
-      return {
-        x: anchor.x - worldX * scale,
-        y: anchor.y - worldY * scale,
-        scale,
-      }
-    })
+  const cancelAnimation = useCallback(() => {
+    if (animationRef.current === null) return
+    cancelAnimationFrame(animationRef.current)
+    animationRef.current = null
   }, [])
+
+  const zoomAt = useCallback(
+    (factor: number, anchor: Point) => {
+      cancelAnimation()
+      setViewport((current) => {
+        const scale = clampZoom(current.scale * factor)
+        if (scale === current.scale) return current
+
+        // Keep the world point under the cursor fixed while the scale changes.
+        const worldX = (anchor.x - current.x) / current.scale
+        const worldY = (anchor.y - current.y) / current.scale
+        return {
+          x: anchor.x - worldX * scale,
+          y: anchor.y - worldY * scale,
+          scale,
+        }
+      })
+    },
+    [cancelAnimation],
+  )
 
   const zoomIn = useCallback(() => {
     zoomAt(ZOOM_STEP, {
@@ -61,17 +77,65 @@ export function useCanvasViewport(
     })
   }, [canvasSize.height, canvasSize.width, zoomAt])
 
-  const setOffset = useCallback((x: number, y: number) => {
-    setViewport((current) => ({ ...current, x, y }))
-  }, [])
+  const setOffset = useCallback(
+    (x: number, y: number) => {
+      cancelAnimation()
+      setViewport((current) => ({ ...current, x, y }))
+    },
+    [cancelAnimation],
+  )
 
-  const panBy = useCallback((dx: number, dy: number) => {
-    setViewport((current) => ({ ...current, x: current.x + dx, y: current.y + dy }))
-  }, [])
+  const panBy = useCallback(
+    (dx: number, dy: number) => {
+      cancelAnimation()
+      setViewport((current) => ({ ...current, x: current.x + dx, y: current.y + dy }))
+    },
+    [cancelAnimation],
+  )
 
   const resetViewport = useCallback(() => {
+    cancelAnimation()
     setViewport({ x: 0, y: 0, scale: 1 })
-  }, [])
+  }, [cancelAnimation])
+
+  /** Animate only the canvas offset; manual gestures cancel the animation. */
+  const animateTo = useCallback(
+    (targetX: number, targetY: number, duration = 220) => {
+      cancelAnimation()
+      const start = viewportRef.current
+      if (Math.abs(targetX - start.x) < 0.5 && Math.abs(targetY - start.y) < 0.5) {
+        return
+      }
+
+      if (
+        typeof window !== "undefined" &&
+        window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+      ) {
+        setViewport((current) => ({ ...current, x: targetX, y: targetY }))
+        return
+      }
+
+      const startedAt = performance.now()
+      const tick = (time: number) => {
+        const progress = Math.min(1, (time - startedAt) / duration)
+        const eased = 1 - (1 - progress) ** 3
+        setViewport((current) => ({
+          ...current,
+          x: start.x + (targetX - start.x) * eased,
+          y: start.y + (targetY - start.y) * eased,
+        }))
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(tick)
+        } else {
+          animationRef.current = null
+        }
+      }
+      animationRef.current = requestAnimationFrame(tick)
+    },
+    [cancelAnimation],
+  )
+
+  useEffect(() => () => cancelAnimation(), [cancelAnimation])
 
   const toWorld = useCallback(
     (point: Point): Point => ({
@@ -111,6 +175,7 @@ export function useCanvasViewport(
     zoomOut,
     setOffset,
     panBy,
+    animateTo,
     resetViewport,
     toWorld,
     canZoomIn: viewport.scale < MAX_ZOOM,

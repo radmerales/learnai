@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { useLabelEditing } from "../hooks/useLabelEditing"
@@ -104,6 +104,7 @@ function makeMocks() {
     viewport: { x: 0, y: 0, scale: 1 },
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
+    animateTo: vi.fn(),
     resetViewport: vi.fn(),
     canZoomIn: true,
     canZoomOut: true,
@@ -178,6 +179,34 @@ describe("MindmapPage", () => {
 
     expect(mocks.graph.addNode).toHaveBeenCalledWith({ x: 400, y: 300 })
     expect(mocks.selection.focusNode).toHaveBeenCalledWith("new")
+  })
+
+  it("pans the canvas left when the detail panel would cover the node", async () => {
+    const base = makeMocks()
+    const node = makeNode({ id: "n1", label: "Right side", x: 500, width: 140 })
+    const animateTo = vi.fn()
+    const mocks = setup({
+      graph: {
+        ...base.graph,
+        nodes: [node],
+        byId: new Map([[node.id, node]]),
+      },
+      selection: {
+        ...base.selection,
+        panelOpen: true,
+        selectedNodeIds: [node.id],
+      },
+      interactions: {
+        ...base.interactions,
+        canvasSize: { width: 800, height: 600 },
+        viewport: { x: 0, y: 0, scale: 1 },
+        animateTo,
+      },
+    })
+
+    await waitFor(() =>
+      expect(mocks.interactions.animateTo).toHaveBeenCalledWith(-198, 0),
+    )
   })
 
   it("opens label editing and context menus from the canvas", () => {

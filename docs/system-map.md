@@ -61,7 +61,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/components/MindmapFooter.tsx` | Selection, counts, and canvas hints |
 | `frontend/src/components/CanvasStatusOverlay.tsx` | Loading/error/empty states |
 | `frontend/src/components/CanvasZoomControls.tsx` | Bottom-left zoom percentage and +/- controls |
-| `frontend/src/components/NodePanel.tsx` | Node title, status group, Learn/Quiz tabs |
+| `frontend/src/components/NodePanel.tsx` | Animated node title panel, status group, Learn/Quiz tabs |
 | `frontend/src/components/LearnTab.tsx` | Markdown block list/editor |
 | `frontend/src/components/MarkdownBlock.tsx` | Source editor, preview, Done/Ctrl+Enter |
 | `frontend/src/components/NodeQuiz.tsx` | Quiz question list and practice answers |
@@ -95,6 +95,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/markdown.tsx` | Markdown parsing, sanitizing, math rendering |
 | `frontend/src/canvasPoint.ts` | Client coordinates -> SVG coordinates |
 | `frontend/src/selectionBounds.ts` | Bounds outline for selected items |
+| `frontend/src/panelViewport.ts` | Panel-aware viewport shift calculation |
 | `frontend/src/state/mindmapReducer.ts` | Pure node/link/add/move/update/remove transitions |
 | `frontend/src/persistence.ts` | UI model <-> portable JSON document |
 | `frontend/src/storage/mindmaps.ts` | localStorage CRUD repository |
@@ -167,6 +168,7 @@ The production build was also checked from a nested static path
 - first-node creation and node dragging after zooming
 - zoom HUD percentage changes from the +/- buttons and Ctrl/Cmd+wheel
 - wheel panning and Space-drag panning
+- opening the panel over a right-side node shifts and animates the canvas
 - viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests

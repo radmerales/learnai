@@ -19,6 +19,7 @@ function interactions(overrides: Partial<CanvasInteractions> = {}): CanvasIntera
     viewport: { x: 0, y: 0, scale: 1 },
     zoomIn: vi.fn(),
     zoomOut: vi.fn(),
+    animateTo: vi.fn(),
     resetViewport: vi.fn(),
     canZoomIn: true,
     canZoomOut: true,

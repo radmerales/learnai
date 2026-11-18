@@ -43,6 +43,7 @@
 - `frontend/src/graph.ts` — model types, anchors, curves, width measurement
 - `frontend/src/interaction.ts` — hit testing, anchor snapping, edge targets
 - `frontend/src/previews.ts` — ghost node and connection/edge previews
+- `frontend/src/panelViewport.ts` — keeps selected nodes clear of the panel
 - `frontend/src/quiz.ts` — MCQ helpers and blank-choice cleanup
 - `frontend/src/markdown.tsx` — safe markdown + KaTeX rendering
 - `frontend/src/index.css` — Tailwind input and theme tokens
