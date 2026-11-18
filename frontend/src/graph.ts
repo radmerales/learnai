@@ -37,6 +37,8 @@ export type TextBox = {
 
 export type Point = { x: number; y: number }
 
+export type LabelBox = { x: number; y: number; width: number; height: number }
+
 export type RenderedEdge = {
   id: string
   from: Node
@@ -235,6 +237,20 @@ export function curveGeometry(fromPoint: Point, fromSide: Side, toPoint: Point, 
 export function curvePath(fromPoint: Point, fromSide: Side, toPoint: Point, toSide: Side): string {
   const { start, c1, c2, end } = curveGeometry(fromPoint, fromSide, toPoint, toSide)
   return `M ${round(start.x)} ${round(start.y)} C ${round(c1.x)} ${round(c1.y)}, ${round(c2.x)} ${round(c2.y)}, ${round(end.x)} ${round(end.y)}`
+}
+
+/** Bounding box used to render and mask the label under an edge. */
+export function edgeLabelBox(
+  edge: Pick<RenderedEdge, "text" | "midpoint">,
+  padding = 0,
+): LabelBox {
+  const width = Math.max(24, edge.text.length * 7 + 12) + padding * 2
+  return {
+    x: edge.midpoint.x - width / 2,
+    y: edge.midpoint.y - 10 - padding,
+    width,
+    height: 20 + padding * 2,
+  }
 }
 
 /** Midpoint of the cubic used for edge labels. */

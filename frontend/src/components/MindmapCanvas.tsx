@@ -1,6 +1,6 @@
 import type { MouseEvent } from "react"
 
-import type { Node, RenderedEdge, TextBox } from "../graph"
+import { edgeLabelBox, type Node, type RenderedEdge, type TextBox } from "../graph"
 import type { SelectionBox } from "../selectionBounds"
 import type { MindmapInteractions } from "../hooks/useMindmapInteractions"
 import type { Viewport } from "../hooks/useCanvasViewport"
@@ -93,6 +93,30 @@ export function MindmapCanvas({
         >
           <path d="M0,0 L10,5 L0,10 Z" fill="#000000" />
         </marker>
+        <mask
+          id="edge-label-mask"
+          maskUnits="userSpaceOnUse"
+          x="-10000"
+          y="-10000"
+          width="20000"
+          height="20000"
+        >
+          <rect x="-10000" y="-10000" width="20000" height="20000" fill="white" />
+          {edges.map((edge) => {
+            if (!edge.text.trim()) return null
+            const box = edgeLabelBox(edge, 3)
+            return (
+              <rect
+                key={`mask-${edge.id}`}
+                x={box.x}
+                y={box.y}
+                width={box.width}
+                height={box.height}
+                fill="black"
+              />
+            )
+          })}
+        </mask>
         <pattern
           id="grid"
           width="32"

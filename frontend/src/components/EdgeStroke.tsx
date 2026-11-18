@@ -16,6 +16,7 @@ export function EdgeStroke({ path, selected = false, markerStart, markerEnd }: P
       strokeDasharray="6 5"
       markerStart={markerStart}
       markerEnd={markerEnd}
+      mask="url(#edge-label-mask)"
     />
   )
 }

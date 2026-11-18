@@ -32,7 +32,19 @@ describe("context menu builders", () => {
 
     expect(menu.label).toBe("A → B")
     expect(menu.items.map((item) => item.label)).toContain("Edit edge text")
-    expect(menu.items.find((item) => item.label === "Arrow to target →")).toMatchObject({
+    expect(menu.items.map((item) => item.label)).toEqual([
+      "Edit edge text",
+      "Arrow",
+      "Delete edge",
+    ])
+    const arrows = menu.items.find((item) => item.label === "Arrow")?.submenu
+    expect(arrows?.map((item) => item.label)).toEqual([
+      "No arrow",
+      "Arrow to target →",
+      "Arrow to source ←",
+      "Arrows both ways ↔",
+    ])
+    expect(arrows?.find((item) => item.label === "Arrow to target →")).toMatchObject({
       checked: true,
     })
     expect(menu.items.at(-1)).toMatchObject({ label: "Delete edge", danger: true })

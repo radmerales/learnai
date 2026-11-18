@@ -69,11 +69,14 @@ export function edgeContextMenu(
         label: edge.text.trim() ? "Edit edge text" : "Add edge text",
         onSelect: actions.onEditText,
       },
-      ...arrows.map(({ mode, label }) => ({
-        label,
-        checked: edge.arrow === mode,
-        onSelect: () => actions.onArrow(mode),
-      })),
+      {
+        label: "Arrow",
+        submenu: arrows.map(({ mode, label }) => ({
+          label,
+          checked: edge.arrow === mode,
+          onSelect: () => actions.onArrow(mode),
+        })),
+      },
       { label: "Delete edge", danger: true, onSelect: actions.onDelete },
     ],
   }

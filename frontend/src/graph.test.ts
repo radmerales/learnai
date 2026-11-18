@@ -4,6 +4,7 @@ import {
   buildRenderedEdges,
   curveGeometry,
   curvePath,
+  edgeLabelBox,
   localHandleHitPath,
   localHandlePoint,
   makeTextBox,
@@ -152,5 +153,14 @@ describe("text annotations", () => {
     expect(measureTextBoxHeight("")).toBe(44)
     expect(measureTextBoxHeight("one\ntwo")).toBe(56)
     expect(measureTextBoxHeight("x".repeat(60))).toBe(76)
+  })
+
+  it("calculates the edge-label knockout box", () => {
+    expect(edgeLabelBox({ text: "causes", midpoint: { x: 100, y: 50 } }, 3)).toEqual({
+      x: 70,
+      y: 37,
+      width: 60,
+      height: 26,
+    })
   })
 })

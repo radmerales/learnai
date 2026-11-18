@@ -69,7 +69,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/components/MarkdownPreview.tsx` | Safe rendered markdown |
 | `frontend/src/components/Latex.tsx` | KaTeX span rendering |
 | `frontend/src/components/ContextMenu.tsx` | Shared canvas/node/edge/text menu |
-| `frontend/src/components/CanvasTextBox.tsx` | Draggable, editable text annotations |
+| `frontend/src/components/CanvasTextBox.tsx` | Draggable, transparent text annotations |
 | `frontend/src/components/InlineEdgeEditor.tsx` | Edge-label editor anchored to the curve midpoint |
 | `frontend/src/components/InlineNodeEditor.tsx` | Inline canvas title editor |
 | `frontend/src/components/buttonStyles.ts` | Shared button class strings |
@@ -81,7 +81,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | --- | --- |
 | `MindmapCanvas.tsx` | SVG surface, pan/zoom transform, grid, text boxes, edge arrows, node/edge previews |
 | `MindmapNode.tsx` | Node rectangle, status colors, anchors, fading handles |
-| `EdgePaths.tsx`, `EdgeStroke.tsx` | Dashed edges, labels, arrow markers, and hit paths |
+| `EdgePaths.tsx`, `EdgeStroke.tsx` | Dashed edges, transparent masked labels, arrow markers, and hit paths |
 | `EdgeHandles.tsx` | Endpoint rewire handles |
 | `EdgePreview.tsx` | Ghost node and connection/edge previews |
 

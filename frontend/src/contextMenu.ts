@@ -1,8 +1,9 @@
 export type ContextMenuItem = {
   label: string
-  onSelect: () => void
+  onSelect?: () => void
   danger?: boolean
   checked?: boolean
+  submenu?: ContextMenuItem[]
 }
 
 export type ContextMenuState = {

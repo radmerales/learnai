@@ -70,7 +70,7 @@ export function CanvasTextBox({
               commit()
             }
           }}
-          className="h-full w-full resize-none border border-ink bg-paper px-2 py-2 font-sans text-sm leading-5 text-ink outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ink"
+          className="h-full w-full resize-none border-0 bg-transparent px-2 py-2 font-sans text-sm leading-5 text-ink outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ink"
         />
       ) : (
         <div
@@ -88,7 +88,7 @@ export function CanvasTextBox({
               onStartEdit(textBox.id)
             }
           }}
-          className="h-full w-full cursor-grab overflow-hidden whitespace-pre-wrap border border-hairline bg-paper px-2 py-2 font-sans text-sm leading-5 text-ink hover:border-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-ink"
+          className="h-full w-full cursor-grab overflow-hidden whitespace-pre-wrap border-0 bg-transparent px-2 py-2 font-sans text-sm leading-5 text-ink focus-visible:outline focus-visible:outline-1 focus-visible:outline-offset-[-1px] focus-visible:outline-ink"
         >
           {textBox.text || <span className="text-mutedink">Double-click to edit text</span>}
         </div>
