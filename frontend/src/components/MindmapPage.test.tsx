@@ -303,6 +303,26 @@ describe("MindmapPage", () => {
     expect(mocks.context.openNode).toHaveBeenCalled()
   })
 
+  it("closes the active detail panel with Escape", () => {
+    const base = makeMocks()
+    const mocks = setup({
+      selection: {
+        ...base.selection,
+        panelOpen: true,
+        selectedNodeIds: ["n1"],
+      },
+      graph: {
+        ...base.graph,
+        nodes: [base.node],
+        byId: new Map([[base.node.id, base.node]]),
+      },
+    })
+
+    fireEvent.keyDown(document.body, { key: "Escape" })
+
+    expect(mocks.selection.closePanel).toHaveBeenCalledOnce()
+  })
+
   it("deletes the selected items with Delete/Backspace", () => {
     const selectedNode = makeNode({ id: "a", label: "Selected" })
     const mocks = setup({

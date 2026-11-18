@@ -186,6 +186,13 @@ export function MindmapPage() {
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        if (!panelOpen) return
+        e.preventDefault()
+        closePanel()
+        return
+      }
+
       if (e.key !== "Backspace" && e.key !== "Delete") return
       if (e.metaKey || e.ctrlKey || e.altKey) return
 
@@ -198,7 +205,7 @@ export function MindmapPage() {
 
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [deleteSelection, selectedCount])
+  }, [closePanel, deleteSelection, panelOpen, selectedCount])
 
   function handleCreateFirstNode() {
     const { width, height } = interactions.canvasSize

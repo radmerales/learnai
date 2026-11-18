@@ -129,6 +129,7 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
 - Animated node panel that slides in, centers the selected node in the left
   half of the canvas, and returns to the original position on close unless the
   canvas was manually panned or zoomed while previewing
+- Escape closes the active detail panel, including from inside an editor
 - Node panel with live title, study status, Learn tab, and Quiz tab
 - Markdown blocks with headings, lists, task lists, quotes, code, links, and
   inline/display math

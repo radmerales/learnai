@@ -171,6 +171,7 @@ The production build was also checked from a nested static path
 - opening the panel centers the selected node in the left half
 - closing the panel restores the previous viewport when the canvas was not
   manually panned or zoomed during preview
+- Escape closes the panel from the canvas or an active editor
 - viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests
