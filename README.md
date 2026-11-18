@@ -127,7 +127,8 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
   deletion menus
 - Marquee selection, inline node renaming, and selection-bounds outline
 - Animated node panel that slides in, centers the selected node in the left
-  half of the canvas, and returns the canvas to its original position on close
+  half of the canvas, and returns to the original position on close unless the
+  canvas was manually panned or zoomed while previewing
 - Node panel with live title, study status, Learn tab, and Quiz tab
 - Markdown blocks with headings, lists, task lists, quotes, code, links, and
   inline/display math

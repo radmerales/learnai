@@ -32,6 +32,7 @@ export function useCanvasViewport(
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, scale: 1 })
   const viewportRef = useRef(viewport)
   const animationRef = useRef<number | null>(null)
+  const [manualVersion, setManualVersion] = useState(0)
 
   useEffect(() => {
     viewportRef.current = viewport
@@ -43,9 +44,14 @@ export function useCanvasViewport(
     animationRef.current = null
   }, [])
 
+  const markManualChange = useCallback(() => {
+    setManualVersion((current) => current + 1)
+  }, [])
+
   const zoomAt = useCallback(
     (factor: number, anchor: Point) => {
       cancelAnimation()
+      markManualChange()
       setViewport((current) => {
         const scale = clampZoom(current.scale * factor)
         if (scale === current.scale) return current
@@ -60,7 +66,7 @@ export function useCanvasViewport(
         }
       })
     },
-    [cancelAnimation],
+    [cancelAnimation, markManualChange],
   )
 
   const zoomIn = useCallback(() => {
@@ -80,23 +86,26 @@ export function useCanvasViewport(
   const setOffset = useCallback(
     (x: number, y: number) => {
       cancelAnimation()
+      markManualChange()
       setViewport((current) => ({ ...current, x, y }))
     },
-    [cancelAnimation],
+    [cancelAnimation, markManualChange],
   )
 
   const panBy = useCallback(
     (dx: number, dy: number) => {
       cancelAnimation()
+      markManualChange()
       setViewport((current) => ({ ...current, x: current.x + dx, y: current.y + dy }))
     },
-    [cancelAnimation],
+    [cancelAnimation, markManualChange],
   )
 
   const resetViewport = useCallback(() => {
     cancelAnimation()
+    markManualChange()
     setViewport({ x: 0, y: 0, scale: 1 })
-  }, [cancelAnimation])
+  }, [cancelAnimation, markManualChange])
 
   /** Animate only the canvas offset; manual gestures cancel the animation. */
   const animateTo = useCallback(
@@ -178,6 +187,7 @@ export function useCanvasViewport(
     animateTo,
     resetViewport,
     toWorld,
+    manualVersion,
     canZoomIn: viewport.scale < MAX_ZOOM,
     canZoomOut: viewport.scale > MIN_ZOOM,
   }

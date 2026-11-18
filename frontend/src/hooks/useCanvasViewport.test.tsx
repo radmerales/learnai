@@ -26,6 +26,18 @@ describe("useCanvasViewport", () => {
     expect(result.current.toWorld({ x: 275, y: 112.5 })).toEqual({ x: 400, y: 200 })
   })
 
+  it("tracks manual pan and zoom changes separately from animated moves", () => {
+    const { result } = renderHook(() => useCanvasViewport(svgRef, size))
+
+    expect(result.current.manualVersion).toBe(0)
+    act(() => result.current.panBy(10, 20))
+    expect(result.current.manualVersion).toBe(1)
+    act(() => result.current.zoomIn())
+    expect(result.current.manualVersion).toBe(2)
+    act(() => result.current.setOffset(0, 0))
+    expect(result.current.manualVersion).toBe(3)
+  })
+
   it("clamps the zoom range", () => {
     const { result } = renderHook(() => useCanvasViewport(svgRef, size))
 

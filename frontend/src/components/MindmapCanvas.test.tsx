@@ -21,6 +21,7 @@ function interactions(overrides: Partial<CanvasInteractions> = {}): CanvasIntera
     zoomOut: vi.fn(),
     animateTo: vi.fn(),
     resetViewport: vi.fn(),
+    manualVersion: 0,
     canZoomIn: true,
     canZoomOut: true,
     panning: false,

@@ -76,11 +76,13 @@ export function MindmapPage() {
   const { svgRef, ...canvasInteractions } = interactions
   const resetViewport = interactions.resetViewport
   const panelOriginalRef = useRef<Viewport | null>(null)
+  const panelManualVersionRef = useRef<number | null>(null)
 
   // A different map should open at the home viewport rather than wherever the
   // previous map was panned.
   useEffect(() => {
     panelOriginalRef.current = null
+    panelManualVersionRef.current = null
     resetViewport()
   }, [resetViewport, sync.currentId])
 
@@ -97,32 +99,41 @@ export function MindmapPage() {
   // making every animation frame retrigger the effect.
   const panelNodeRef = useRef(panelNode)
   const viewportRef = useRef(interactions.viewport)
+  const manualVersionRef = useRef(interactions.manualVersion)
   useEffect(() => {
     panelNodeRef.current = panelNode
     viewportRef.current = interactions.viewport
+    manualVersionRef.current = interactions.manualVersion
   })
   const animateTo = interactions.animateTo
   const viewportScale = interactions.viewport.scale
   const canvasWidth = interactions.canvasSize.width
   const canvasHeight = interactions.canvasSize.height
 
-  // Center the selected node in the left canvas area while the panel is open,
-  // then return to the pre-panel viewport when the panel closes.
+  // Center the selected node in the left canvas area while the panel is open.
+  // On close, restore the pre-panel viewport only if the user did not pan or
+  // zoom the canvas while previewing.
   useEffect(() => {
     const node = panelNodeRef.current
     const current = viewportRef.current
 
     if (!node) {
       const original = panelOriginalRef.current
-      if (original) {
-        panelOriginalRef.current = null
+      const manualChanged =
+        panelManualVersionRef.current !== manualVersionRef.current
+      panelOriginalRef.current = null
+      panelManualVersionRef.current = null
+      if (original && !manualChanged) {
         animateTo(original.x, original.y)
       }
       return
     }
 
     if (!canvasWidth || !canvasHeight) return
-    if (!panelOriginalRef.current) panelOriginalRef.current = { ...current }
+    if (!panelOriginalRef.current) {
+      panelOriginalRef.current = { ...current }
+      panelManualVersionRef.current = manualVersionRef.current
+    }
 
     const panelWidth = canvasWidth >= 768 ? canvasWidth / 2 : 0
     if (!panelWidth) return

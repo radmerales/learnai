@@ -106,6 +106,7 @@ function makeMocks() {
     zoomOut: vi.fn(),
     animateTo: vi.fn(),
     resetViewport: vi.fn(),
+    manualVersion: 0,
     canZoomIn: true,
     canZoomOut: true,
     panning: false,
@@ -244,6 +245,49 @@ describe("MindmapPage", () => {
     await waitFor(() =>
       expect(mocks.interactions.animateTo).toHaveBeenLastCalledWith(80, 40),
     )
+  })
+
+  it("does not restore the viewport after manual panning with the panel open", async () => {
+    const base = makeMocks()
+    const node = makeNode({ id: "n1", label: "Right side", x: 500, y: 100 })
+    const mocks = setup({
+      graph: {
+        ...base.graph,
+        nodes: [node],
+        byId: new Map([[node.id, node]]),
+      },
+      selection: {
+        ...base.selection,
+        panelOpen: true,
+        selectedNodeIds: [node.id],
+      },
+      interactions: {
+        ...base.interactions,
+        canvasSize: { width: 800, height: 600 },
+        viewport: { x: 80, y: 40, scale: 1 },
+        animateTo: vi.fn(),
+      },
+    })
+
+    await waitFor(() =>
+      expect(mocks.interactions.animateTo).toHaveBeenCalledWith(-300, 200),
+    )
+
+    vi.mocked(useMindmapSelection).mockReturnValue({
+      ...base.selection,
+      selectedNodeIds: [],
+      panelOpen: false,
+    })
+    vi.mocked(useMindmapInteractions).mockReturnValue({
+      ...mocks.interactions,
+      manualVersion: 1,
+    } as unknown as MindmapInteractions)
+    mocks.view.rerender(<MindmapPage />)
+
+    await waitFor(() =>
+      expect(mocks.interactions.animateTo).toHaveBeenCalledTimes(1),
+    )
+    expect(mocks.interactions.animateTo).not.toHaveBeenCalledWith(80, 40)
   })
 
   it("opens label editing and context menus from the canvas", () => {

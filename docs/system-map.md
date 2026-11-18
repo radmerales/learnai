@@ -169,7 +169,8 @@ The production build was also checked from a nested static path
 - zoom HUD percentage changes from the +/- buttons and Ctrl/Cmd+wheel
 - wheel panning and Space-drag panning
 - opening the panel centers the selected node in the left half
-- closing the panel animates the canvas back to its previous viewport
+- closing the panel restores the previous viewport when the canvas was not
+  manually panned or zoomed during preview
 - viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests

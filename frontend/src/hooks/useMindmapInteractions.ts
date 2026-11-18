@@ -241,6 +241,7 @@ export function useMindmapInteractions(options: Options) {
     zoomOut: view.zoomOut,
     animateTo: view.animateTo,
     resetViewport: view.resetViewport,
+    manualVersion: view.manualVersion,
     canZoomIn: view.canZoomIn,
     canZoomOut: view.canZoomOut,
     panning: pan !== null,
