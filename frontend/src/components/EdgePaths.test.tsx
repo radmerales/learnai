@@ -27,6 +27,7 @@ function renderPaths(overrides: Partial<Parameters<typeof EdgePaths>[0]> = {}) {
     onHoverStart: vi.fn(),
     onHoverEnd: vi.fn(),
     onSelect: vi.fn(),
+    onEditText: vi.fn(),
     onContextMenu: vi.fn(),
     ...overrides,
   }
@@ -73,12 +74,14 @@ describe("EdgePaths", () => {
     fireEvent.pointerLeave(hitPath)
     fireEvent.pointerDown(hitPath)
     fireEvent.pointerDown(hitPath, { shiftKey: true })
+    fireEvent.doubleClick(hitPath)
     fireEvent.contextMenu(hitPath)
 
     expect(props.onHoverStart).toHaveBeenCalledWith("l1")
     expect(props.onHoverEnd).toHaveBeenCalledWith("l1")
     expect(props.onSelect).toHaveBeenNthCalledWith(1, "l1", false)
     expect(props.onSelect).toHaveBeenNthCalledWith(2, "l1", true)
+    expect(props.onEditText).toHaveBeenCalledWith(edge)
     expect(props.onContextMenu).toHaveBeenCalledWith(edge, expect.anything())
   })
 })

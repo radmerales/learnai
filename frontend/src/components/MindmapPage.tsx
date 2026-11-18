@@ -235,6 +235,7 @@ export function MindmapPage() {
           }}
           onNodeContextMenu={menus.handleNodeContextMenu}
           onEdgeContextMenu={menus.handleEdgeContextMenu}
+          onEdgeEditText={(edge) => annotations.beginEdgeText(edge.id)}
           onCanvasContextMenu={menus.handleCanvasContextMenu}
           onTextContextMenu={menus.handleTextContextMenu}
           onTextStartEdit={annotations.beginText}

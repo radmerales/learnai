@@ -179,7 +179,7 @@ The production build was also checked from a nested static path
   manually panned or zoomed during preview
 - Escape closes the panel from the canvas or an active editor
 - blank-canvas right-click adds nodes or draggable text boxes
-- edge right-click edits labels and switches arrow directions
+- edge right-click or double-click edits labels; the Arrow submenu switches directions
 - viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests

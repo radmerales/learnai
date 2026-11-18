@@ -138,7 +138,8 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
 - Draggable, editable text boxes with transparent backgrounds and their own
   edit/delete context menu
 - Edge labels with transparent backgrounds that mask the line beneath the text,
-  plus directional arrows (none, forward, backward, or both) in an Arrow submenu
+  double-click editing, plus directional arrows (none, forward, backward, or
+  both) in an Arrow submenu
 - Edge endpoint rewiring, including same-pair side changes and right-click
   deletion menus
 - Marquee selection, inline node renaming, and selection-bounds outline

@@ -72,6 +72,7 @@ function renderCanvas(
     onNodeDoubleClick: vi.fn(),
     onNodeContextMenu: vi.fn(),
     onEdgeContextMenu: vi.fn(),
+    onEdgeEditText: vi.fn(),
     onCanvasContextMenu: vi.fn(),
     onTextContextMenu: vi.fn(),
     onTextStartEdit: vi.fn(),

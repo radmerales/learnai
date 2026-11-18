@@ -10,6 +10,7 @@ type Props = {
   onHoverStart: (id: string) => void
   onHoverEnd: (id: string) => void
   onSelect: (id: string, additive: boolean) => void
+  onEditText: (edge: RenderedEdge) => void
   onContextMenu: (edge: RenderedEdge, e: MouseEvent<SVGPathElement>) => void
 }
 
@@ -20,6 +21,7 @@ export function EdgePaths({
   onHoverStart,
   onHoverEnd,
   onSelect,
+  onEditText,
   onContextMenu,
 }: Props) {
   return (
@@ -74,7 +76,10 @@ export function EdgePaths({
               e.stopPropagation()
               onSelect(edge.id, e.shiftKey || e.metaKey || e.ctrlKey)
             }}
-            onDoubleClick={(e) => e.stopPropagation()}
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              onEditText(edge)
+            }}
             onContextMenu={(e) => {
               e.preventDefault()
               e.stopPropagation()

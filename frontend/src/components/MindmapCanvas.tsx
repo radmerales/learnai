@@ -25,6 +25,7 @@ type Props = {
   onNodeDoubleClick: (node: Node) => void
   onNodeContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
   onEdgeContextMenu: (edge: RenderedEdge, e: MouseEvent<SVGPathElement>) => void
+  onEdgeEditText: (edge: RenderedEdge) => void
   onCanvasContextMenu: (e: MouseEvent<SVGSVGElement>) => void
   onTextContextMenu: (text: TextBox, e: MouseEvent<SVGForeignObjectElement>) => void
   onTextStartEdit: (id: string) => void
@@ -48,6 +49,7 @@ export function MindmapCanvas({
   onNodeDoubleClick,
   onNodeContextMenu,
   onEdgeContextMenu,
+  onEdgeEditText,
   onCanvasContextMenu,
   onTextContextMenu,
   onTextStartEdit,
@@ -85,8 +87,8 @@ export function MindmapCanvas({
             fill="none"
             stroke="#3f3e3e"
             strokeWidth="1.5"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </marker>
         <marker
@@ -103,8 +105,8 @@ export function MindmapCanvas({
             fill="none"
             stroke="#000000"
             strokeWidth="1.5"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </marker>
         <mask
@@ -151,6 +153,7 @@ export function MindmapCanvas({
         onHoverStart={interactions.showEdge}
         onHoverEnd={interactions.scheduleEdgeHide}
         onSelect={onSelectEdge}
+        onEditText={onEdgeEditText}
         onContextMenu={onEdgeContextMenu}
       />
 
