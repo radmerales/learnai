@@ -35,9 +35,11 @@
 - `frontend/src/main.tsx` — React root
 - `frontend/src/App.tsx` — app shell
 - `frontend/src/components/MindmapPage.tsx` — workspace composition and actions
-- `frontend/src/components/` — canvas, zoom HUD, header, panel, Learn, Quiz, menus
-- `frontend/src/hooks/` — drag/selection, sync, autosave, viewport, canvas size
-- `frontend/src/state/mindmapReducer.ts` — node/link mutations
+- `frontend/src/components/` — canvas, text boxes, zoom HUD, header, panel, Learn, Quiz, menus
+- `frontend/src/components/ContextMenu.tsx` — shared right-click menu
+- `frontend/src/hooks/` — drag/selection, sync, autosave, viewport, annotations, canvas size
+- `frontend/src/contextMenus.ts` — canvas/node/edge/text menu builders
+- `frontend/src/state/mindmapReducer.ts` — node/link/text mutations
 - `frontend/src/storage/mindmaps.ts` — localStorage repository
 - `frontend/src/storage/types.ts` — stored JSON document types
 - `frontend/src/graph.ts` — model types, anchors, curves, width measurement

@@ -28,6 +28,12 @@
         },
         "toSide": {
           "$ref": "#/$defs/Side"
+        },
+        "text": {
+          "type": "string"
+        },
+        "arrow": {
+          "$ref": "#/$defs/ArrowMode"
         }
       },
       "required": [
@@ -141,6 +147,45 @@
         "left"
       ],
       "type": "string"
+    },
+    "ArrowMode": {
+      "enum": [
+        "none",
+        "forward",
+        "backward",
+        "both"
+      ],
+      "type": "string"
+    },
+    "MindmapTextBox": {
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "x": {
+          "format": "double",
+          "type": "number"
+        },
+        "y": {
+          "format": "double",
+          "type": "number"
+        },
+        "width": {
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "text",
+        "x",
+        "y",
+        "width"
+      ],
+      "type": "object"
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -173,6 +218,12 @@
     },
     "updatedAt": {
       "type": "string"
+    },
+    "texts": {
+      "items": {
+        "$ref": "#/$defs/MindmapTextBox"
+      },
+      "type": "array"
     }
   },
   "required": [

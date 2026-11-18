@@ -24,13 +24,49 @@ export function EdgePaths({
 }: Props) {
   return (
     <>
-      {edges.map((edge) =>
-        edge.id === hiddenEdgeId ? null : (
+      {edges.map((edge) => {
+        if (edge.id === hiddenEdgeId) return null
+        const selected = selectedEdgeIds.includes(edge.id)
+        const marker = selected ? "edge-arrow-selected" : "edge-arrow"
+        return (
           <g key={edge.id} pointerEvents="none">
-            <EdgeStroke path={edge.path} selected={selectedEdgeIds.includes(edge.id)} />
+            <EdgeStroke
+              path={edge.path}
+              selected={selected}
+              markerStart={edge.arrow === "backward" || edge.arrow === "both" ? `url(#${marker})` : undefined}
+              markerEnd={edge.arrow === "forward" || edge.arrow === "both" ? `url(#${marker})` : undefined}
+            />
           </g>
-        ),
-      )}
+        )
+      })}
+
+      {edges.map((edge) => {
+        if (edge.id === hiddenEdgeId || !edge.text.trim()) return null
+        const width = Math.max(24, edge.text.length * 7 + 12)
+        return (
+          <g key={`label-${edge.id}`} pointerEvents="none">
+            <rect
+              x={edge.midpoint.x - width / 2}
+              y={edge.midpoint.y - 10}
+              width={width}
+              height={20}
+              fill="#e9e9e5"
+              stroke="#cbcac7"
+              strokeWidth={1}
+            />
+            <text
+              x={edge.midpoint.x}
+              y={edge.midpoint.y + 4}
+              textAnchor="middle"
+              fontSize="11"
+              fontFamily="IBM Plex Sans, sans-serif"
+              fill="#1d1d1d"
+            >
+              {edge.text}
+            </text>
+          </g>
+        )
+      })}
 
       {edges.map((edge) =>
         edge.id === hiddenEdgeId ? null : (

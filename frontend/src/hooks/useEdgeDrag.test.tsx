@@ -16,6 +16,7 @@ const edge: RenderedEdge = {
   to: target,
   fromPoint: { x: 180, y: 100 },
   toPoint: { x: 230, y: 100 },
+  midpoint: { x: 205, y: 100 },
   path: "",
 }
 

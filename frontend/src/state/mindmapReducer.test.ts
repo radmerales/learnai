@@ -57,9 +57,15 @@ describe("mindmap reducer", () => {
     const nodes = [makeNode({ id: "loaded" })]
     const links = [makeLink({ id: "loaded-edge", from: "loaded", to: "loaded" })]
 
-    const state = mindmapReducer(initialMindmapState, { type: "replace", nodes, links })
+    const texts = [{ id: "text1", text: "Note", x: 10, y: 20, width: 220 }]
+    const state = mindmapReducer(initialMindmapState, {
+      type: "replace",
+      nodes,
+      links,
+      texts,
+    })
 
-    expect(state).toEqual({ nodes, links })
+    expect(state).toEqual({ nodes, links, texts })
   })
 
   it("moves several nodes in one action", () => {
@@ -89,11 +95,25 @@ describe("mindmap reducer", () => {
     state = mindmapReducer(state, {
       type: "update-link",
       id: "l1",
-      patch: { toSide: "top" },
+      patch: { toSide: "top", text: "causes", arrow: "both" },
     })
-    expect(state.links[0].toSide).toBe("top")
+    expect(state.links[0]).toMatchObject({ toSide: "top", text: "causes", arrow: "both" })
 
     state = mindmapReducer(state, { type: "remove-link", id: "l1" })
     expect(state.links).toEqual([])
+  })
+
+  it("adds, edits, moves, and removes text annotations", () => {
+    let state = mindmapReducer(initialMindmapState, {
+      type: "add-text",
+      text: { id: "t1", text: "Note", x: 10, y: 20, width: 220 },
+    })
+    state = mindmapReducer(state, { type: "update-text", id: "t1", text: "Updated" })
+    state = mindmapReducer(state, { type: "move-text", id: "t1", x: 100, y: 200 })
+
+    expect(state.texts[0]).toMatchObject({ text: "Updated", x: 100, y: 200 })
+
+    state = mindmapReducer(state, { type: "remove-text", id: "t1" })
+    expect(state.texts).toEqual([])
   })
 })

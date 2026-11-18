@@ -13,6 +13,9 @@ const edge: RenderedEdge = {
   toSide: "left",
   fromPoint: { x: 100, y: 100 },
   toPoint: { x: 200, y: 100 },
+  midpoint: { x: 150, y: 100 },
+  text: "",
+  arrow: "none",
   path: "",
 }
 

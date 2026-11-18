@@ -46,7 +46,18 @@
       "from": "n_1a2b3c4",
       "to": "n_5f6g7h8",
       "fromSide": "right",
-      "toSide": "left"
+      "toSide": "left",
+      "text": "feeds into",
+      "arrow": "forward"
+    }
+  ],
+  "texts": [
+    {
+      "id": "t_3c4d5e6",
+      "text": "Exam on Friday",
+      "x": 720,
+      "y": 420,
+      "width": 220
     }
   ]
 }

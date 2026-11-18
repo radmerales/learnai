@@ -22,6 +22,8 @@ export function makeLink(overrides: Partial<Link> = {}): Link {
     to: "n2",
     fromSide: "right",
     toSide: "left",
+    text: "",
+    arrow: "none",
     ...overrides,
   }
 }

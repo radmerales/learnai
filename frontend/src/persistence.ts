@@ -8,11 +8,12 @@
  * about the storage format. "Pure" here means the functions only read arguments
  * and return new values; they do not mutate state or touch browser storage.
  */
-import type { Link, Node } from "./graph"
+import type { Link, Node, TextBox } from "./graph"
 import type {
   MindmapDocument,
   MindmapLinkDocument,
   MindmapNodeDocument,
+  MindmapTextBoxDocument,
 } from "./storage/types"
 
 export const UNTITLED_MINDMAP = "Untitled mindmap"
@@ -52,7 +53,13 @@ function toDocumentLink(link: Link): MindmapLinkDocument {
     to: link.to,
     fromSide: link.fromSide,
     toSide: link.toSide,
+    text: link.text,
+    arrow: link.arrow,
   }
+}
+
+function toDocumentText(text: TextBox): MindmapTextBoxDocument {
+  return { id: text.id, text: text.text, x: text.x, y: text.y, width: text.width }
 }
 
 /** UI objects -> JSON document (used by autosave). */
@@ -60,12 +67,14 @@ export function toMindmapDocument(
   title: string,
   nodes: Node[],
   links: Link[],
+  texts: TextBox[] = [],
 ): MindmapDocument {
   return {
     schemaVersion: 1,
     title: normalizeTitle(title),
     nodes: nodes.map(toDocumentNode),
     links: links.map(toDocumentLink),
+    texts: texts.map(toDocumentText),
   }
 }
 
@@ -73,6 +82,7 @@ export function toMindmapDocument(
 export function fromMindmapDocument(document: MindmapDocument): {
   nodes: Node[]
   links: Link[]
+  texts: TextBox[]
 } {
   // The cast lets us compare a literal type (`1`) with a value that may have
   // come from older saved data at runtime.
@@ -100,7 +110,10 @@ export function fromMindmapDocument(document: MindmapDocument): {
       to: link.to,
       fromSide: link.fromSide,
       toSide: link.toSide,
+      text: link.text ?? "",
+      arrow: link.arrow ?? "none",
     })),
+    texts: (document.texts ?? []).map((text) => ({ ...text })),
   }
 }
 

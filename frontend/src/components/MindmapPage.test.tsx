@@ -49,8 +49,13 @@ function makeMocks() {
   const graph = {
     nodes: [] as ReturnType<typeof makeNode>[],
     links: [],
+    texts: [],
     byId: new Map(),
     addNode: vi.fn(() => makeNode({ id: "new" })),
+    addText: vi.fn(() => ({ id: "text1", text: "", x: 0, y: 0, width: 220 })),
+    updateText: vi.fn(),
+    moveText: vi.fn(),
+    removeText: vi.fn(),
     removeNode: vi.fn(),
     removeLink: vi.fn(),
     moveNodes: vi.fn(),
@@ -125,6 +130,8 @@ function makeMocks() {
     onNodePointerDown: vi.fn(),
     onNodePointerEnter: vi.fn(),
     onNodePointerLeave: vi.fn(),
+    startTextDrag: vi.fn(),
+    toSvgPoint: (x: number, y: number) => ({ x, y }),
     startConnect: vi.fn(),
     startEdgeDrag: vi.fn(),
     showEdge: vi.fn(),
@@ -136,10 +143,8 @@ function makeMocks() {
   }
   const context = {
     contextMenu: null,
-    openNode: vi.fn(),
-    openEdge: vi.fn(),
+    open: vi.fn(),
     close: vi.fn(),
-    confirmDelete: vi.fn(),
   }
   return { node, graph, selection, label, sync, interactions, context }
 }
@@ -300,7 +305,7 @@ describe("MindmapPage", () => {
     expect(mocks.selection.selectNode).toHaveBeenCalledWith("n1")
     expect(mocks.label.startEditing).toHaveBeenCalledWith(mocks.node)
     expect(mocks.selection.closePanel).toHaveBeenCalled()
-    expect(mocks.context.openNode).toHaveBeenCalled()
+    expect(mocks.context.open).toHaveBeenCalled()
   })
 
   it("closes the active detail panel with Escape", () => {

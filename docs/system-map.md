@@ -27,13 +27,13 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 3. `useMindmapSync` calls `listMindmaps` from `storage/mindmaps.ts`.
 4. It loads the remembered map (or the most recently updated map), falling back
    to `createMindmap(emptyMindmap())` when the library is empty.
-5. `fromMindmapDocument` converts the stored JSON shape into UI `Node`/`Link`
-   objects and the reducer replaces graph state.
+5. `fromMindmapDocument` converts the stored JSON shape into UI `Node`, `Link`,
+   and `TextBox` objects and the reducer replaces graph state.
 
 ### Edit and autosave
 
 1. Canvas and panel events dispatch reducer actions or change selection state.
-2. `useMindmapSync` serializes title/nodes/links through
+2. `useMindmapSync` serializes title/nodes/links/texts through
    `toMindmapDocument`.
 3. `useMindmapAutosave` debounces changes for 800 ms and calls
    `saveMindmap`.
@@ -68,7 +68,9 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/components/QuizQuestionBlock.tsx` | MCQ editor, Done, blank-choice cleanup |
 | `frontend/src/components/MarkdownPreview.tsx` | Safe rendered markdown |
 | `frontend/src/components/Latex.tsx` | KaTeX span rendering |
-| `frontend/src/components/ContextMenu.tsx` | Node/edge delete menu |
+| `frontend/src/components/ContextMenu.tsx` | Shared canvas/node/edge/text menu |
+| `frontend/src/components/CanvasTextBox.tsx` | Draggable, editable text annotations |
+| `frontend/src/components/InlineEdgeEditor.tsx` | Edge-label editor anchored to the curve midpoint |
 | `frontend/src/components/InlineNodeEditor.tsx` | Inline canvas title editor |
 | `frontend/src/components/buttonStyles.ts` | Shared button class strings |
 | `frontend/src/components/DeleteButton.tsx`, `PlusIcon.tsx`, `TrashIcon.tsx` | Shared icons/actions |
@@ -77,9 +79,9 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 
 | File | Responsibility |
 | --- | --- |
-| `MindmapCanvas.tsx` | SVG surface, pan/zoom transform, scaled grid, node/edge/preview composition |
+| `MindmapCanvas.tsx` | SVG surface, pan/zoom transform, grid, text boxes, edge arrows, node/edge previews |
 | `MindmapNode.tsx` | Node rectangle, status colors, anchors, fading handles |
-| `EdgePaths.tsx`, `EdgeStroke.tsx` | Dashed edge rendering and hit paths |
+| `EdgePaths.tsx`, `EdgeStroke.tsx` | Dashed edges, labels, arrow markers, and hit paths |
 | `EdgeHandles.tsx` | Endpoint rewire handles |
 | `EdgePreview.tsx` | Ghost node and connection/edge previews |
 
@@ -96,10 +98,11 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `frontend/src/canvasPoint.ts` | Client coordinates -> SVG coordinates |
 | `frontend/src/selectionBounds.ts` | Bounds outline for selected items |
 | `frontend/src/panelViewport.ts` | Left-half centering target and panel viewport restore |
-| `frontend/src/state/mindmapReducer.ts` | Pure node/link/add/move/update/remove transitions |
+| `frontend/src/contextMenus.ts` | Builds context menus for canvas, node, edge, and text targets |
+| `frontend/src/state/mindmapReducer.ts` | Pure node/link/text add/move/update/remove transitions |
 | `frontend/src/persistence.ts` | UI model <-> portable JSON document |
 | `frontend/src/storage/mindmaps.ts` | localStorage CRUD repository |
-| `frontend/src/storage/types.ts` | Stored document/resource/summary types |
+| `frontend/src/storage/types.ts` | Stored document/resource/summary, edge metadata, and text-box types |
 | `frontend/src/mindmapLibrary.ts` | Last-opened-map localStorage helpers |
 | `frontend/src/errors.ts` | Safe error message extraction |
 
@@ -112,6 +115,9 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `useMindmapAutosave` | Debounce, save queue, status/retry, page-hide flush |
 | `useMindmapSelection` | Node/edge/panel selection |
 | `useMindmapInteractions` | Coordinates the interaction hooks, space/middle-drag panning |
+| `useCanvasAnnotations` | Text-box and edge-label editing state |
+| `useTextDrag` | Free-standing text annotation dragging |
+| `useMindmapMenus` | Right-click handlers and menu item wiring |
 | `useCanvasViewport` | Pan offset, zoom clamping/anchoring, wheel gestures, world conversion |
 | `useNodeDrag` | Move one or many selected nodes |
 | `useConnectDrag` | Drag from a side handle to create an edge/ghost node |
@@ -119,7 +125,7 @@ Vite builds a static bundle with relative asset URLs. GitHub Actions uploads
 | `useEdgeHover` | Hover state and delayed handle hiding |
 | `useMarqueeSelection` | Box selection |
 | `useLabelEditing` | Inline node-name editing |
-| `useMindmapContextMenu` | Context-menu state and delete confirmation |
+| `useMindmapContextMenu` | Shared context-menu open/close state |
 | `useCanvasSize` | ResizeObserver-based canvas dimensions |
 
 ## 5. Storage API
@@ -172,6 +178,8 @@ The production build was also checked from a nested static path
 - closing the panel restores the previous viewport when the canvas was not
   manually panned or zoomed during preview
 - Escape closes the panel from the canvas or an active editor
+- blank-canvas right-click adds nodes or draggable text boxes
+- edge right-click edits labels and switches arrow directions
 - viewport reset when switching maps
 - navigation reload with the node restored from localStorage
 - no `/api` requests

@@ -32,6 +32,7 @@ function setup() {
   const newNode = makeNode({ id: "new", x: 400, y: 400 })
   const actions = {
     moveNodes: vi.fn(),
+    moveText: vi.fn(),
     addNode: vi.fn(() => newNode),
     addLink: vi.fn(),
     updateLink: vi.fn(),
@@ -45,6 +46,7 @@ function setup() {
     useMindmapInteractions({
       nodes,
       links: [],
+      texts: [],
       byId,
       edges: [],
       selectedNodeIds: [],

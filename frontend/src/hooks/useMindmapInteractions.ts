@@ -5,6 +5,7 @@ import type { RenderedEdge } from "../graph"
 import type { SelectionResult } from "../interaction"
 import { useCanvasSize } from "./useCanvasSize"
 import { useCanvasViewport } from "./useCanvasViewport"
+import { useTextDrag } from "./useTextDrag"
 import { useConnectDrag } from "./useConnectDrag"
 import { useEdgeDrag } from "./useEdgeDrag"
 import { useEdgeHover } from "./useEdgeHover"
@@ -14,7 +15,16 @@ import { useNodeDrag } from "./useNodeDrag"
 
 type GraphActions = Pick<
   MindmapGraph,
-  "nodes" | "links" | "byId" | "moveNodes" | "addNode" | "addLink" | "updateLink" | "removeLink"
+  | "nodes"
+  | "links"
+  | "texts"
+  | "byId"
+  | "moveNodes"
+  | "moveText"
+  | "addNode"
+  | "addLink"
+  | "updateLink"
+  | "removeLink"
 >
 
 type Options = GraphActions & {
@@ -42,9 +52,11 @@ export function useMindmapInteractions(options: Options) {
   const {
     nodes,
     links,
+    texts,
     byId,
     edges,
     moveNodes,
+    moveText,
     addNode,
     addLink,
     updateLink,
@@ -110,6 +122,7 @@ export function useMindmapInteractions(options: Options) {
   }, [])
 
   const marquee = useMarqueeSelection({ toSvgPoint, nodes, edges, onSelect: selectMarquee })
+  const textDrag = useTextDrag({ texts, moveText, toSvgPoint })
 
   const nodeDrag = useNodeDrag({
     byId,
@@ -187,6 +200,10 @@ export function useMindmapInteractions(options: Options) {
       )
       return
     }
+    if (textDrag.drag) {
+      textDrag.move(event)
+      return
+    }
     if (marquee.active) {
       marquee.move(event)
       return
@@ -209,6 +226,10 @@ export function useMindmapInteractions(options: Options) {
       setPan(null)
       return
     }
+    if (textDrag.drag) {
+      textDrag.finish()
+      return
+    }
     if (marquee.active) {
       marquee.finish(event)
       return
@@ -226,6 +247,7 @@ export function useMindmapInteractions(options: Options) {
 
   function onPointerLeave() {
     setPan(null)
+    textDrag.cancel()
     nodeDrag.cancel()
     connectDrag.cancel()
     edgeDrag.cancel()
@@ -260,6 +282,8 @@ export function useMindmapInteractions(options: Options) {
     onNodePointerDown: nodeDrag.start,
     onNodePointerEnter,
     onNodePointerLeave,
+    startTextDrag: textDrag.start,
+    toSvgPoint,
     startConnect: connectDrag.start,
     startEdgeDrag: edgeDrag.start,
     showEdge: edgeHover.show,

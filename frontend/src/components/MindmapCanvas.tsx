@@ -1,9 +1,10 @@
 import type { MouseEvent } from "react"
 
-import type { Node, RenderedEdge } from "../graph"
+import type { Node, RenderedEdge, TextBox } from "../graph"
 import type { SelectionBox } from "../selectionBounds"
 import type { MindmapInteractions } from "../hooks/useMindmapInteractions"
 import type { Viewport } from "../hooks/useCanvasViewport"
+import { CanvasTextBox } from "./CanvasTextBox"
 import { EdgeHandles } from "./EdgeHandles"
 import { EdgePaths } from "./EdgePaths"
 import { EdgePreview } from "./EdgePreview"
@@ -12,9 +13,11 @@ import { MindmapNode } from "./MindmapNode"
 type Props = {
   nodes: Node[]
   edges: RenderedEdge[]
+  texts: TextBox[]
   selectedNodeIds: string[]
   selectedEdgeIds: string[]
   editingId: string | null
+  editingTextId: string | null
   selectionBox: SelectionBox | null
   viewport: Viewport
   svgRef: MindmapInteractions["svgRef"]
@@ -22,15 +25,22 @@ type Props = {
   onNodeDoubleClick: (node: Node) => void
   onNodeContextMenu: (node: Node, e: MouseEvent<SVGGElement>) => void
   onEdgeContextMenu: (edge: RenderedEdge, e: MouseEvent<SVGPathElement>) => void
+  onCanvasContextMenu: (e: MouseEvent<SVGSVGElement>) => void
+  onTextContextMenu: (text: TextBox, e: MouseEvent<SVGForeignObjectElement>) => void
+  onTextStartEdit: (id: string) => void
+  onTextCommit: (id: string, text: string) => void
+  onTextCancel: () => void
   onSelectEdge: (id: string, additive: boolean) => void
 }
 
 export function MindmapCanvas({
   nodes,
   edges,
+  texts,
   selectedNodeIds,
   selectedEdgeIds,
   editingId,
+  editingTextId,
   selectionBox,
   viewport,
   svgRef,
@@ -38,6 +48,11 @@ export function MindmapCanvas({
   onNodeDoubleClick,
   onNodeContextMenu,
   onEdgeContextMenu,
+  onCanvasContextMenu,
+  onTextContextMenu,
+  onTextStartEdit,
+  onTextCommit,
+  onTextCancel,
   onSelectEdge,
 }: Props) {
   const interactionActive = Boolean(interactions.drag || interactions.connect || interactions.edgeDrag)
@@ -53,8 +68,31 @@ export function MindmapCanvas({
       onPointerLeave={interactions.onPointerLeave}
       onPointerDown={interactions.onBackgroundPointerDown}
       onDoubleClick={interactions.onCanvasDoubleClick}
+      onContextMenu={onCanvasContextMenu}
     >
       <defs>
+        <marker
+          id="edge-arrow"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,0 L10,5 L0,10 Z" fill="#3f3e3e" />
+        </marker>
+        <marker
+          id="edge-arrow-selected"
+          viewBox="0 0 10 10"
+          refX="9"
+          refY="5"
+          markerWidth="7"
+          markerHeight="7"
+          orient="auto-start-reverse"
+        >
+          <path d="M0,0 L10,5 L0,10 Z" fill="#000000" />
+        </marker>
         <pattern
           id="grid"
           width="32"
@@ -77,6 +115,19 @@ export function MindmapCanvas({
         onSelect={onSelectEdge}
         onContextMenu={onEdgeContextMenu}
       />
+
+        {texts.map((text) => (
+          <CanvasTextBox
+            key={`${text.id}-${editingTextId === text.id ? "edit" : "view"}`}
+            textBox={text}
+            editing={editingTextId === text.id}
+            onStartEdit={onTextStartEdit}
+            onCommit={onTextCommit}
+            onCancel={onTextCancel}
+            onPointerDown={interactions.startTextDrag}
+            onContextMenu={onTextContextMenu}
+          />
+        ))}
 
       {nodes.map((node) => {
         const connectTarget = interactions.connect?.targetId === node.id

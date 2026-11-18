@@ -5,7 +5,7 @@
  * `learn.blocks`, quiz content under `quiz.questions`, and metadata such as
  * `createdAt` / `updatedAt` is managed by the storage layer.
  */
-import type { Side } from "../graph"
+import type { ArrowMode, Side } from "../graph"
 import type { QuizQuestion } from "../quiz"
 import type { NoteStatus } from "../status"
 
@@ -31,6 +31,17 @@ export type MindmapLinkDocument = {
   to: string
   fromSide: Side
   toSide: Side
+  text?: string
+  arrow?: ArrowMode
+}
+
+/** A free-standing text annotation stored on the canvas. */
+export type MindmapTextBoxDocument = {
+  id: string
+  text: string
+  x: number
+  y: number
+  width: number
 }
 
 /** The complete document saved for one map. */
@@ -39,6 +50,7 @@ export type MindmapDocument = {
   title: string
   nodes: MindmapNodeDocument[]
   links: MindmapLinkDocument[]
+  texts?: MindmapTextBoxDocument[]
 }
 
 /** A saved document plus locally managed metadata. */

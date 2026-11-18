@@ -1,6 +1,15 @@
 import { useCallback, useMemo, useReducer, useRef } from "react"
 
-import { measureNodeWidth, nextNodeNumber, uid, type Link, type Node, type Point } from "../graph"
+import {
+  makeTextBox,
+  measureNodeWidth,
+  nextNodeNumber,
+  uid,
+  type Link,
+  type Node,
+  type Point,
+  type TextBox,
+} from "../graph"
 import { initialMindmapState, mindmapReducer } from "../state/mindmapReducer"
 import { DEFAULT_NOTE_STATUS } from "../status"
 
@@ -50,21 +59,35 @@ export function useMindmapGraph() {
     dispatch({ type: "set-status", id, status })
   }, [])
 
-  const replaceState = useCallback((nodes: Node[], links: Link[]) => {
+  const replaceState = useCallback((nodes: Node[], links: Link[], texts: TextBox[] = []) => {
     labelCounter.current = nextNodeNumber(nodes)
-    dispatch({ type: "replace", nodes, links })
+    dispatch({ type: "replace", nodes, links, texts })
   }, [])
 
   const moveNodes = useCallback((moves: { id: string; x: number; y: number }[]) => {
     dispatch({ type: "move-nodes", moves })
   }, [])
 
-  const addLink = useCallback((link: Omit<Link, "id">) => {
-    dispatch({ type: "add-link", link: { ...link, id: uid() } })
-  }, [])
+  const addLink = useCallback(
+    (
+      link: Omit<Link, "id" | "text" | "arrow"> &
+        Partial<Pick<Link, "text" | "arrow">>,
+    ) => {
+      dispatch({
+        type: "add-link",
+        link: { text: "", arrow: "none", ...link, id: uid() },
+      })
+    },
+    [],
+  )
 
   const updateLink = useCallback(
-    (id: string, patch: Partial<Pick<Link, "from" | "to" | "fromSide" | "toSide">>) => {
+    (
+      id: string,
+      patch: Partial<
+        Pick<Link, "from" | "to" | "fromSide" | "toSide" | "text" | "arrow">
+      >,
+    ) => {
       dispatch({ type: "update-link", id, patch })
     },
     [],
@@ -74,9 +97,28 @@ export function useMindmapGraph() {
     dispatch({ type: "remove-link", id })
   }, [])
 
+  const addText = useCallback((point: Point, text = "") => {
+    const next = makeTextBox(point, text)
+    dispatch({ type: "add-text", text: next })
+    return next
+  }, [])
+
+  const updateText = useCallback((id: string, text: string) => {
+    dispatch({ type: "update-text", id, text })
+  }, [])
+
+  const moveText = useCallback((id: string, x: number, y: number) => {
+    dispatch({ type: "move-text", id, x, y })
+  }, [])
+
+  const removeText = useCallback((id: string) => {
+    dispatch({ type: "remove-text", id })
+  }, [])
+
   return {
     nodes: state.nodes,
     links: state.links,
+    texts: state.texts,
     byId,
     addNode,
     removeNode,
@@ -89,6 +131,10 @@ export function useMindmapGraph() {
     addLink,
     updateLink,
     removeLink,
+    addText,
+    updateText,
+    moveText,
+    removeText,
   }
 }
 

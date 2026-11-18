@@ -76,13 +76,41 @@ describe("useMindmapGraph", () => {
     )
 
     expect(result.current.links).toHaveLength(1)
+    expect(result.current.links[0]).toMatchObject({ text: "", arrow: "none" })
     const linkId = result.current.links[0].id
 
-    act(() => result.current.updateLink(linkId, { toSide: "top" }))
-    expect(result.current.links[0].toSide).toBe("top")
+    act(() =>
+      result.current.updateLink(linkId, {
+        toSide: "top",
+        text: "causes",
+        arrow: "forward",
+      }),
+    )
+    expect(result.current.links[0]).toMatchObject({
+      toSide: "top",
+      text: "causes",
+      arrow: "forward",
+    })
 
     act(() => result.current.removeLink(linkId))
     expect(result.current.links).toEqual([])
+  })
+
+  it("creates, updates, moves, and removes text annotations", () => {
+    const { result } = renderHook(() => useMindmapGraph())
+    let id = ""
+
+    act(() => {
+      id = result.current.addText({ x: 200, y: 100 }, "Note").id
+    })
+    expect(result.current.texts[0]).toMatchObject({ text: "Note", x: 90, y: 78, width: 220 })
+
+    act(() => result.current.updateText(id, "Updated"))
+    act(() => result.current.moveText(id, 50, 60))
+    expect(result.current.texts[0]).toMatchObject({ text: "Updated", x: 50, y: 60 })
+
+    act(() => result.current.removeText(id))
+    expect(result.current.texts).toEqual([])
   })
 
   it("replaces state and continues numbering from loaded labels", () => {

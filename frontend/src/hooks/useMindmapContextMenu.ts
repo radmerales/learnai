@@ -1,65 +1,21 @@
-import { useCallback, useState, type MouseEvent } from "react"
+import { useCallback, useState } from "react"
 
-import type { Node, RenderedEdge } from "../graph"
-
-type ContextMenuState = {
-  kind: "node" | "edge"
-  id: string
-  label: string
-  deleteLabel: string
-  x: number
-  y: number
-}
-
-type Options = {
-  onDeleteNode: (id: string) => void
-  onDeleteEdge: (id: string) => void
-}
+import type { ContextMenuState } from "../contextMenu"
 
 /**
- * Owns the right-click menu state and the delete confirmation.
- *
- * React state lives here instead of in MindmapPage so the page only has to
- * open the menu and pass the resulting action back to the graph.
+ * Owns the right-click menu position, title, and items. Components build the
+ * item list; this hook only handles opening/closing the shared menu.
  */
-export function useMindmapContextMenu({ onDeleteNode, onDeleteEdge }: Options) {
+export function useMindmapContextMenu() {
   const [contextMenu, setContextMenu] = useState<ContextMenuState | null>(null)
 
-  const openNode = useCallback((node: Node, event: MouseEvent<SVGGElement>) => {
-    setContextMenu({
-      kind: "node",
-      id: node.id,
-      label: node.label,
-      deleteLabel: "Delete node",
-      x: event.clientX,
-      y: event.clientY,
-    })
-  }, [])
-
-  const openEdge = useCallback((edge: RenderedEdge, event: MouseEvent<SVGPathElement>) => {
-    setContextMenu({
-      kind: "edge",
-      id: edge.id,
-      label: `${edge.from.label} → ${edge.to.label}`,
-      deleteLabel: "Delete edge",
-      x: event.clientX,
-      y: event.clientY,
-    })
+  const open = useCallback((menu: ContextMenuState) => {
+    setContextMenu(menu)
   }, [])
 
   const close = useCallback(() => {
     setContextMenu(null)
   }, [])
 
-  const confirmDelete = useCallback(() => {
-    if (!contextMenu) return
-    if (contextMenu.kind === "node") {
-      onDeleteNode(contextMenu.id)
-    } else {
-      onDeleteEdge(contextMenu.id)
-    }
-    setContextMenu(null)
-  }, [contextMenu, onDeleteEdge, onDeleteNode])
-
-  return { contextMenu, openNode, openEdge, close, confirmDelete }
+  return { contextMenu, open, close }
 }

@@ -7,7 +7,7 @@ import {
   listMindmaps,
 } from "../storage/mindmaps"
 import type { MindmapResource, MindmapSummary } from "../storage/types"
-import type { Link, Node } from "../graph"
+import type { Link, Node, TextBox } from "../graph"
 import { errorMessage } from "../errors"
 import { readRememberedId, rememberId, summarize } from "../mindmapLibrary"
 import {
@@ -21,7 +21,8 @@ import { useMindmapAutosave } from "./useMindmapAutosave"
 type Options = {
   nodes: Node[]
   links: Link[]
-  onLoad: (nodes: Node[], links: Link[]) => void
+  texts: TextBox[]
+  onLoad: (nodes: Node[], links: Link[], texts: TextBox[]) => void
 }
 
 /**
@@ -38,7 +39,7 @@ type Options = {
  *   3. Every edit changes `document`; useMindmapAutosave sends it after a pause.
  *   4. Map switches flush the current save before loading the next map.
  */
-export function useMindmapSync({ nodes, links, onLoad }: Options) {
+export function useMindmapSync({ nodes, links, texts, onLoad }: Options) {
   const [summaries, setSummaries] = useState<MindmapSummary[]>([])
   const [currentId, setCurrentId] = useState<string | null>(null)
   const [title, setTitleState] = useState(UNTITLED_MINDMAP)
@@ -62,8 +63,8 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
   // Convert the graph into the JSON document shape storage understands.
   // useMemo avoids rebuilding the object when unrelated state changes.
   const document = useMemo(
-    () => toMindmapDocument(title, nodes, links),
-    [title, nodes, links],
+    () => toMindmapDocument(title, nodes, links, texts),
+    [title, nodes, links, texts],
   )
   const documentJson = useMemo(() => JSON.stringify(document), [document])
 
@@ -90,9 +91,14 @@ export function useMindmapSync({ nodes, links, onLoad }: Options) {
   const applyResource = useCallback(
     (resource: MindmapResource) => {
       const loaded = fromMindmapDocument(resource)
-      onLoadRef.current(loaded.nodes, loaded.links)
+      onLoadRef.current(loaded.nodes, loaded.links, loaded.texts)
 
-      const normalized = toMindmapDocument(resource.title, loaded.nodes, loaded.links)
+      const normalized = toMindmapDocument(
+        resource.title,
+        loaded.nodes,
+        loaded.links,
+        loaded.texts,
+      )
       currentIdRef.current = resource.id
       setCurrentId(resource.id)
       setTitleState(resource.title)

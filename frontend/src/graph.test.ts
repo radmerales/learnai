@@ -6,6 +6,8 @@ import {
   curvePath,
   localHandleHitPath,
   localHandlePoint,
+  makeTextBox,
+  measureTextBoxHeight,
   nearestSide,
   nextNodeNumber,
   sideFromVector,
@@ -112,6 +114,9 @@ describe("rendered edges", () => {
     expect(edges).toHaveLength(1)
     expect(edges[0].fromPoint).toEqual({ x: 180, y: 100 })
     expect(edges[0].toPoint).toEqual({ x: 220, y: 100 })
+    expect(edges[0].midpoint).toEqual({ x: 200, y: 100 })
+    expect(edges[0].text).toBe("")
+    expect(edges[0].arrow).toBe("none")
     expect(edges[0].path.startsWith("M ")).toBe(true)
   })
 
@@ -120,5 +125,32 @@ describe("rendered edges", () => {
     const byId = new Map(nodes.map((node) => [node.id, node]))
 
     expect(buildRenderedEdges([makeLink({ from: "a", to: "missing" })], byId)).toEqual([])
+  })
+
+  it("carries edge text and arrow settings through the rendered edge", () => {
+    const nodes = [makeNode({ id: "a" }), makeNode({ id: "b", x: 300 })]
+    const byId = new Map(nodes.map((node) => [node.id, node]))
+
+    const edges = buildRenderedEdges(
+      [makeLink({ from: "a", to: "b", text: "causes", arrow: "both" })],
+      byId,
+    )
+
+    expect(edges[0].text).toBe("causes")
+    expect(edges[0].arrow).toBe("both")
+  })
+})
+
+describe("text annotations", () => {
+  it("creates a centered text box", () => {
+    const text = makeTextBox({ x: 200, y: 100 }, "Hello")
+
+    expect(text).toMatchObject({ text: "Hello", x: 90, y: 78, width: 220 })
+  })
+
+  it("grows the text box height for wrapped lines", () => {
+    expect(measureTextBoxHeight("")).toBe(44)
+    expect(measureTextBoxHeight("one\ntwo")).toBe(56)
+    expect(measureTextBoxHeight("x".repeat(60))).toBe(76)
   })
 })

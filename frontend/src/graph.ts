@@ -14,12 +14,25 @@ export type Node = {
 
 export type Side = "top" | "right" | "bottom" | "left"
 
+export type ArrowMode = "none" | "forward" | "backward" | "both"
+
 export type Link = {
   id: string
   from: string
   to: string
   fromSide: Side
   toSide: Side
+  text: string
+  arrow: ArrowMode
+}
+
+/** A free-standing canvas annotation, separate from a mindmap node. */
+export type TextBox = {
+  id: string
+  text: string
+  x: number
+  y: number
+  width: number
 }
 
 export type Point = { x: number; y: number }
@@ -32,11 +45,16 @@ export type RenderedEdge = {
   toSide: Side
   fromPoint: Point
   toPoint: Point
+  midpoint: Point
+  text: string
+  arrow: ArrowMode
   path: string
 }
 
 export const NODE_W = 140
 export const NODE_H = 44
+export const TEXT_BOX_W = 220
+export const TEXT_BOX_MIN_H = 44
 export const HANDLE_R = 4.5
 export const HANDLE_HIT_R = 36
 const ANCHOR_OFFSET = 10
@@ -219,6 +237,41 @@ export function curvePath(fromPoint: Point, fromSide: Side, toPoint: Point, toSi
   return `M ${round(start.x)} ${round(start.y)} C ${round(c1.x)} ${round(c1.y)}, ${round(c2.x)} ${round(c2.y)}, ${round(end.x)} ${round(end.y)}`
 }
 
+/** Midpoint of the cubic used for edge labels. */
+export function curveMidpoint(
+  fromPoint: Point,
+  fromSide: Side,
+  toPoint: Point,
+  toSide: Side,
+): Point {
+  const { start, c1, c2, end } = curveGeometry(fromPoint, fromSide, toPoint, toSide)
+  const t = 0.5
+  const mt = 1 - t
+  return {
+    x: mt ** 3 * start.x + 3 * mt ** 2 * t * c1.x + 3 * mt * t ** 2 * c2.x + t ** 3 * end.x,
+    y: mt ** 3 * start.y + 3 * mt ** 2 * t * c1.y + 3 * mt * t ** 2 * c2.y + t ** 3 * end.y,
+  }
+}
+
+/** Approximate wrapped height for a fixed-width text annotation. */
+export function measureTextBoxHeight(text: string): number {
+  const lines = text.split("\n").reduce((count, line) => {
+    return count + Math.max(1, Math.ceil(line.length / 28))
+  }, 0)
+  return Math.max(TEXT_BOX_MIN_H, lines * 20 + 16)
+}
+
+/** Create an empty text annotation centered on the requested point. */
+export function makeTextBox(point: Point, text = ""): TextBox {
+  return {
+    id: uid(),
+    text,
+    x: point.x - TEXT_BOX_W / 2,
+    y: point.y - TEXT_BOX_MIN_H / 2,
+    width: TEXT_BOX_W,
+  }
+}
+
 export function buildRenderedEdges(links: Link[], byId: Map<string, Node>): RenderedEdge[] {
   const next: RenderedEdge[] = []
 
@@ -236,6 +289,9 @@ export function buildRenderedEdges(links: Link[], byId: Map<string, Node>): Rend
       toSide: link.toSide,
       fromPoint,
       toPoint,
+      midpoint: curveMidpoint(fromPoint, link.fromSide, toPoint, link.toSide),
+      text: link.text,
+      arrow: link.arrow,
       path: curvePath(fromPoint, link.fromSide, toPoint, link.toSide),
     })
   })

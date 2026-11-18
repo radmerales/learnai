@@ -1,17 +1,19 @@
-import { useCallback, useEffect, useMemo, useRef, type MouseEvent } from "react"
+import { useCallback, useEffect, useMemo } from "react"
 
-import { buildRenderedEdges, type Node, type RenderedEdge } from "../graph"
-import type { Viewport } from "../hooks/useCanvasViewport"
-import { panelFocusTarget } from "../panelViewport"
+import { buildRenderedEdges } from "../graph"
 import { getSelectionBounds } from "../selectionBounds"
+import { useCanvasAnnotations } from "../hooks/useCanvasAnnotations"
 import { useLabelEditing } from "../hooks/useLabelEditing"
 import { useMindmapContextMenu } from "../hooks/useMindmapContextMenu"
 import { useMindmapGraph } from "../hooks/useMindmapGraph"
 import { useMindmapInteractions } from "../hooks/useMindmapInteractions"
+import { useMindmapMenus } from "../hooks/useMindmapMenus"
 import { useMindmapSelection } from "../hooks/useMindmapSelection"
 import { useMindmapSync } from "../hooks/useMindmapSync"
+import { usePanelCanvasFocus } from "../hooks/usePanelCanvasFocus"
 import { CanvasStatusOverlay } from "./CanvasStatusOverlay"
 import { CanvasZoomControls } from "./CanvasZoomControls"
+import { InlineEdgeEditor } from "./InlineEdgeEditor"
 import { InlineNodeEditor } from "./InlineNodeEditor"
 import { ContextMenu } from "./ContextMenu"
 import { MindmapCanvas } from "./MindmapCanvas"
@@ -26,6 +28,7 @@ export function MindmapPage() {
   const sync = useMindmapSync({
     nodes: graph.nodes,
     links: graph.links,
+    texts: graph.texts,
     onLoad: graph.replaceState,
   })
   const selection = useMindmapSelection()
@@ -43,7 +46,7 @@ export function MindmapPage() {
     clearEdgeSelection,
     closePanel,
   } = selection
-  const { removeNode, removeLink, moveNodes } = graph
+  const { removeNode, removeLink, moveNodes, moveText, addText, updateText, removeText } = graph
 
   // A map switch replaces every node ID, so old selections no longer point at
   // real nodes. Clearing them also closes the note panel.
@@ -59,9 +62,11 @@ export function MindmapPage() {
   const interactions = useMindmapInteractions({
     nodes: graph.nodes,
     links: graph.links,
+    texts: graph.texts,
     byId: graph.byId,
     edges,
     moveNodes,
+    moveText,
     addNode: graph.addNode,
     addLink: graph.addLink,
     updateLink: graph.updateLink,
@@ -74,17 +79,6 @@ export function MindmapPage() {
   })
 
   const { svgRef, ...canvasInteractions } = interactions
-  const resetViewport = interactions.resetViewport
-  const panelOriginalRef = useRef<Viewport | null>(null)
-  const panelManualVersionRef = useRef<number | null>(null)
-
-  // A different map should open at the home viewport rather than wherever the
-  // previous map was panned.
-  useEffect(() => {
-    panelOriginalRef.current = null
-    panelManualVersionRef.current = null
-    resetViewport()
-  }, [resetViewport, sync.currentId])
 
   const selectedNode =
     selectedNodeIds.length === 1 ? graph.byId.get(selectedNodeIds[0]) ?? null : null
@@ -95,64 +89,25 @@ export function MindmapPage() {
     [edges, graph.nodes, selectedEdgeIds, selectedNodeIds],
   )
 
-  // Keep the latest values available to the panel-placement effect without
-  // making every animation frame retrigger the effect.
-  const panelNodeRef = useRef(panelNode)
-  const viewportRef = useRef(interactions.viewport)
-  const manualVersionRef = useRef(interactions.manualVersion)
-  useEffect(() => {
-    panelNodeRef.current = panelNode
-    viewportRef.current = interactions.viewport
-    manualVersionRef.current = interactions.manualVersion
+  usePanelCanvasFocus({
+    node: panelNode,
+    canvasWidth: interactions.canvasSize.width,
+    canvasHeight: interactions.canvasSize.height,
+    viewport: interactions.viewport,
+    manualVersion: interactions.manualVersion,
+    mapId: sync.currentId,
+    animateTo: interactions.animateTo,
+    resetViewport: interactions.resetViewport,
   })
-  const animateTo = interactions.animateTo
-  const viewportScale = interactions.viewport.scale
-  const canvasWidth = interactions.canvasSize.width
-  const canvasHeight = interactions.canvasSize.height
 
-  // Center the selected node in the left canvas area while the panel is open.
-  // On close, restore the pre-panel viewport only if the user did not pan or
-  // zoom the canvas while previewing.
-  useEffect(() => {
-    const node = panelNodeRef.current
-    const current = viewportRef.current
-
-    if (!node) {
-      const original = panelOriginalRef.current
-      const manualChanged =
-        panelManualVersionRef.current !== manualVersionRef.current
-      panelOriginalRef.current = null
-      panelManualVersionRef.current = null
-      if (original && !manualChanged) {
-        animateTo(original.x, original.y)
-      }
-      return
-    }
-
-    if (!canvasWidth || !canvasHeight) return
-    if (!panelOriginalRef.current) {
-      panelOriginalRef.current = { ...current }
-      panelManualVersionRef.current = manualVersionRef.current
-    }
-
-    const panelWidth = canvasWidth >= 768 ? canvasWidth / 2 : 0
-    if (!panelWidth) return
-
-    const target = panelFocusTarget(
-      current,
-      node,
-      canvasWidth,
-      canvasHeight,
-      panelWidth,
-    )
-    if (target) animateTo(target.x, target.y)
-  }, [
-    animateTo,
-    canvasHeight,
-    canvasWidth,
-    panelNode?.id,
-    viewportScale,
-  ])
+  const annotations = useCanvasAnnotations({
+    texts: graph.texts,
+    edges,
+    addText,
+    updateText,
+    removeText,
+    updateLink: graph.updateLink,
+  })
 
   const deleteSelection = useCallback(() => {
     selectedEdgeIds.forEach((id) => removeLink(id))
@@ -179,9 +134,23 @@ export function MindmapPage() {
     [cancelEditing, clearSelection, removeLink],
   )
 
-  const menu = useMindmapContextMenu({
-    onDeleteNode: deleteNodeById,
-    onDeleteEdge: deleteEdgeById,
+  const menu = useMindmapContextMenu()
+  const menus = useMindmapMenus({
+    menu,
+    toSvgPoint: interactions.toSvgPoint,
+    selectNode,
+    focusNode,
+    selectEdge,
+    closePanel,
+    addNode: graph.addNode,
+    addText,
+    updateLink: graph.updateLink,
+    deleteNode: deleteNodeById,
+    deleteEdge: deleteEdgeById,
+    beginEdgeText: annotations.beginEdgeText,
+    cancelEdgeText: annotations.cancelEdgeText,
+    beginText: annotations.beginText,
+    deleteText: annotations.deleteText,
   })
 
   useEffect(() => {
@@ -216,7 +185,6 @@ export function MindmapPage() {
     })
     focusNode(node.id)
   }
-
   function handleDeleteMap() {
     if (!sync.currentId) return
     const label = sync.title.trim() || "Untitled mindmap"
@@ -224,23 +192,6 @@ export function MindmapPage() {
       void sync.deleteMap(sync.currentId)
     }
   }
-
-  function handleNodeDoubleClick(node: Node) {
-    selectNode(node.id)
-    editing.startEditing(node)
-  }
-
-  function handleNodeContextMenu(node: Node, e: MouseEvent<SVGGElement>) {
-    selectNode(node.id)
-    closePanel()
-    menu.openNode(node, e)
-  }
-
-  function handleEdgeContextMenu(edge: RenderedEdge, e: MouseEvent<SVGPathElement>) {
-    selectEdge(edge.id)
-    menu.openEdge(edge, e)
-  }
-
   return (
     <div className="flex h-full flex-col bg-paper text-ink">
       <MindmapHeader
@@ -269,16 +220,26 @@ export function MindmapPage() {
         <MindmapCanvas
           nodes={graph.nodes}
           edges={edges}
+          texts={graph.texts}
           selectedNodeIds={selectedNodeIds}
           selectedEdgeIds={selectedEdgeIds}
           editingId={editing.editingId}
+          editingTextId={annotations.editingTextId}
           selectionBox={selectionBox}
           viewport={interactions.viewport}
           svgRef={svgRef}
           interactions={canvasInteractions}
-          onNodeDoubleClick={handleNodeDoubleClick}
-          onNodeContextMenu={handleNodeContextMenu}
-          onEdgeContextMenu={handleEdgeContextMenu}
+          onNodeDoubleClick={(node) => {
+            selectNode(node.id)
+            editing.startEditing(node)
+          }}
+          onNodeContextMenu={menus.handleNodeContextMenu}
+          onEdgeContextMenu={menus.handleEdgeContextMenu}
+          onCanvasContextMenu={menus.handleCanvasContextMenu}
+          onTextContextMenu={menus.handleTextContextMenu}
+          onTextStartEdit={annotations.beginText}
+          onTextCommit={annotations.commitText}
+          onTextCancel={annotations.cancelText}
           onSelectEdge={selectEdge}
         />
 
@@ -298,6 +259,15 @@ export function MindmapPage() {
             onChange={editing.setDraftLabel}
             onCommit={editing.commitEditing}
             onCancel={editing.cancelEditing}
+          />
+        )}
+
+        {annotations.editingEdge && (
+          <InlineEdgeEditor
+            edge={annotations.editingEdge}
+            viewport={interactions.viewport}
+            onCommit={annotations.commitEdgeText}
+            onCancel={annotations.cancelEdgeText}
           />
         )}
 
@@ -322,14 +292,7 @@ export function MindmapPage() {
       />
 
       {menu.contextMenu && (
-        <ContextMenu
-          label={menu.contextMenu.label}
-          deleteLabel={menu.contextMenu.deleteLabel}
-          x={menu.contextMenu.x}
-          y={menu.contextMenu.y}
-          onDelete={menu.confirmDelete}
-          onClose={menu.close}
-        />
+        <ContextMenu menu={menu.contextMenu} onClose={menu.close} />
       )}
     </div>
   )

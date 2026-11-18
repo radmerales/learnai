@@ -13,7 +13,10 @@ type Options = {
   links: Link[]
   byId: Map<string, Node>
   addNode: (point: Point) => Node
-  addLink: (link: Omit<Link, "id">) => void
+  addLink: (
+    link: Omit<Link, "id" | "text" | "arrow"> &
+      Partial<Pick<Link, "text" | "arrow">>,
+  ) => void
   focusNode: (id: string) => void
   toSvgPoint: (clientX: number, clientY: number) => Point
   onStart?: () => void

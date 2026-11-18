@@ -104,7 +104,18 @@ The portable JSON shape is still the same:
       "from": "n_1",
       "to": "n_2",
       "fromSide": "right",
-      "toSide": "left"
+      "toSide": "left",
+      "text": "produces",
+      "arrow": "forward"
+    }
+  ],
+  "texts": [
+    {
+      "id": "t_1",
+      "text": "Exam on Friday",
+      "x": 720,
+      "y": 420,
+      "width": 220
     }
   ]
 }
@@ -123,6 +134,10 @@ A complete example is in [`examples/mindmap.json`](examples/mindmap.json).
 - Bottom-left zoom HUD with percentage, zoom-out, and zoom-in controls
 - Node dragging, drag-to-connect with anchor snapping, and a “New node” ghost
   preview when releasing on empty canvas
+- Blank-canvas right-click menu with **New node** and **New text** actions
+- Draggable, editable text boxes with their own edit/delete context menu
+- Edge labels and directional arrows (none, forward, backward, or both), edited
+  from the edge right-click menu
 - Edge endpoint rewiring, including same-pair side changes and right-click
   deletion menus
 - Marquee selection, inline node renaming, and selection-bounds outline
@@ -144,8 +159,8 @@ frontend/
   src/
     main.tsx              React entrypoint
     App.tsx               root component
-    components/           canvas, zoom HUD, header, panel, Learn, Quiz, menus
-    hooks/                drag, selection, sync, autosave, viewport, canvas size
+    components/           canvas, text boxes, zoom HUD, header, panel, menus
+    hooks/                drag, selection, sync, autosave, viewport, annotations
     state/                pure mindmap reducer
     storage/              localStorage repository and document types
     graph.ts              node/link types, geometry, curve rendering

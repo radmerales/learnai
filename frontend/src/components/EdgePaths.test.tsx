@@ -1,4 +1,4 @@
-import { fireEvent, render } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
 import type { RenderedEdge } from "../graph"
@@ -13,6 +13,9 @@ const edge: RenderedEdge = {
   toSide: "left",
   fromPoint: { x: 100, y: 100 },
   toPoint: { x: 200, y: 100 },
+  midpoint: { x: 150, y: 100 },
+  text: "",
+  arrow: "none",
   path: "M 100 100 C 150 100, 150 100, 200 100",
 }
 
@@ -43,6 +46,17 @@ describe("EdgePaths", () => {
     expect(paths).toHaveLength(2)
     expect(paths[0]).toHaveAttribute("stroke-width", "3.25")
     expect(paths[1]).toHaveAttribute("stroke", "transparent")
+  })
+
+  it("renders edge text and arrow markers", () => {
+    const { container } = renderPaths({
+      edges: [{ ...edge, text: "causes", arrow: "both" }],
+    })
+
+    expect(screen.getByText("causes")).toBeInTheDocument()
+    const stroke = container.querySelector("path")!
+    expect(stroke).toHaveAttribute("marker-start", "url(#edge-arrow)")
+    expect(stroke).toHaveAttribute("marker-end", "url(#edge-arrow)")
   })
 
   it("hides the edge being dragged", () => {

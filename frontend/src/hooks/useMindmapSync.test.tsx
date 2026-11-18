@@ -35,7 +35,7 @@ beforeEach(() => {
 })
 
 function renderSync(onLoad = vi.fn()) {
-  return renderHook(() => useMindmapSync({ nodes: [], links: [], onLoad }))
+  return renderHook(() => useMindmapSync({ nodes: [], links: [], texts: [], onLoad }))
 }
 
 describe("useMindmapSync", () => {
@@ -53,6 +53,7 @@ describe("useMindmapSync", () => {
     expect(result.current.loadError).toBeNull()
     expect(onLoad).toHaveBeenCalledWith(
       [expect.objectContaining({ id: "n1", label: "Node 1" })],
+      [],
       [],
     )
   })
